@@ -1,0 +1,12 @@
+/Users/dor.kokotek/Git/JavaCourse/V3/s-emulator-ui/src/main/java/ui/SEmulatorApplication.java
+/Users/dor.kokotek/Git/JavaCourse/V3/s-emulator-ui/src/main/java/ui/command/ExitCommand.java
+/Users/dor.kokotek/Git/JavaCourse/V3/s-emulator-ui/src/main/java/ui/command/ViewHistoryCommand.java
+/Users/dor.kokotek/Git/JavaCourse/V3/s-emulator-ui/src/main/java/ui/console/OutputFormatter.java
+/Users/dor.kokotek/Git/JavaCourse/V3/s-emulator-ui/src/main/java/ui/command/LoadFileCommand.java
+/Users/dor.kokotek/Git/JavaCourse/V3/s-emulator-ui/src/main/java/ui/console/InputValidator.java
+/Users/dor.kokotek/Git/JavaCourse/V3/s-emulator-ui/src/main/java/ui/command/Command.java
+/Users/dor.kokotek/Git/JavaCourse/V3/s-emulator-ui/src/main/java/ui/command/ExpandProgramCommand.java
+/Users/dor.kokotek/Git/JavaCourse/V3/s-emulator-ui/src/main/java/ui/command/ViewProgramCommand.java
+/Users/dor.kokotek/Git/JavaCourse/V3/s-emulator-ui/src/main/java/ui/console/ConsoleInterface.java
+/Users/dor.kokotek/Git/JavaCourse/V3/s-emulator-ui/src/main/java/ui/command/RunProgramCommand.java
+/Users/dor.kokotek/Git/JavaCourse/V3/s-emulator-ui/src/main/java/ui/console/MenuManager.java

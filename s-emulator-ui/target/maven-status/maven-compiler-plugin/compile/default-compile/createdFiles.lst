@@ -1,0 +1,12 @@
+ui/command/RunProgramCommand.class
+ui/command/LoadFileCommand.class
+ui/command/ViewProgramCommand.class
+ui/command/ExitCommand.class
+ui/command/ViewHistoryCommand.class
+ui/console/OutputFormatter.class
+ui/SEmulatorApplication.class
+ui/command/ExpandProgramCommand.class
+ui/console/InputValidator.class
+ui/command/Command.class
+ui/console/ConsoleInterface.class
+ui/console/MenuManager.class
