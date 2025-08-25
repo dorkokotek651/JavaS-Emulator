@@ -15,20 +15,6 @@ import java.util.Map;
 public class GotoLabelInstruction extends BaseInstruction {
     private final String gotoLabel;
     
-    public GotoLabelInstruction(String variable, String label, Map<String, String> arguments) {
-        super(SEmulatorConstants.GOTO_LABEL_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
-              SEmulatorConstants.GOTO_LABEL_CYCLES);
-        
-        if (arguments == null || !arguments.containsKey(SEmulatorConstants.GOTO_LABEL_ARG)) {
-            throw new IllegalArgumentException("GOTO_LABEL instruction requires 'gotoLabel' argument");
-        }
-        
-        this.gotoLabel = arguments.get(SEmulatorConstants.GOTO_LABEL_ARG);
-        if (gotoLabel == null || gotoLabel.trim().isEmpty()) {
-            throw new IllegalArgumentException("gotoLabel cannot be null or empty");
-        }
-    }
-
     public GotoLabelInstruction(String variable, String label, Map<String, String> arguments,
                               SInstruction sourceInstruction) {
         super(SEmulatorConstants.GOTO_LABEL_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 

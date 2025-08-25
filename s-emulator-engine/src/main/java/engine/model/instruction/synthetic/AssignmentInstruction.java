@@ -16,20 +16,6 @@ import java.util.Map;
 public class AssignmentInstruction extends BaseInstruction {
     private final String assignedVariable;
     
-    public AssignmentInstruction(String variable, String label, Map<String, String> arguments) {
-        super(SEmulatorConstants.ASSIGNMENT_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
-              SEmulatorConstants.ASSIGNMENT_CYCLES);
-        
-        if (arguments == null || !arguments.containsKey(SEmulatorConstants.ASSIGNED_VARIABLE_ARG)) {
-            throw new IllegalArgumentException("ASSIGNMENT instruction requires 'assignedVariable' argument");
-        }
-        
-        this.assignedVariable = arguments.get(SEmulatorConstants.ASSIGNED_VARIABLE_ARG);
-        if (assignedVariable == null || assignedVariable.trim().isEmpty()) {
-            throw new IllegalArgumentException("assignedVariable cannot be null or empty");
-        }
-    }
-
     public AssignmentInstruction(String variable, String label, Map<String, String> arguments, 
                                 SInstruction sourceInstruction) {
         super(SEmulatorConstants.ASSIGNMENT_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 

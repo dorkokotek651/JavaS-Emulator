@@ -16,26 +16,7 @@ public class JumpEqualVariableInstruction extends BaseInstruction {
     private final String jumpLabel;
     private final String comparedVariable;
     
-    public JumpEqualVariableInstruction(String variable, String label, Map<String, String> arguments) {
-        super(SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
-              SEmulatorConstants.JUMP_EQUAL_VARIABLE_CYCLES);
-        
-        if (arguments == null || !arguments.containsKey(SEmulatorConstants.JE_VARIABLE_LABEL_ARG) || !arguments.containsKey(SEmulatorConstants.VARIABLE_NAME_ARG)) {
-            throw new IllegalArgumentException("JUMP_EQUAL_VARIABLE instruction requires 'JEVariableLabel' and 'variableName' arguments");
-        }
-        
-        this.jumpLabel = arguments.get(SEmulatorConstants.JE_VARIABLE_LABEL_ARG);
-        if (jumpLabel == null || jumpLabel.trim().isEmpty()) {
-            throw new IllegalArgumentException("JEVariableLabel cannot be null or empty");
-        }
-        
-        this.comparedVariable = arguments.get(SEmulatorConstants.VARIABLE_NAME_ARG);
-        if (comparedVariable == null || comparedVariable.trim().isEmpty()) {
-            throw new IllegalArgumentException("variableName cannot be null or empty");
-        }
-    }
-
-        public JumpEqualVariableInstruction(String variable, String label, Map<String, String> arguments, 
+    public JumpEqualVariableInstruction(String variable, String label, Map<String, String> arguments, 
                                        SInstruction sourceInstruction) {
         super(SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
               SEmulatorConstants.JUMP_EQUAL_VARIABLE_CYCLES, sourceInstruction);

@@ -14,11 +14,6 @@ import java.util.Map;
 
 public class ZeroVariableInstruction extends BaseInstruction {
     
-        public ZeroVariableInstruction(String variable, String label, Map<String, String> arguments) {
-        super(SEmulatorConstants.ZERO_VARIABLE_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
-              SEmulatorConstants.ZERO_VARIABLE_CYCLES);
-    }
-    
     public ZeroVariableInstruction(String variable, String label, Map<String, String> arguments, 
                                  SInstruction sourceInstruction) {
         super(SEmulatorConstants.ZERO_VARIABLE_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 

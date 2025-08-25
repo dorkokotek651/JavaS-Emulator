@@ -16,35 +16,7 @@ public class JumpEqualConstantInstruction extends BaseInstruction {
     private final String jumpLabel;
     private final int constantValue;
     
-    public JumpEqualConstantInstruction(String variable, String label, Map<String, String> arguments) {
-        super(SEmulatorConstants.JUMP_EQUAL_CONSTANT_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
-              SEmulatorConstants.JUMP_EQUAL_CONSTANT_CYCLES);
-        
-        if (arguments == null || !arguments.containsKey(SEmulatorConstants.JE_CONSTANT_LABEL_ARG) || !arguments.containsKey(SEmulatorConstants.CONSTANT_VALUE_ARG)) {
-            throw new IllegalArgumentException("JUMP_EQUAL_CONSTANT instruction requires 'JEConstantLabel' and 'constantValue' arguments");
-        }
-        
-        this.jumpLabel = arguments.get(SEmulatorConstants.JE_CONSTANT_LABEL_ARG);
-        if (jumpLabel == null || jumpLabel.trim().isEmpty()) {
-            throw new IllegalArgumentException("JEConstantLabel cannot be null or empty");
-        }
-        
-        String constantStr = arguments.get(SEmulatorConstants.CONSTANT_VALUE_ARG);
-        if (constantStr == null || constantStr.trim().isEmpty()) {
-            throw new IllegalArgumentException("constantValue cannot be null or empty");
-        }
-        
-        try {
-            this.constantValue = Integer.parseInt(constantStr.trim());
-            if (this.constantValue < 0) {
-                throw new IllegalArgumentException("constantValue cannot be negative: " + this.constantValue);
-            }
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("constantValue must be a valid non-negative integer: " + constantStr, e);
-        }
-    }
-
-        public JumpEqualConstantInstruction(String variable, String label, Map<String, String> arguments, 
+    public JumpEqualConstantInstruction(String variable, String label, Map<String, String> arguments, 
                                        SInstruction sourceInstruction) {
         super(SEmulatorConstants.JUMP_EQUAL_CONSTANT_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
               SEmulatorConstants.JUMP_EQUAL_CONSTANT_CYCLES, sourceInstruction);

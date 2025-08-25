@@ -36,50 +36,18 @@ public class InstructionFactory {
             case SEmulatorConstants.DECREASE_NAME -> new DecreaseInstruction(variable, label, arguments);
             case SEmulatorConstants.JUMP_NOT_ZERO_NAME -> new JumpNotZeroInstruction(variable, label, arguments);
             case SEmulatorConstants.NEUTRAL_NAME -> new NeutralInstruction(variable, label, arguments);
-            case SEmulatorConstants.ZERO_VARIABLE_NAME -> new ZeroVariableInstruction(variable, label, arguments);
-            case SEmulatorConstants.GOTO_LABEL_NAME -> new GotoLabelInstruction(variable, label, arguments);
-            case SEmulatorConstants.ASSIGNMENT_NAME -> new AssignmentInstruction(variable, label, arguments);
-            case SEmulatorConstants.CONSTANT_ASSIGNMENT_NAME -> new ConstantAssignmentInstruction(variable, label, arguments);
-            case SEmulatorConstants.JUMP_ZERO_NAME -> new JumpZeroInstruction(variable, label, arguments);
-            case SEmulatorConstants.JUMP_EQUAL_CONSTANT_NAME -> new JumpEqualConstantInstruction(variable, label, arguments);
-            case SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME -> new JumpEqualVariableInstruction(variable, label, arguments);
+            case SEmulatorConstants.ZERO_VARIABLE_NAME -> new ZeroVariableInstruction(variable, label, arguments, null);
+            case SEmulatorConstants.GOTO_LABEL_NAME -> new GotoLabelInstruction(variable, label, arguments, null);
+            case SEmulatorConstants.ASSIGNMENT_NAME -> new AssignmentInstruction(variable, label, arguments, null);
+            case SEmulatorConstants.CONSTANT_ASSIGNMENT_NAME -> new ConstantAssignmentInstruction(variable, label, arguments, null);
+            case SEmulatorConstants.JUMP_ZERO_NAME -> new JumpZeroInstruction(variable, label, arguments, null);
+            case SEmulatorConstants.JUMP_EQUAL_CONSTANT_NAME -> new JumpEqualConstantInstruction(variable, label, arguments, null);
+            case SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME -> new JumpEqualVariableInstruction(variable, label, arguments, null);
             default -> throw new IllegalArgumentException("Unknown instruction type: " + instructionName + 
                 ". Supported instructions: " + SEmulatorConstants.INCREASE_NAME + ", " + SEmulatorConstants.DECREASE_NAME + ", " + 
                 SEmulatorConstants.JUMP_NOT_ZERO_NAME + ", " + SEmulatorConstants.NEUTRAL_NAME + ", " + SEmulatorConstants.ZERO_VARIABLE_NAME + ", " + 
                 SEmulatorConstants.GOTO_LABEL_NAME + ", " + SEmulatorConstants.ASSIGNMENT_NAME + ", " + SEmulatorConstants.CONSTANT_ASSIGNMENT_NAME + ", " + 
                 SEmulatorConstants.JUMP_ZERO_NAME + ", " + SEmulatorConstants.JUMP_EQUAL_CONSTANT_NAME + ", " + SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME);
         };
-    }
-
-    public static boolean isBasicInstruction(String name) {
-        if (name == null || name.trim().isEmpty()) {
-            return false;
-        }
-        
-        String instructionName = name.trim().toUpperCase();
-        return switch (instructionName) {
-            case SEmulatorConstants.INCREASE_NAME, SEmulatorConstants.DECREASE_NAME, 
-                 SEmulatorConstants.JUMP_NOT_ZERO_NAME, SEmulatorConstants.NEUTRAL_NAME -> true;
-            default -> false;
-        };
-    }
-
-    public static boolean isSyntheticInstruction(String name) {
-        if (name == null || name.trim().isEmpty()) {
-            return false;
-        }
-        
-        String instructionName = name.trim().toUpperCase();
-        return switch (instructionName) {
-            case SEmulatorConstants.ZERO_VARIABLE_NAME, SEmulatorConstants.GOTO_LABEL_NAME, 
-                 SEmulatorConstants.ASSIGNMENT_NAME, SEmulatorConstants.CONSTANT_ASSIGNMENT_NAME, 
-                 SEmulatorConstants.JUMP_ZERO_NAME, SEmulatorConstants.JUMP_EQUAL_CONSTANT_NAME, 
-                 SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME -> true;
-            default -> false;
-        };
-    }
-
-    public static boolean isValidInstructionName(String name) {
-        return isBasicInstruction(name) || isSyntheticInstruction(name);
     }
 }

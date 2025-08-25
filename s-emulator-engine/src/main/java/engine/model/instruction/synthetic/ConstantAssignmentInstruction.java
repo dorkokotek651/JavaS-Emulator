@@ -14,30 +14,7 @@ import java.util.Map;
 public class ConstantAssignmentInstruction extends BaseInstruction {
     private final int constantValue;
     
-    public ConstantAssignmentInstruction(String variable, String label, Map<String, String> arguments) {
-        super(SEmulatorConstants.CONSTANT_ASSIGNMENT_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
-              SEmulatorConstants.CONSTANT_ASSIGNMENT_CYCLES);
-        
-        if (arguments == null || !arguments.containsKey(SEmulatorConstants.CONSTANT_VALUE_ARG)) {
-            throw new IllegalArgumentException("CONSTANT_ASSIGNMENT instruction requires 'constantValue' argument");
-        }
-        
-        String constantStr = arguments.get(SEmulatorConstants.CONSTANT_VALUE_ARG);
-        if (constantStr == null || constantStr.trim().isEmpty()) {
-            throw new IllegalArgumentException("constantValue cannot be null or empty");
-        }
-        
-        try {
-            this.constantValue = Integer.parseInt(constantStr.trim());
-            if (this.constantValue < 0) {
-                throw new IllegalArgumentException("constantValue cannot be negative: " + this.constantValue);
-            }
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("constantValue must be a valid non-negative integer: " + constantStr, e);
-        }
-    }
-
-        public ConstantAssignmentInstruction(String variable, String label, Map<String, String> arguments, 
+    public ConstantAssignmentInstruction(String variable, String label, Map<String, String> arguments, 
                                        SInstruction sourceInstruction) {
         super(SEmulatorConstants.CONSTANT_ASSIGNMENT_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
               SEmulatorConstants.CONSTANT_ASSIGNMENT_CYCLES, sourceInstruction);
