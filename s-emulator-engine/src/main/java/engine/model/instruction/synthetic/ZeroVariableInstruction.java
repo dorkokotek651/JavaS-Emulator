@@ -14,14 +14,14 @@ import java.util.Map;
 
 public class ZeroVariableInstruction extends BaseInstruction {
     
-    public ZeroVariableInstruction(String variable, String label, Map<String, String> arguments) {
-        super("ZERO_VARIABLE", InstructionType.SYNTHETIC, variable, label, arguments, 
+        public ZeroVariableInstruction(String variable, String label, Map<String, String> arguments) {
+        super(SEmulatorConstants.ZERO_VARIABLE_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
               SEmulatorConstants.ZERO_VARIABLE_CYCLES);
     }
-
-    public ZeroVariableInstruction(String variable, String label, Map<String, String> arguments,
+    
+    public ZeroVariableInstruction(String variable, String label, Map<String, String> arguments, 
                                  SInstruction sourceInstruction) {
-        super("ZERO_VARIABLE", InstructionType.SYNTHETIC, variable, label, arguments, 
+        super(SEmulatorConstants.ZERO_VARIABLE_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
               SEmulatorConstants.ZERO_VARIABLE_CYCLES, sourceInstruction);
     }
 
@@ -45,13 +45,15 @@ public class ZeroVariableInstruction extends BaseInstruction {
         DecreaseInstruction decreaseInstruction = new DecreaseInstruction(
             variable, 
             loopLabel, 
-            Map.of()
+            Map.of(),
+            this
         );
         
         JumpNotZeroInstruction jumpInstruction = new JumpNotZeroInstruction(
             variable,
             null,
-            Map.of("JNZLabel", loopLabel)
+            Map.of(SEmulatorConstants.JNZ_LABEL_ARG, loopLabel),
+            this
         );
         
         expandedInstructions.add(decreaseInstruction);

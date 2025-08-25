@@ -13,6 +13,7 @@ public class ExpansionContext {
     private final Map<String, String> variableMappings;
     private final Set<String> usedWorkingVariables;
     private int workingVariableCounter;
+    private int currentOriginalLineNumber;
 
     public ExpansionContext() {
         this.labelManager = new LabelManager();
@@ -21,6 +22,7 @@ public class ExpansionContext {
         this.variableMappings = new HashMap<>();
         this.usedWorkingVariables = new HashSet<>();
         this.workingVariableCounter = 1;
+        this.currentOriginalLineNumber = -1;
     }
 
     public ExpansionContext(Set<String> existingLabels, Set<String> existingVariables) {
@@ -30,6 +32,7 @@ public class ExpansionContext {
         this.variableMappings = new HashMap<>();
         this.usedWorkingVariables = new HashSet<>(existingVariables);
         this.workingVariableCounter = findNextWorkingVariableCounter(existingVariables);
+        this.currentOriginalLineNumber = -1;
     }
 
     public String getUniqueLabel() {
@@ -136,5 +139,13 @@ public class ExpansionContext {
             }
         }
         return maxCounter + 1;
+    }
+
+    public int getCurrentOriginalLineNumber() {
+        return currentOriginalLineNumber;
+    }
+
+    public void setCurrentOriginalLineNumber(int currentOriginalLineNumber) {
+        this.currentOriginalLineNumber = currentOriginalLineNumber;
     }
 }

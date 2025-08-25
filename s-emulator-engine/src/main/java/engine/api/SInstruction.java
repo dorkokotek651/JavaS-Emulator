@@ -26,4 +26,10 @@ public interface SInstruction {
     String getDisplayFormat();
     
     SInstruction getSourceInstruction();
+    
+    List<SInstruction> getAncestryChain();
+    
+    String toStringWithHistory(int currentLineNumber);
+    
+    String toStringWithMultiLevelHistory(java.util.List<engine.expansion.MultiLevelExpansion.InstructionAncestor> ancestry);
 }

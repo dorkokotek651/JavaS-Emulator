@@ -12,6 +12,7 @@ import engine.model.instruction.synthetic.ConstantAssignmentInstruction;
 import engine.model.instruction.synthetic.JumpZeroInstruction;
 import engine.model.instruction.synthetic.JumpEqualConstantInstruction;
 import engine.model.instruction.synthetic.JumpEqualVariableInstruction;
+import engine.model.SEmulatorConstants;
 import java.util.Map;
 
 public class InstructionFactory {
@@ -31,20 +32,22 @@ public class InstructionFactory {
         String instructionName = name.trim().toUpperCase();
         
         return switch (instructionName) {
-            case "INCREASE" -> new IncreaseInstruction(variable, label, arguments);
-            case "DECREASE" -> new DecreaseInstruction(variable, label, arguments);
-            case "JUMP_NOT_ZERO" -> new JumpNotZeroInstruction(variable, label, arguments);
-            case "NEUTRAL" -> new NeutralInstruction(variable, label, arguments);
-            case "ZERO_VARIABLE" -> new ZeroVariableInstruction(variable, label, arguments);
-            case "GOTO_LABEL" -> new GotoLabelInstruction(variable, label, arguments);
-            case "ASSIGNMENT" -> new AssignmentInstruction(variable, label, arguments);
-            case "CONSTANT_ASSIGNMENT" -> new ConstantAssignmentInstruction(variable, label, arguments);
-            case "JUMP_ZERO" -> new JumpZeroInstruction(variable, label, arguments);
-            case "JUMP_EQUAL_CONSTANT" -> new JumpEqualConstantInstruction(variable, label, arguments);
-            case "JUMP_EQUAL_VARIABLE" -> new JumpEqualVariableInstruction(variable, label, arguments);
+            case SEmulatorConstants.INCREASE_NAME -> new IncreaseInstruction(variable, label, arguments);
+            case SEmulatorConstants.DECREASE_NAME -> new DecreaseInstruction(variable, label, arguments);
+            case SEmulatorConstants.JUMP_NOT_ZERO_NAME -> new JumpNotZeroInstruction(variable, label, arguments);
+            case SEmulatorConstants.NEUTRAL_NAME -> new NeutralInstruction(variable, label, arguments);
+            case SEmulatorConstants.ZERO_VARIABLE_NAME -> new ZeroVariableInstruction(variable, label, arguments);
+            case SEmulatorConstants.GOTO_LABEL_NAME -> new GotoLabelInstruction(variable, label, arguments);
+            case SEmulatorConstants.ASSIGNMENT_NAME -> new AssignmentInstruction(variable, label, arguments);
+            case SEmulatorConstants.CONSTANT_ASSIGNMENT_NAME -> new ConstantAssignmentInstruction(variable, label, arguments);
+            case SEmulatorConstants.JUMP_ZERO_NAME -> new JumpZeroInstruction(variable, label, arguments);
+            case SEmulatorConstants.JUMP_EQUAL_CONSTANT_NAME -> new JumpEqualConstantInstruction(variable, label, arguments);
+            case SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME -> new JumpEqualVariableInstruction(variable, label, arguments);
             default -> throw new IllegalArgumentException("Unknown instruction type: " + instructionName + 
-                ". Supported instructions: INCREASE, DECREASE, JUMP_NOT_ZERO, NEUTRAL, ZERO_VARIABLE, GOTO_LABEL, " +
-                "ASSIGNMENT, CONSTANT_ASSIGNMENT, JUMP_ZERO, JUMP_EQUAL_CONSTANT, JUMP_EQUAL_VARIABLE");
+                ". Supported instructions: " + SEmulatorConstants.INCREASE_NAME + ", " + SEmulatorConstants.DECREASE_NAME + ", " + 
+                SEmulatorConstants.JUMP_NOT_ZERO_NAME + ", " + SEmulatorConstants.NEUTRAL_NAME + ", " + SEmulatorConstants.ZERO_VARIABLE_NAME + ", " + 
+                SEmulatorConstants.GOTO_LABEL_NAME + ", " + SEmulatorConstants.ASSIGNMENT_NAME + ", " + SEmulatorConstants.CONSTANT_ASSIGNMENT_NAME + ", " + 
+                SEmulatorConstants.JUMP_ZERO_NAME + ", " + SEmulatorConstants.JUMP_EQUAL_CONSTANT_NAME + ", " + SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME);
         };
     }
 
@@ -55,7 +58,8 @@ public class InstructionFactory {
         
         String instructionName = name.trim().toUpperCase();
         return switch (instructionName) {
-            case "INCREASE", "DECREASE", "JUMP_NOT_ZERO", "NEUTRAL" -> true;
+            case SEmulatorConstants.INCREASE_NAME, SEmulatorConstants.DECREASE_NAME, 
+                 SEmulatorConstants.JUMP_NOT_ZERO_NAME, SEmulatorConstants.NEUTRAL_NAME -> true;
             default -> false;
         };
     }
@@ -67,8 +71,10 @@ public class InstructionFactory {
         
         String instructionName = name.trim().toUpperCase();
         return switch (instructionName) {
-            case "ZERO_VARIABLE", "GOTO_LABEL", "ASSIGNMENT", "CONSTANT_ASSIGNMENT", 
-                 "JUMP_ZERO", "JUMP_EQUAL_CONSTANT", "JUMP_EQUAL_VARIABLE" -> true;
+            case SEmulatorConstants.ZERO_VARIABLE_NAME, SEmulatorConstants.GOTO_LABEL_NAME, 
+                 SEmulatorConstants.ASSIGNMENT_NAME, SEmulatorConstants.CONSTANT_ASSIGNMENT_NAME, 
+                 SEmulatorConstants.JUMP_ZERO_NAME, SEmulatorConstants.JUMP_EQUAL_CONSTANT_NAME, 
+                 SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME -> true;
             default -> false;
         };
     }

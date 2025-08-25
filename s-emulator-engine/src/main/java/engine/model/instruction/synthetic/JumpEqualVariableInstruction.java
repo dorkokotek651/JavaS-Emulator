@@ -17,39 +17,39 @@ public class JumpEqualVariableInstruction extends BaseInstruction {
     private final String comparedVariable;
     
     public JumpEqualVariableInstruction(String variable, String label, Map<String, String> arguments) {
-        super("JUMP_EQUAL_VARIABLE", InstructionType.SYNTHETIC, variable, label, arguments, 
+        super(SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
               SEmulatorConstants.JUMP_EQUAL_VARIABLE_CYCLES);
         
-        if (arguments == null || !arguments.containsKey("JEVariableLabel") || !arguments.containsKey("variableName")) {
+        if (arguments == null || !arguments.containsKey(SEmulatorConstants.JE_VARIABLE_LABEL_ARG) || !arguments.containsKey(SEmulatorConstants.VARIABLE_NAME_ARG)) {
             throw new IllegalArgumentException("JUMP_EQUAL_VARIABLE instruction requires 'JEVariableLabel' and 'variableName' arguments");
         }
         
-        this.jumpLabel = arguments.get("JEVariableLabel");
+        this.jumpLabel = arguments.get(SEmulatorConstants.JE_VARIABLE_LABEL_ARG);
         if (jumpLabel == null || jumpLabel.trim().isEmpty()) {
             throw new IllegalArgumentException("JEVariableLabel cannot be null or empty");
         }
         
-        this.comparedVariable = arguments.get("variableName");
+        this.comparedVariable = arguments.get(SEmulatorConstants.VARIABLE_NAME_ARG);
         if (comparedVariable == null || comparedVariable.trim().isEmpty()) {
             throw new IllegalArgumentException("variableName cannot be null or empty");
         }
     }
 
-    public JumpEqualVariableInstruction(String variable, String label, Map<String, String> arguments,
-                                      SInstruction sourceInstruction) {
-        super("JUMP_EQUAL_VARIABLE", InstructionType.SYNTHETIC, variable, label, arguments, 
+        public JumpEqualVariableInstruction(String variable, String label, Map<String, String> arguments, 
+                                       SInstruction sourceInstruction) {
+        super(SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
               SEmulatorConstants.JUMP_EQUAL_VARIABLE_CYCLES, sourceInstruction);
         
-        if (arguments == null || !arguments.containsKey("JEVariableLabel") || !arguments.containsKey("variableName")) {
+        if (arguments == null || !arguments.containsKey(SEmulatorConstants.JE_VARIABLE_LABEL_ARG) || !arguments.containsKey(SEmulatorConstants.VARIABLE_NAME_ARG)) {
             throw new IllegalArgumentException("JUMP_EQUAL_VARIABLE instruction requires 'JEVariableLabel' and 'variableName' arguments");
         }
         
-        this.jumpLabel = arguments.get("JEVariableLabel");
+        this.jumpLabel = arguments.get(SEmulatorConstants.JE_VARIABLE_LABEL_ARG);
         if (jumpLabel == null || jumpLabel.trim().isEmpty()) {
             throw new IllegalArgumentException("JEVariableLabel cannot be null or empty");
         }
         
-        this.comparedVariable = arguments.get("variableName");
+        this.comparedVariable = arguments.get(SEmulatorConstants.VARIABLE_NAME_ARG);
         if (comparedVariable == null || comparedVariable.trim().isEmpty()) {
             throw new IllegalArgumentException("variableName cannot be null or empty");
         }
@@ -82,47 +82,47 @@ public class JumpEqualVariableInstruction extends BaseInstruction {
         String skipLabel = context.getUniqueLabel();
         
         AssignmentInstruction copyV = new AssignmentInstruction(
-            workingVariable1, null, Map.of("assignedVariable", variable)
+            workingVariable1, null, Map.of(SEmulatorConstants.ASSIGNED_VARIABLE_ARG, variable), this
         );
         expandedInstructions.add(copyV);
         
         AssignmentInstruction copyVPrime = new AssignmentInstruction(
-            workingVariable2, null, Map.of("assignedVariable", comparedVariable)
+            workingVariable2, null, Map.of(SEmulatorConstants.ASSIGNED_VARIABLE_ARG, comparedVariable), this
         );
         expandedInstructions.add(copyVPrime);
         
         JumpZeroInstruction checkZ1Zero = new JumpZeroInstruction(
-            workingVariable1, compareLoopLabel, Map.of("JZLabel", checkSecondLabel)
+            workingVariable1, compareLoopLabel, Map.of(SEmulatorConstants.JZ_LABEL_ARG, checkSecondLabel), this
         );
         expandedInstructions.add(checkZ1Zero);
         
         JumpZeroInstruction checkZ2Zero = new JumpZeroInstruction(
-            workingVariable2, null, Map.of("JZLabel", skipLabel)
+            workingVariable2, null, Map.of(SEmulatorConstants.JZ_LABEL_ARG, skipLabel), this
         );
         expandedInstructions.add(checkZ2Zero);
         
         DecreaseInstruction decreaseZ1 = new DecreaseInstruction(
-            workingVariable1, null, Map.of()
+            workingVariable1, null, Map.of(), this
         );
         expandedInstructions.add(decreaseZ1);
         
         DecreaseInstruction decreaseZ2 = new DecreaseInstruction(
-            workingVariable2, null, Map.of()
+            workingVariable2, null, Map.of(), this
         );
         expandedInstructions.add(decreaseZ2);
         
         GotoLabelInstruction loopBack = new GotoLabelInstruction(
-            workingVariable1, null, Map.of("gotoLabel", compareLoopLabel)
+            workingVariable1, null, Map.of(SEmulatorConstants.GOTO_LABEL_ARG, compareLoopLabel), this
         );
         expandedInstructions.add(loopBack);
         
         JumpZeroInstruction checkBothZero = new JumpZeroInstruction(
-            workingVariable2, checkSecondLabel, Map.of("JZLabel", jumpLabel)
+            workingVariable2, checkSecondLabel, Map.of(SEmulatorConstants.JZ_LABEL_ARG, jumpLabel), this
         );
         expandedInstructions.add(checkBothZero);
         
         NeutralInstruction skipDestination = new NeutralInstruction(
-            variable, skipLabel, Map.of()
+            variable, skipLabel, Map.of(), this
         );
         expandedInstructions.add(skipDestination);
         

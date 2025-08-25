@@ -23,7 +23,7 @@ public class ExpandProgramCommand implements Command {
             
             ui.displayInfo("Expanding program to level " + targetLevel + "...");
             
-            String expandedProgram = engine.expandProgram(targetLevel);
+            String expandedProgram = engine.expandProgramWithHistory(targetLevel);
             ui.displayProgramOutput(expandedProgram);
             
         } catch (Exception e) {

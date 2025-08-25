@@ -13,13 +13,26 @@ public class JumpNotZeroInstruction extends BaseInstruction {
     private final String jumpLabel;
     
     public JumpNotZeroInstruction(String variable, String label, Map<String, String> arguments) {
-        super("JUMP_NOT_ZERO", InstructionType.BASIC, variable, label, arguments, SEmulatorConstants.JUMP_NOT_ZERO_CYCLES);
+        super(SEmulatorConstants.JUMP_NOT_ZERO_NAME, InstructionType.BASIC, variable, label, arguments, SEmulatorConstants.JUMP_NOT_ZERO_CYCLES);
         
-        if (arguments == null || !arguments.containsKey("JNZLabel")) {
+        if (arguments == null || !arguments.containsKey(SEmulatorConstants.JNZ_LABEL_ARG)) {
             throw new IllegalArgumentException("JUMP_NOT_ZERO instruction requires 'JNZLabel' argument");
         }
         
-        this.jumpLabel = arguments.get("JNZLabel");
+        this.jumpLabel = arguments.get(SEmulatorConstants.JNZ_LABEL_ARG);
+        if (jumpLabel == null || jumpLabel.trim().isEmpty()) {
+            throw new IllegalArgumentException("JNZLabel cannot be null or empty");
+        }
+    }
+
+    public JumpNotZeroInstruction(String variable, String label, Map<String, String> arguments, SInstruction sourceInstruction) {
+        super(SEmulatorConstants.JUMP_NOT_ZERO_NAME, InstructionType.BASIC, variable, label, arguments, SEmulatorConstants.JUMP_NOT_ZERO_CYCLES, sourceInstruction);
+        
+        if (arguments == null || !arguments.containsKey(SEmulatorConstants.JNZ_LABEL_ARG)) {
+            throw new IllegalArgumentException("JUMP_NOT_ZERO instruction requires 'JNZLabel' argument");
+        }
+        
+        this.jumpLabel = arguments.get(SEmulatorConstants.JNZ_LABEL_ARG);
         if (jumpLabel == null || jumpLabel.trim().isEmpty()) {
             throw new IllegalArgumentException("JNZLabel cannot be null or empty");
         }

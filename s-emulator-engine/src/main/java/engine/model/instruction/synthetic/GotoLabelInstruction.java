@@ -16,14 +16,14 @@ public class GotoLabelInstruction extends BaseInstruction {
     private final String gotoLabel;
     
     public GotoLabelInstruction(String variable, String label, Map<String, String> arguments) {
-        super("GOTO_LABEL", InstructionType.SYNTHETIC, variable, label, arguments, 
+        super(SEmulatorConstants.GOTO_LABEL_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
               SEmulatorConstants.GOTO_LABEL_CYCLES);
         
-        if (arguments == null || !arguments.containsKey("gotoLabel")) {
+        if (arguments == null || !arguments.containsKey(SEmulatorConstants.GOTO_LABEL_ARG)) {
             throw new IllegalArgumentException("GOTO_LABEL instruction requires 'gotoLabel' argument");
         }
         
-        this.gotoLabel = arguments.get("gotoLabel");
+        this.gotoLabel = arguments.get(SEmulatorConstants.GOTO_LABEL_ARG);
         if (gotoLabel == null || gotoLabel.trim().isEmpty()) {
             throw new IllegalArgumentException("gotoLabel cannot be null or empty");
         }
@@ -31,14 +31,14 @@ public class GotoLabelInstruction extends BaseInstruction {
 
     public GotoLabelInstruction(String variable, String label, Map<String, String> arguments,
                               SInstruction sourceInstruction) {
-        super("GOTO_LABEL", InstructionType.SYNTHETIC, variable, label, arguments, 
+        super(SEmulatorConstants.GOTO_LABEL_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
               SEmulatorConstants.GOTO_LABEL_CYCLES, sourceInstruction);
         
-        if (arguments == null || !arguments.containsKey("gotoLabel")) {
+        if (arguments == null || !arguments.containsKey(SEmulatorConstants.GOTO_LABEL_ARG)) {
             throw new IllegalArgumentException("GOTO_LABEL instruction requires 'gotoLabel' argument");
         }
         
-        this.gotoLabel = arguments.get("gotoLabel");
+        this.gotoLabel = arguments.get(SEmulatorConstants.GOTO_LABEL_ARG);
         if (gotoLabel == null || gotoLabel.trim().isEmpty()) {
             throw new IllegalArgumentException("gotoLabel cannot be null or empty");
         }
@@ -64,13 +64,15 @@ public class GotoLabelInstruction extends BaseInstruction {
         IncreaseInstruction increaseInstruction = new IncreaseInstruction(
             workingVariable,
             null,
-            Map.of()
+            Map.of(),
+            this
         );
         
         JumpNotZeroInstruction jumpInstruction = new JumpNotZeroInstruction(
             workingVariable,
             null,
-            Map.of("JNZLabel", gotoLabel)
+            Map.of(SEmulatorConstants.JNZ_LABEL_ARG, gotoLabel),
+            this
         );
         
         expandedInstructions.add(increaseInstruction);

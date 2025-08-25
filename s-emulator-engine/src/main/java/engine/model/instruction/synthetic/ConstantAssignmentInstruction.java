@@ -15,14 +15,14 @@ public class ConstantAssignmentInstruction extends BaseInstruction {
     private final int constantValue;
     
     public ConstantAssignmentInstruction(String variable, String label, Map<String, String> arguments) {
-        super("CONSTANT_ASSIGNMENT", InstructionType.SYNTHETIC, variable, label, arguments, 
+        super(SEmulatorConstants.CONSTANT_ASSIGNMENT_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
               SEmulatorConstants.CONSTANT_ASSIGNMENT_CYCLES);
         
-        if (arguments == null || !arguments.containsKey("constantValue")) {
+        if (arguments == null || !arguments.containsKey(SEmulatorConstants.CONSTANT_VALUE_ARG)) {
             throw new IllegalArgumentException("CONSTANT_ASSIGNMENT instruction requires 'constantValue' argument");
         }
         
-        String constantStr = arguments.get("constantValue");
+        String constantStr = arguments.get(SEmulatorConstants.CONSTANT_VALUE_ARG);
         if (constantStr == null || constantStr.trim().isEmpty()) {
             throw new IllegalArgumentException("constantValue cannot be null or empty");
         }
@@ -37,16 +37,16 @@ public class ConstantAssignmentInstruction extends BaseInstruction {
         }
     }
 
-    public ConstantAssignmentInstruction(String variable, String label, Map<String, String> arguments,
+        public ConstantAssignmentInstruction(String variable, String label, Map<String, String> arguments, 
                                        SInstruction sourceInstruction) {
-        super("CONSTANT_ASSIGNMENT", InstructionType.SYNTHETIC, variable, label, arguments, 
+        super(SEmulatorConstants.CONSTANT_ASSIGNMENT_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
               SEmulatorConstants.CONSTANT_ASSIGNMENT_CYCLES, sourceInstruction);
         
-        if (arguments == null || !arguments.containsKey("constantValue")) {
+        if (arguments == null || !arguments.containsKey(SEmulatorConstants.CONSTANT_VALUE_ARG)) {
             throw new IllegalArgumentException("CONSTANT_ASSIGNMENT instruction requires 'constantValue' argument");
         }
         
-        String constantStr = arguments.get("constantValue");
+        String constantStr = arguments.get(SEmulatorConstants.CONSTANT_VALUE_ARG);
         if (constantStr == null || constantStr.trim().isEmpty()) {
             throw new IllegalArgumentException("constantValue cannot be null or empty");
         }
@@ -77,7 +77,7 @@ public class ConstantAssignmentInstruction extends BaseInstruction {
         List<SInstruction> expandedInstructions = new ArrayList<>();
         
         ZeroVariableInstruction zeroInstruction = new ZeroVariableInstruction(
-            variable, null, Map.of()
+            variable, null, Map.of(), this
         );
         expandedInstructions.add(zeroInstruction);
         
@@ -85,7 +85,8 @@ public class ConstantAssignmentInstruction extends BaseInstruction {
             IncreaseInstruction increaseInstruction = new IncreaseInstruction(
                 variable,
                 null,
-                Map.of()
+                Map.of(),
+                this
             );
             expandedInstructions.add(increaseInstruction);
         }

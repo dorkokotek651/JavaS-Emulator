@@ -19,6 +19,7 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
     private final SProgramParser parser;
     private final ProgramRunner runner;
     private final ExpansionEngine expansionEngine;
+    private final engine.expansion.MultiLevelExpansionEngine multiLevelExpansionEngine;
     private int nextRunNumber;
 
     public SEmulatorEngineImpl() throws SProgramException {
@@ -30,6 +31,7 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
             this.parser = new SProgramParser();
             this.runner = new ProgramRunner();
             this.expansionEngine = new ExpansionEngine();
+            this.multiLevelExpansionEngine = new engine.expansion.MultiLevelExpansionEngine();
         } catch (XMLValidationException e) {
             throw new SProgramException("Failed to initialize S-Emulator engine", e);
         }
@@ -114,12 +116,60 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
             List<engine.api.SInstruction> instructions = expandedProgram.getInstructions();
             for (int i = 0; i < instructions.size(); i++) {
                 engine.api.SInstruction instruction = instructions.get(i);
-                display.append(String.format("#%-3d %s\n", i + 1, instruction.toString()));
+                display.append(String.format("#%-3d %s\n", i + 1, instruction.toStringWithHistory(i + 1)));
             }
 
             return display.toString();
             
         } catch (ExpansionException e) {
+            return "Expansion failed: " + e.getMessage();
+        }
+    }
+
+    @Override
+    public String expandProgramWithHistory(int level) {
+        if (!isProgramLoaded()) {
+            return "No program loaded.";
+        }
+
+        if (level < 0) {
+            return "Expansion level cannot be negative.";
+        }
+
+        if (level > currentProgram.getMaxExpansionLevel()) {
+            return "Expansion level " + level + " exceeds maximum level " + currentProgram.getMaxExpansionLevel() + ".";
+        }
+
+        if (level == 0) {
+            return displayProgram();
+        }
+
+        try {
+            engine.expansion.MultiLevelExpansion multiLevel = multiLevelExpansionEngine.expandProgramToAllLevels(currentProgram);
+            SProgram targetProgram = multiLevel.getLevel(level);
+            
+            if (targetProgram == null) {
+                return "Failed to expand program to level " + level;
+            }
+            
+            StringBuilder display = new StringBuilder();
+            display.append("Program: ").append(targetProgram.getName()).append("\n");
+            display.append("Expansion Level: ").append(level).append("\n");
+            display.append("Input Variables: ").append(targetProgram.getInputVariables()).append("\n");
+            display.append("Labels: ").append(targetProgram.getLabels()).append("\n");
+            display.append("Instructions:\n");
+
+            List<engine.api.SInstruction> instructions = targetProgram.getInstructions();
+            for (int i = 0; i < instructions.size(); i++) {
+                engine.api.SInstruction instruction = instructions.get(i);
+                List<engine.expansion.MultiLevelExpansion.InstructionAncestor> ancestry = 
+                    multiLevel.getInstructionAncestry(level, i);
+                display.append(String.format("#%-3d %s\n", i + 1, instruction.toStringWithMultiLevelHistory(ancestry)));
+            }
+
+            return display.toString();
+            
+        } catch (engine.exception.ExpansionException e) {
             return "Expansion failed: " + e.getMessage();
         }
     }

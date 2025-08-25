@@ -4,6 +4,7 @@ import engine.api.SInstruction;
 import engine.api.SProgram;
 import engine.exception.ExpansionException;
 import engine.model.InstructionType;
+import engine.model.SEmulatorConstants;
 import engine.model.SProgramImpl;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -47,11 +48,21 @@ public class ExpansionEngine {
             
             updateContextWithCurrentInstructions(context, currentInstructions);
             
-            for (SInstruction instruction : currentInstructions) {
+            for (int instIndex = 0; instIndex < currentInstructions.size(); instIndex++) {
+                SInstruction instruction = currentInstructions.get(instIndex);
                 if (instruction.getType() == InstructionType.BASIC) {
                     nextInstructions.add(instruction);
                 } else {
                     hasExpansion = true;
+                    
+                    int originalLineNumber;
+                    if (currentDepth == 0) {
+                        originalLineNumber = instIndex + 1;
+                    } else {
+                        originalLineNumber = getOriginalLineNumber(instruction, instIndex + 1);
+                    }
+                    context.setCurrentOriginalLineNumber(originalLineNumber);
+                    
                     List<SInstruction> expandedInstructions = instruction.expand(context);
                     
                     if (instruction.getLabel() != null && !instruction.getLabel().trim().isEmpty()) {
@@ -101,7 +112,7 @@ public class ExpansionEngine {
             
             for (String argValue : instruction.getArguments().values()) {
                 if (argValue != null && !argValue.trim().isEmpty()) {
-                    if (argValue.matches("L\\d+") || argValue.equals("EXIT")) {
+                    if (SEmulatorConstants.LABEL_PATTERN.matcher(argValue).matches() || argValue.equals(SEmulatorConstants.EXIT_LABEL)) {
                     }
                 }
             }
@@ -128,5 +139,15 @@ public class ExpansionEngine {
         }
         
         return history;
+    }
+    
+    private int getOriginalLineNumber(SInstruction instruction, int currentIndex) {
+        if (instruction instanceof engine.model.instruction.BaseInstruction) {
+            engine.model.instruction.BaseInstruction base = (engine.model.instruction.BaseInstruction) instruction;
+            if (base.getOriginalLineNumber() != -1) {
+                return base.getOriginalLineNumber();
+            }
+        }
+        return currentIndex;
     }
 }

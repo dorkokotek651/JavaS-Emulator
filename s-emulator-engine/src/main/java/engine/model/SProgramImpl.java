@@ -156,17 +156,17 @@ public class SProgramImpl implements SProgram {
 
     private int getInstructionExpansionLevel(String instructionName) {
         switch (instructionName) {
-            case "ZERO_VARIABLE":
-            case "GOTO_LABEL":
+            case SEmulatorConstants.ZERO_VARIABLE_NAME:
+            case SEmulatorConstants.GOTO_LABEL_NAME:
                 return 1;
             
-            case "ASSIGNMENT":
-            case "CONSTANT_ASSIGNMENT":
-            case "JUMP_ZERO":
+            case SEmulatorConstants.ASSIGNMENT_NAME:
+            case SEmulatorConstants.CONSTANT_ASSIGNMENT_NAME:
+            case SEmulatorConstants.JUMP_ZERO_NAME:
                 return 2;
             
-            case "JUMP_EQUAL_CONSTANT":
-            case "JUMP_EQUAL_VARIABLE":
+            case SEmulatorConstants.JUMP_EQUAL_CONSTANT_NAME:
+            case SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME:
             case "QUOTE":
                 return 3;
             

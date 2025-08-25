@@ -12,7 +12,11 @@ import java.util.Map;
 public class NeutralInstruction extends BaseInstruction {
     
     public NeutralInstruction(String variable, String label, Map<String, String> arguments) {
-        super("NEUTRAL", InstructionType.BASIC, variable, label, arguments, SEmulatorConstants.NEUTRAL_CYCLES);
+        super(SEmulatorConstants.NEUTRAL_NAME, InstructionType.BASIC, variable, label, arguments, SEmulatorConstants.NEUTRAL_CYCLES);
+    }
+
+    public NeutralInstruction(String variable, String label, Map<String, String> arguments, SInstruction sourceInstruction) {
+        super(SEmulatorConstants.NEUTRAL_NAME, InstructionType.BASIC, variable, label, arguments, SEmulatorConstants.NEUTRAL_CYCLES, sourceInstruction);
     }
 
     @Override

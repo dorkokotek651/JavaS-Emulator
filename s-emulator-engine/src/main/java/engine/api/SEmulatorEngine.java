@@ -14,6 +14,8 @@ public interface SEmulatorEngine {
     
     String expandProgram(int level);
     
+    String expandProgramWithHistory(int level);
+    
     ExecutionResult runProgram(int expansionLevel, List<Integer> inputs);
     
     List<ExecutionResult> getExecutionHistory();

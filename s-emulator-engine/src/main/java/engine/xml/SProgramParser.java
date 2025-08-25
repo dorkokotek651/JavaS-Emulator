@@ -4,6 +4,7 @@ import engine.api.SProgram;
 import engine.api.SInstruction;
 import engine.exception.XMLValidationException;
 import engine.model.SProgramImpl;
+import engine.model.SEmulatorConstants;
 import engine.model.instruction.InstructionFactory;
 import engine.xml.model.SInstructionArgumentXml;
 import engine.xml.model.SProgramXml;
@@ -15,13 +16,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
+
 
 public class SProgramParser {
-    private static final Pattern X_VARIABLE_PATTERN = Pattern.compile("^x\\d+$");
-    private static final Pattern Z_VARIABLE_PATTERN = Pattern.compile("^z\\d+$");
-    private static final Pattern Y_VARIABLE_PATTERN = Pattern.compile("^y$");
-    private static final Pattern LABEL_PATTERN = Pattern.compile("^L\\d+$|^EXIT$");
+
 
     private final XMLValidator xmlValidator;
     private final XmlMapper xmlMapper;
@@ -94,8 +92,8 @@ public class SProgramParser {
         }
 
         String type = xmlInstruction.getType().trim();
-        if (!type.equals("basic") && !type.equals("synthetic")) {
-            throw new XMLValidationException("Invalid instruction type: " + type + ". Must be 'basic' or 'synthetic'");
+        if (!type.equals(SEmulatorConstants.INSTRUCTION_TYPE_BASIC) && !type.equals(SEmulatorConstants.INSTRUCTION_TYPE_SYNTHETIC)) {
+            throw new XMLValidationException("Invalid instruction type: " + type + ". Must be '" + SEmulatorConstants.INSTRUCTION_TYPE_BASIC + "' or '" + SEmulatorConstants.INSTRUCTION_TYPE_SYNTHETIC + "'");
         }
 
         if (xmlInstruction.getSVariable() == null || xmlInstruction.getSVariable().trim().isEmpty()) {
@@ -110,7 +108,7 @@ public class SProgramParser {
 
         if (xmlInstruction.getSLabel() != null && !xmlInstruction.getSLabel().trim().isEmpty()) {
             String label = xmlInstruction.getSLabel().trim();
-            if (!LABEL_PATTERN.matcher(label).matches()) {
+            if (!SEmulatorConstants.LABEL_PATTERN.matcher(label).matches()) {
                 throw new XMLValidationException("Invalid label format: " + label + 
                     ". Must be 'L' followed by digits or 'EXIT'");
             }
@@ -120,9 +118,9 @@ public class SProgramParser {
     }
 
     private boolean isValidVariableName(String variable) {
-        return Y_VARIABLE_PATTERN.matcher(variable).matches() ||
-               X_VARIABLE_PATTERN.matcher(variable).matches() ||
-               Z_VARIABLE_PATTERN.matcher(variable).matches();
+        return SEmulatorConstants.Y_VARIABLE_PATTERN.matcher(variable).matches() ||
+               SEmulatorConstants.X_VARIABLE_PATTERN.matcher(variable).matches() ||
+               SEmulatorConstants.Z_VARIABLE_PATTERN.matcher(variable).matches();
     }
 
     private void validateInstructionArguments(SInstructionXml xmlInstruction) throws XMLValidationException {
@@ -148,39 +146,39 @@ public class SProgramParser {
 
     private void validateArgumentsForInstructionType(String instructionName, Map<String, String> arguments) throws XMLValidationException {
         switch (instructionName) {
-            case "JUMP_NOT_ZERO":
-                if (!arguments.containsKey("JNZLabel")) {
-                    throw new XMLValidationException("JUMP_NOT_ZERO instruction requires 'JNZLabel' argument");
+            case SEmulatorConstants.JUMP_NOT_ZERO_NAME:
+                if (!arguments.containsKey(SEmulatorConstants.JNZ_LABEL_ARG)) {
+                    throw new XMLValidationException(SEmulatorConstants.JUMP_NOT_ZERO_NAME + " instruction requires '" + SEmulatorConstants.JNZ_LABEL_ARG + "' argument");
                 }
                 break;
-            case "ASSIGNMENT":
-                if (!arguments.containsKey("assignedVariable")) {
-                    throw new XMLValidationException("ASSIGNMENT instruction requires 'assignedVariable' argument");
+            case SEmulatorConstants.ASSIGNMENT_NAME:
+                if (!arguments.containsKey(SEmulatorConstants.ASSIGNED_VARIABLE_ARG)) {
+                    throw new XMLValidationException(SEmulatorConstants.ASSIGNMENT_NAME + " instruction requires '" + SEmulatorConstants.ASSIGNED_VARIABLE_ARG + "' argument");
                 }
                 break;
-            case "CONSTANT_ASSIGNMENT":
-                if (!arguments.containsKey("constantValue")) {
-                    throw new XMLValidationException("CONSTANT_ASSIGNMENT instruction requires 'constantValue' argument");
+            case SEmulatorConstants.CONSTANT_ASSIGNMENT_NAME:
+                if (!arguments.containsKey(SEmulatorConstants.CONSTANT_VALUE_ARG)) {
+                    throw new XMLValidationException(SEmulatorConstants.CONSTANT_ASSIGNMENT_NAME + " instruction requires '" + SEmulatorConstants.CONSTANT_VALUE_ARG + "' argument");
                 }
                 break;
-            case "GOTO_LABEL":
-                if (!arguments.containsKey("gotoLabel")) {
-                    throw new XMLValidationException("GOTO_LABEL instruction requires 'gotoLabel' argument");
+            case SEmulatorConstants.GOTO_LABEL_NAME:
+                if (!arguments.containsKey(SEmulatorConstants.GOTO_LABEL_ARG)) {
+                    throw new XMLValidationException(SEmulatorConstants.GOTO_LABEL_NAME + " instruction requires '" + SEmulatorConstants.GOTO_LABEL_ARG + "' argument");
                 }
                 break;
-            case "JUMP_ZERO":
-                if (!arguments.containsKey("JZLabel")) {
-                    throw new XMLValidationException("JUMP_ZERO instruction requires 'JZLabel' argument");
+            case SEmulatorConstants.JUMP_ZERO_NAME:
+                if (!arguments.containsKey(SEmulatorConstants.JZ_LABEL_ARG)) {
+                    throw new XMLValidationException(SEmulatorConstants.JUMP_ZERO_NAME + " instruction requires '" + SEmulatorConstants.JZ_LABEL_ARG + "' argument");
                 }
                 break;
-            case "JUMP_EQUAL_CONSTANT":
-                if (!arguments.containsKey("JEConstantLabel") || !arguments.containsKey("constantValue")) {
-                    throw new XMLValidationException("JUMP_EQUAL_CONSTANT instruction requires 'JEConstantLabel' and 'constantValue' arguments");
+            case SEmulatorConstants.JUMP_EQUAL_CONSTANT_NAME:
+                if (!arguments.containsKey(SEmulatorConstants.JE_CONSTANT_LABEL_ARG) || !arguments.containsKey(SEmulatorConstants.CONSTANT_VALUE_ARG)) {
+                    throw new XMLValidationException(SEmulatorConstants.JUMP_EQUAL_CONSTANT_NAME + " instruction requires '" + SEmulatorConstants.JE_CONSTANT_LABEL_ARG + "' and '" + SEmulatorConstants.CONSTANT_VALUE_ARG + "' arguments");
                 }
                 break;
-            case "JUMP_EQUAL_VARIABLE":
-                if (!arguments.containsKey("JEVariableLabel") || !arguments.containsKey("variableName")) {
-                    throw new XMLValidationException("JUMP_EQUAL_VARIABLE instruction requires 'JEVariableLabel' and 'variableName' arguments");
+            case SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME:
+                if (!arguments.containsKey(SEmulatorConstants.JE_VARIABLE_LABEL_ARG) || !arguments.containsKey(SEmulatorConstants.VARIABLE_NAME_ARG)) {
+                    throw new XMLValidationException(SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME + " instruction requires '" + SEmulatorConstants.JE_VARIABLE_LABEL_ARG + "' and '" + SEmulatorConstants.VARIABLE_NAME_ARG + "' arguments");
                 }
                 break;
         }
@@ -201,12 +199,12 @@ public class SProgramParser {
 
     private void validateLabelReferences(Set<String> definedLabels, Set<String> referencedLabels) throws XMLValidationException {
         for (String referencedLabel : referencedLabels) {
-            if (!LABEL_PATTERN.matcher(referencedLabel).matches()) {
+            if (!SEmulatorConstants.LABEL_PATTERN.matcher(referencedLabel).matches()) {
                 throw new XMLValidationException("Invalid label format: '" + referencedLabel + 
                     "'. Must be 'L' followed by digits or 'EXIT'");
             }
             
-            if (!definedLabels.contains(referencedLabel) && !referencedLabel.equals("EXIT")) {
+            if (!definedLabels.contains(referencedLabel) && !referencedLabel.equals(SEmulatorConstants.EXIT_LABEL)) {
                 throw new XMLValidationException("Referenced label '" + referencedLabel + "' is not defined in the program");
             }
         }

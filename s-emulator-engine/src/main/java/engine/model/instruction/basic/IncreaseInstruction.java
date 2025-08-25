@@ -12,7 +12,11 @@ import java.util.Map;
 public class IncreaseInstruction extends BaseInstruction {
     
     public IncreaseInstruction(String variable, String label, Map<String, String> arguments) {
-        super("INCREASE", InstructionType.BASIC, variable, label, arguments, SEmulatorConstants.INCREASE_CYCLES);
+        super(SEmulatorConstants.INCREASE_NAME, InstructionType.BASIC, variable, label, arguments, SEmulatorConstants.INCREASE_CYCLES);
+    }
+
+    public IncreaseInstruction(String variable, String label, Map<String, String> arguments, SInstruction sourceInstruction) {
+        super(SEmulatorConstants.INCREASE_NAME, InstructionType.BASIC, variable, label, arguments, SEmulatorConstants.INCREASE_CYCLES, sourceInstruction);
     }
 
     @Override

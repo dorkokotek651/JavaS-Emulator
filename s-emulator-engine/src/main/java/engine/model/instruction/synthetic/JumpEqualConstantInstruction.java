@@ -17,19 +17,48 @@ public class JumpEqualConstantInstruction extends BaseInstruction {
     private final int constantValue;
     
     public JumpEqualConstantInstruction(String variable, String label, Map<String, String> arguments) {
-        super("JUMP_EQUAL_CONSTANT", InstructionType.SYNTHETIC, variable, label, arguments, 
+        super(SEmulatorConstants.JUMP_EQUAL_CONSTANT_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
               SEmulatorConstants.JUMP_EQUAL_CONSTANT_CYCLES);
         
-        if (arguments == null || !arguments.containsKey("JEConstantLabel") || !arguments.containsKey("constantValue")) {
+        if (arguments == null || !arguments.containsKey(SEmulatorConstants.JE_CONSTANT_LABEL_ARG) || !arguments.containsKey(SEmulatorConstants.CONSTANT_VALUE_ARG)) {
             throw new IllegalArgumentException("JUMP_EQUAL_CONSTANT instruction requires 'JEConstantLabel' and 'constantValue' arguments");
         }
         
-        this.jumpLabel = arguments.get("JEConstantLabel");
+        this.jumpLabel = arguments.get(SEmulatorConstants.JE_CONSTANT_LABEL_ARG);
         if (jumpLabel == null || jumpLabel.trim().isEmpty()) {
             throw new IllegalArgumentException("JEConstantLabel cannot be null or empty");
         }
         
-        String constantStr = arguments.get("constantValue");
+        String constantStr = arguments.get(SEmulatorConstants.CONSTANT_VALUE_ARG);
+        if (constantStr == null || constantStr.trim().isEmpty()) {
+            throw new IllegalArgumentException("constantValue cannot be null or empty");
+        }
+        
+        try {
+            this.constantValue = Integer.parseInt(constantStr.trim());
+            if (this.constantValue < 0) {
+                throw new IllegalArgumentException("constantValue cannot be negative: " + this.constantValue);
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("constantValue must be a valid non-negative integer: " + constantStr, e);
+        }
+    }
+
+        public JumpEqualConstantInstruction(String variable, String label, Map<String, String> arguments, 
+                                       SInstruction sourceInstruction) {
+        super(SEmulatorConstants.JUMP_EQUAL_CONSTANT_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
+              SEmulatorConstants.JUMP_EQUAL_CONSTANT_CYCLES, sourceInstruction);
+        
+        if (arguments == null || !arguments.containsKey(SEmulatorConstants.JE_CONSTANT_LABEL_ARG) || !arguments.containsKey(SEmulatorConstants.CONSTANT_VALUE_ARG)) {
+            throw new IllegalArgumentException("JUMP_EQUAL_CONSTANT instruction requires 'JEConstantLabel' and 'constantValue' arguments");
+        }
+        
+        this.jumpLabel = arguments.get(SEmulatorConstants.JE_CONSTANT_LABEL_ARG);
+        if (jumpLabel == null || jumpLabel.trim().isEmpty()) {
+            throw new IllegalArgumentException("JEConstantLabel cannot be null or empty");
+        }
+        
+        String constantStr = arguments.get(SEmulatorConstants.CONSTANT_VALUE_ARG);
         if (constantStr == null || constantStr.trim().isEmpty()) {
             throw new IllegalArgumentException("constantValue cannot be null or empty");
         }
@@ -67,34 +96,34 @@ public class JumpEqualConstantInstruction extends BaseInstruction {
         String skipLabel = context.getUniqueLabel();
         
         AssignmentInstruction copyV = new AssignmentInstruction(
-            workingVariable, null, Map.of("assignedVariable", variable)
+            workingVariable, null, Map.of(SEmulatorConstants.ASSIGNED_VARIABLE_ARG, variable), this
         );
         expandedInstructions.add(copyV);
         
         JumpZeroInstruction initialCheck = new JumpZeroInstruction(
-            workingVariable, null, Map.of("JZLabel", skipLabel)
+            workingVariable, null, Map.of(SEmulatorConstants.JZ_LABEL_ARG, skipLabel), this
         );
         expandedInstructions.add(initialCheck);
         
         for (int i = 0; i < constantValue; i++) {
             DecreaseInstruction decreaseOne = new DecreaseInstruction(
-                workingVariable, null, Map.of()
+                workingVariable, null, Map.of(), this
             );
             expandedInstructions.add(decreaseOne);
             
             JumpZeroInstruction checkZero = new JumpZeroInstruction(
-                workingVariable, null, Map.of("JZLabel", skipLabel)
+                workingVariable, null, Map.of(SEmulatorConstants.JZ_LABEL_ARG, skipLabel), this
             );
             expandedInstructions.add(checkZero);
         }
         
         GotoLabelInstruction doJump = new GotoLabelInstruction(
-            workingVariable, null, Map.of("gotoLabel", jumpLabel)
+            workingVariable, null, Map.of(SEmulatorConstants.GOTO_LABEL_ARG, jumpLabel), this
         );
         expandedInstructions.add(doJump);
         
         NeutralInstruction skipDestination = new NeutralInstruction(
-            variable, skipLabel, Map.of()
+            variable, skipLabel, Map.of(), this
         );
         expandedInstructions.add(skipDestination);
         

@@ -17,29 +17,29 @@ public class AssignmentInstruction extends BaseInstruction {
     private final String assignedVariable;
     
     public AssignmentInstruction(String variable, String label, Map<String, String> arguments) {
-        super("ASSIGNMENT", InstructionType.SYNTHETIC, variable, label, arguments, 
+        super(SEmulatorConstants.ASSIGNMENT_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
               SEmulatorConstants.ASSIGNMENT_CYCLES);
         
-        if (arguments == null || !arguments.containsKey("assignedVariable")) {
+        if (arguments == null || !arguments.containsKey(SEmulatorConstants.ASSIGNED_VARIABLE_ARG)) {
             throw new IllegalArgumentException("ASSIGNMENT instruction requires 'assignedVariable' argument");
         }
         
-        this.assignedVariable = arguments.get("assignedVariable");
+        this.assignedVariable = arguments.get(SEmulatorConstants.ASSIGNED_VARIABLE_ARG);
         if (assignedVariable == null || assignedVariable.trim().isEmpty()) {
             throw new IllegalArgumentException("assignedVariable cannot be null or empty");
         }
     }
 
-    public AssignmentInstruction(String variable, String label, Map<String, String> arguments,
-                               SInstruction sourceInstruction) {
-        super("ASSIGNMENT", InstructionType.SYNTHETIC, variable, label, arguments, 
+    public AssignmentInstruction(String variable, String label, Map<String, String> arguments, 
+                                SInstruction sourceInstruction) {
+        super(SEmulatorConstants.ASSIGNMENT_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
               SEmulatorConstants.ASSIGNMENT_CYCLES, sourceInstruction);
         
-        if (arguments == null || !arguments.containsKey("assignedVariable")) {
+        if (arguments == null || !arguments.containsKey(SEmulatorConstants.ASSIGNED_VARIABLE_ARG)) {
             throw new IllegalArgumentException("ASSIGNMENT instruction requires 'assignedVariable' argument");
         }
         
-        this.assignedVariable = arguments.get("assignedVariable");
+        this.assignedVariable = arguments.get(SEmulatorConstants.ASSIGNED_VARIABLE_ARG);
         if (assignedVariable == null || assignedVariable.trim().isEmpty()) {
             throw new IllegalArgumentException("assignedVariable cannot be null or empty");
         }
@@ -69,40 +69,46 @@ public class AssignmentInstruction extends BaseInstruction {
         ZeroVariableInstruction zeroTarget = new ZeroVariableInstruction(
             variable,
             null,
-            Map.of()
+            Map.of(),
+            this
         );
         expandedInstructions.add(zeroTarget);
         
         JumpNotZeroInstruction checkSource = new JumpNotZeroInstruction(
             assignedVariable,
             null,
-            Map.of("JNZLabel", copyLoopLabel)
+            Map.of(SEmulatorConstants.JNZ_LABEL_ARG, copyLoopLabel),
+            this
         );
         expandedInstructions.add(checkSource);
         
         GotoLabelInstruction skipToEnd = new GotoLabelInstruction(
             workingVariable,
             null,
-            Map.of("gotoLabel", endLabel)
+            Map.of(SEmulatorConstants.GOTO_LABEL_ARG, endLabel),
+            this
         );
         expandedInstructions.add(skipToEnd);
         
         DecreaseInstruction copyDecrease = new DecreaseInstruction(
             assignedVariable,
             copyLoopLabel,
-            Map.of()
+            Map.of(),
+            this
         );
         
         IncreaseInstruction workingIncrease = new IncreaseInstruction(
             workingVariable,
             null,
-            Map.of()
+            Map.of(),
+            this
         );
         
         JumpNotZeroInstruction copyJump = new JumpNotZeroInstruction(
             assignedVariable,
             null,
-            Map.of("JNZLabel", copyLoopLabel)
+            Map.of(SEmulatorConstants.JNZ_LABEL_ARG, copyLoopLabel),
+            this
         );
         
         expandedInstructions.add(copyDecrease);
@@ -112,25 +118,29 @@ public class AssignmentInstruction extends BaseInstruction {
         DecreaseInstruction restoreDecrease = new DecreaseInstruction(
             workingVariable,
             restoreLoopLabel,
-            Map.of()
+            Map.of(),
+            this
         );
         
         IncreaseInstruction targetIncrease = new IncreaseInstruction(
             variable,
             null,
-            Map.of()
+            Map.of(),
+            this
         );
         
         IncreaseInstruction sourceRestore = new IncreaseInstruction(
             assignedVariable,
             null,
-            Map.of()
+            Map.of(),
+            this
         );
         
         JumpNotZeroInstruction restoreJump = new JumpNotZeroInstruction(
             workingVariable,
             null,
-            Map.of("JNZLabel", restoreLoopLabel)
+            Map.of(SEmulatorConstants.JNZ_LABEL_ARG, restoreLoopLabel),
+            this
         );
         
         expandedInstructions.add(restoreDecrease);
@@ -141,7 +151,8 @@ public class AssignmentInstruction extends BaseInstruction {
         expandedInstructions.add(new engine.model.instruction.basic.NeutralInstruction(
             variable,
             endLabel,
-            Map.of()
+            Map.of(),
+            this
         ));
         
         return expandedInstructions;

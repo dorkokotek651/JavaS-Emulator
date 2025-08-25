@@ -16,29 +16,29 @@ public class JumpZeroInstruction extends BaseInstruction {
     private final String jumpLabel;
     
     public JumpZeroInstruction(String variable, String label, Map<String, String> arguments) {
-        super("JUMP_ZERO", InstructionType.SYNTHETIC, variable, label, arguments, 
+        super(SEmulatorConstants.JUMP_ZERO_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
               SEmulatorConstants.JUMP_ZERO_CYCLES);
         
-        if (arguments == null || !arguments.containsKey("JZLabel")) {
+        if (arguments == null || !arguments.containsKey(SEmulatorConstants.JZ_LABEL_ARG)) {
             throw new IllegalArgumentException("JUMP_ZERO instruction requires 'JZLabel' argument");
         }
         
-        this.jumpLabel = arguments.get("JZLabel");
+        this.jumpLabel = arguments.get(SEmulatorConstants.JZ_LABEL_ARG);
         if (jumpLabel == null || jumpLabel.trim().isEmpty()) {
             throw new IllegalArgumentException("JZLabel cannot be null or empty");
         }
     }
 
-    public JumpZeroInstruction(String variable, String label, Map<String, String> arguments,
+        public JumpZeroInstruction(String variable, String label, Map<String, String> arguments, 
                              SInstruction sourceInstruction) {
-        super("JUMP_ZERO", InstructionType.SYNTHETIC, variable, label, arguments, 
+        super(SEmulatorConstants.JUMP_ZERO_NAME, InstructionType.SYNTHETIC, variable, label, arguments, 
               SEmulatorConstants.JUMP_ZERO_CYCLES, sourceInstruction);
         
-        if (arguments == null || !arguments.containsKey("JZLabel")) {
+        if (arguments == null || !arguments.containsKey(SEmulatorConstants.JZ_LABEL_ARG)) {
             throw new IllegalArgumentException("JUMP_ZERO instruction requires 'JZLabel' argument");
         }
         
-        this.jumpLabel = arguments.get("JZLabel");
+        this.jumpLabel = arguments.get(SEmulatorConstants.JZ_LABEL_ARG);
         if (jumpLabel == null || jumpLabel.trim().isEmpty()) {
             throw new IllegalArgumentException("JZLabel cannot be null or empty");
         }
@@ -69,21 +69,24 @@ public class JumpZeroInstruction extends BaseInstruction {
         JumpNotZeroInstruction skipJump = new JumpNotZeroInstruction(
             variable,
             null,
-            Map.of("JNZLabel", skipLabel)
+            Map.of(SEmulatorConstants.JNZ_LABEL_ARG, skipLabel),
+            this
         );
         expandedInstructions.add(skipJump);
         
         GotoLabelInstruction doJump = new GotoLabelInstruction(
             workingVariable,
             null,
-            Map.of("gotoLabel", jumpLabel)
+            Map.of(SEmulatorConstants.GOTO_LABEL_ARG, jumpLabel),
+            this
         );
         expandedInstructions.add(doJump);
         
         NeutralInstruction skipDestination = new NeutralInstruction(
             variable,
             skipLabel,
-            Map.of()
+            Map.of(),
+            this
         );
         expandedInstructions.add(skipDestination);
         

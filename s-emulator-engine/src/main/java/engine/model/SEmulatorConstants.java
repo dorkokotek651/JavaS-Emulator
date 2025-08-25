@@ -12,6 +12,18 @@ public final class SEmulatorConstants {
     public static final int DECREASE_CYCLES = 1;
     public static final int JUMP_NOT_ZERO_CYCLES = 2;
     public static final int NEUTRAL_CYCLES = 0;
+
+    public static final String INCREASE_NAME = "INCREASE";
+    public static final String DECREASE_NAME = "DECREASE";
+    public static final String JUMP_NOT_ZERO_NAME = "JUMP_NOT_ZERO";
+    public static final String NEUTRAL_NAME = "NEUTRAL";
+    public static final String GOTO_LABEL_NAME = "GOTO_LABEL";
+    public static final String ZERO_VARIABLE_NAME = "ZERO_VARIABLE";
+    public static final String ASSIGNMENT_NAME = "ASSIGNMENT";
+    public static final String CONSTANT_ASSIGNMENT_NAME = "CONSTANT_ASSIGNMENT";
+    public static final String JUMP_ZERO_NAME = "JUMP_ZERO";
+    public static final String JUMP_EQUAL_CONSTANT_NAME = "JUMP_EQUAL_CONSTANT";
+    public static final String JUMP_EQUAL_VARIABLE_NAME = "JUMP_EQUAL_VARIABLE";
     
     public static final int ZERO_VARIABLE_CYCLES = 1;
     public static final int GOTO_LABEL_CYCLES = 1;
@@ -27,4 +39,16 @@ public final class SEmulatorConstants {
     public static final Pattern LABEL_PATTERN = Pattern.compile("^L\\d+$|^EXIT$");
     
     public static final String RESULT_VARIABLE = "y";
+    
+    public static final String ASSIGNED_VARIABLE_ARG = "assignedVariable";
+    public static final String JNZ_LABEL_ARG = "JNZLabel";
+    public static final String GOTO_LABEL_ARG = "gotoLabel";
+    public static final String JZ_LABEL_ARG = "JZLabel";
+    public static final String JE_CONSTANT_LABEL_ARG = "JEConstantLabel";
+    public static final String JE_VARIABLE_LABEL_ARG = "JEVariableLabel";
+    public static final String CONSTANT_VALUE_ARG = "constantValue";
+    public static final String VARIABLE_NAME_ARG = "variableName";
+    
+    public static final String INSTRUCTION_TYPE_BASIC = "basic";
+    public static final String INSTRUCTION_TYPE_SYNTHETIC = "synthetic";
 }
