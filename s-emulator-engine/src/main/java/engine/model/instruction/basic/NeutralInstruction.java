@@ -4,6 +4,9 @@ import engine.model.instruction.BaseInstruction;
 import engine.model.InstructionType;
 import engine.model.SEmulatorConstants;
 import engine.execution.ExecutionContext;
+import engine.expansion.ExpansionContext;
+import engine.api.SInstruction;
+import java.util.List;
 import java.util.Map;
 
 public class NeutralInstruction extends BaseInstruction {
@@ -13,11 +16,13 @@ public class NeutralInstruction extends BaseInstruction {
     }
 
     @Override
-    public void execute(ExecutionContext context) {
-        // Neutral instruction does nothing to the variable (V <- V)
-        // It only consumes 0 cycles and moves to next instruction
+    protected void executeInstruction(ExecutionContext context) {
         context.addCycles(cycles);
-        context.incrementInstructionPointer();
+    }
+
+    @Override
+    public List<SInstruction> expand(ExpansionContext context) {
+        return List.of(this);
     }
 
     @Override

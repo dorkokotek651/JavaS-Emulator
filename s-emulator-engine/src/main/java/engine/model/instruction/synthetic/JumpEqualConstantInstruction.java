@@ -3,8 +3,7 @@ package engine.model.instruction.synthetic;
 import engine.api.SInstruction;
 import engine.model.instruction.BaseInstruction;
 import engine.model.instruction.basic.DecreaseInstruction;
-import engine.model.instruction.synthetic.AssignmentInstruction;
-import engine.model.instruction.synthetic.JumpZeroInstruction;
+import engine.model.instruction.basic.NeutralInstruction;
 import engine.model.InstructionType;
 import engine.model.SEmulatorConstants;
 import engine.expansion.ExpansionContext;
@@ -46,14 +45,12 @@ public class JumpEqualConstantInstruction extends BaseInstruction {
     }
 
     @Override
-    public void execute(ExecutionContext context) {
+    protected void executeInstruction(ExecutionContext context) {
         context.addCycles(cycles);
         
         int variableValue = context.getVariableManager().getValue(variable);
         if (variableValue == constantValue) {
             context.jumpToLabel(jumpLabel);
-        } else {
-            context.incrementInstructionPointer();
         }
     }
 
@@ -67,53 +64,43 @@ public class JumpEqualConstantInstruction extends BaseInstruction {
         List<SInstruction> expandedInstructions = new ArrayList<>();
         
         String workingVariable = context.getUniqueWorkingVariable();
+        String skipLabel = context.getUniqueLabel();
         
         AssignmentInstruction copyV = new AssignmentInstruction(
             workingVariable, null, Map.of("assignedVariable", variable)
         );
         expandedInstructions.add(copyV);
         
+        JumpZeroInstruction initialCheck = new JumpZeroInstruction(
+            workingVariable, null, Map.of("JZLabel", skipLabel)
+        );
+        expandedInstructions.add(initialCheck);
+        
         for (int i = 0; i < constantValue; i++) {
-            DecreaseInstruction subtractOne = new DecreaseInstruction(
+            DecreaseInstruction decreaseOne = new DecreaseInstruction(
                 workingVariable, null, Map.of()
             );
-            expandedInstructions.add(subtractOne);
+            expandedInstructions.add(decreaseOne);
+            
+            JumpZeroInstruction checkZero = new JumpZeroInstruction(
+                workingVariable, null, Map.of("JZLabel", skipLabel)
+            );
+            expandedInstructions.add(checkZero);
         }
         
-        JumpZeroInstruction checkZero = new JumpZeroInstruction(
-            workingVariable, null, Map.of("JZLabel", jumpLabel)
+        GotoLabelInstruction doJump = new GotoLabelInstruction(
+            workingVariable, null, Map.of("gotoLabel", jumpLabel)
         );
-        expandedInstructions.add(checkZero);
+        expandedInstructions.add(doJump);
+        
+        NeutralInstruction skipDestination = new NeutralInstruction(
+            variable, skipLabel, Map.of()
+        );
+        expandedInstructions.add(skipDestination);
         
         return expandedInstructions;
     }
     
-    @Override
-    protected int calculateExpansionLevel() {
-        return 3;
-    }
-    
-    @Override
-    protected List<SInstruction> createDependencies(ExpansionContext context) {
-        String workingVariable = context.getUniqueWorkingVariable();
-        List<SInstruction> dependencies = new ArrayList<>();
-        
-        // Step 1: Copy V to working variable using ASSIGNMENT (Level 2 dependency)
-        dependencies.add(new AssignmentInstruction(workingVariable, null, 
-            Map.of("assignedVariable", variable)));
-        
-        // Step 2: Subtract K from working variable (basic instructions)
-        for (int i = 0; i < constantValue; i++) {
-            dependencies.add(new DecreaseInstruction(workingVariable, null, Map.of()));
-        }
-        
-        // Step 3: Use JUMP_ZERO to check if working variable is 0 (Level 2 dependency)
-        dependencies.add(new JumpZeroInstruction(workingVariable, null, 
-            Map.of("JZLabel", jumpLabel)));
-        
-        return dependencies;
-    }
-
     public String getJumpLabel() {
         return jumpLabel;
     }

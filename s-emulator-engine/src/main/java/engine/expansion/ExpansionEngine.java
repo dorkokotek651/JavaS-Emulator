@@ -5,7 +5,6 @@ import engine.api.SProgram;
 import engine.exception.ExpansionException;
 import engine.model.InstructionType;
 import engine.model.SProgramImpl;
-import engine.model.instruction.InstructionFactory;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -40,64 +39,45 @@ public class ExpansionEngine {
     private SProgram expandProgramToLevel(SProgram program, int targetLevel, ExpansionContext context) throws ExpansionException {
         SProgramImpl expandedProgram = new SProgramImpl(program.getName() + " (expanded to level " + targetLevel + ")");
         
-        // Start with original instructions
         List<SInstruction> currentInstructions = new ArrayList<>(program.getInstructions());
         
-        // Expand exactly targetLevel times (depth-based expansion)
         for (int currentDepth = 0; currentDepth < targetLevel; currentDepth++) {
             List<SInstruction> nextInstructions = new ArrayList<>();
             boolean hasExpansion = false;
             
-            // Use the same context throughout all iterations to maintain label consistency
-            // Only update it with new labels/variables from current instructions
             updateContextWithCurrentInstructions(context, currentInstructions);
             
             for (SInstruction instruction : currentInstructions) {
                 if (instruction.getType() == InstructionType.BASIC) {
-                    // Always keep basic instructions
                     nextInstructions.add(instruction);
                 } else {
-                    // Expand this synthetic instruction
                     hasExpansion = true;
-                    List<SInstruction> dependencies = instruction.getDependencies(context);
+                    List<SInstruction> expandedInstructions = instruction.expand(context);
                     
-                    for (int i = 0; i < dependencies.size(); i++) {
-                        SInstruction dependency = dependencies.get(i);
-                        
-                        // Transfer original instruction's label to first dependency
-                        if (i == 0 && instruction.getLabel() != null && !instruction.getLabel().trim().isEmpty()) {
-                            dependency = createInstructionWithLabel(dependency, instruction.getLabel());
-                        }
-                        
-                        nextInstructions.add(dependency);
+                    if (instruction.getLabel() != null && !instruction.getLabel().trim().isEmpty()) {
+                        nextInstructions.add(new engine.model.instruction.basic.NeutralInstruction(
+                            instruction.getVariable(),
+                            instruction.getLabel(),
+                            java.util.Map.of()
+                        ));
                     }
+                    
+                    nextInstructions.addAll(expandedInstructions);
                 }
             }
             
             currentInstructions = nextInstructions;
             
-            // If no synthetic instructions were found, we can't expand further
             if (!hasExpansion) {
                 break;
             }
         }
         
-        // Add all final instructions to the program
         for (SInstruction instruction : currentInstructions) {
             expandedProgram.addInstruction(instruction);
         }
         
         return expandedProgram;
-    }
-
-    private SInstruction createInstructionWithLabel(SInstruction instruction, String label) {
-        // Create a new instruction with the same properties but with the specified label
-        return InstructionFactory.createInstruction(
-            instruction.getName(),
-            instruction.getVariable(),
-            label,
-            instruction.getArguments()
-        );
     }
 
     private ExpansionContext createExpansionContext(SProgram program) {
@@ -114,45 +94,14 @@ public class ExpansionEngine {
         return new ExpansionContext(existingLabels, existingVariables);
     }
     
-    private ExpansionContext createFreshExpansionContext(List<SInstruction> currentInstructions) {
-        Set<String> existingLabels = new HashSet<>();
-        Set<String> existingVariables = new HashSet<>();
-        
-        // Collect all labels and variables from current instructions
-        for (SInstruction instruction : currentInstructions) {
-            if (instruction.getLabel() != null && !instruction.getLabel().trim().isEmpty()) {
-                existingLabels.add(instruction.getLabel().trim());
-            }
-            existingVariables.add(instruction.getVariable());
-            
-            // Also collect variables from arguments (like jump targets, assigned variables, etc.)
-            for (String argValue : instruction.getArguments().values()) {
-                if (argValue != null && !argValue.trim().isEmpty()) {
-                    existingVariables.add(argValue.trim());
-                    // If the argument looks like a label, add it to existing labels too
-                    if (argValue.matches("L\\d+") || argValue.equals("EXIT")) {
-                        existingLabels.add(argValue.trim());
-                    }
-                }
-            }
-        }
-        
-        return new ExpansionContext(existingLabels, existingVariables);
-    }
-    
     private void updateContextWithCurrentInstructions(ExpansionContext context, List<SInstruction> currentInstructions) {
-        // Add any new labels and variables from current instructions to the context
         for (SInstruction instruction : currentInstructions) {
             if (instruction.getLabel() != null && !instruction.getLabel().trim().isEmpty()) {
-                // This will be handled by the context's internal tracking
             }
             
-            // Add variables from arguments (like jump targets, assigned variables, etc.)
             for (String argValue : instruction.getArguments().values()) {
                 if (argValue != null && !argValue.trim().isEmpty()) {
-                    // If the argument looks like a label, the context should be aware of it
                     if (argValue.matches("L\\d+") || argValue.equals("EXIT")) {
-                        // The context will handle label uniqueness internally
                     }
                 }
             }

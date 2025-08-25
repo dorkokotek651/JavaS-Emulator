@@ -24,6 +24,6 @@ public class ExitCommand implements Command {
 
     @Override
     public boolean isAvailable(SEmulatorEngine engine) {
-        return true; // Always available
+        return true;
     }
 }

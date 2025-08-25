@@ -43,7 +43,6 @@ public class ConsoleInterface {
                 String input = scanner.nextLine();
                 String trimmedInput = input.trim();
                 
-                // Handle quoted paths (remove quotes if present)
                 if ((trimmedInput.startsWith("\"") && trimmedInput.endsWith("\"")) ||
                     (trimmedInput.startsWith("'") && trimmedInput.endsWith("'"))) {
                     trimmedInput = trimmedInput.substring(1, trimmedInput.length() - 1);

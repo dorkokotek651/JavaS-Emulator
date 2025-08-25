@@ -7,7 +7,6 @@ import java.util.List;
 public class InputValidator {
     
     private InputValidator() {
-        // Utility class - prevent instantiation
     }
 
     public static int validateInteger(String input) throws IllegalArgumentException {
@@ -84,12 +83,10 @@ public class InputValidator {
         String trimmedInput = input.trim();
         List<Integer> values = new ArrayList<>();
         
-        // Handle empty input or just whitespace
         if (trimmedInput.isEmpty()) {
             return values;
         }
         
-        // Split by comma and parse each value
         String[] parts = trimmedInput.split(",");
         
         for (int i = 0; i < parts.length; i++) {

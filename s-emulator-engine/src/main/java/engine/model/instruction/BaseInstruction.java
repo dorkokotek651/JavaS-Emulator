@@ -14,17 +14,17 @@ public abstract class BaseInstruction implements SInstruction {
     protected final String label;
     protected final Map<String, String> arguments;
     protected final int cycles;
-    protected final int expansionLevel;
+
     protected final SInstruction sourceInstruction;
 
     protected BaseInstruction(String name, InstructionType type, String variable, 
                             String label, Map<String, String> arguments, int cycles) {
-        this(name, type, variable, label, arguments, cycles, 0, null);
+        this(name, type, variable, label, arguments, cycles, null);
     }
 
     protected BaseInstruction(String name, InstructionType type, String variable, 
                             String label, Map<String, String> arguments, int cycles,
-                            int expansionLevel, SInstruction sourceInstruction) {
+                            SInstruction sourceInstruction) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Instruction name cannot be null or empty");
         }
@@ -37,9 +37,7 @@ public abstract class BaseInstruction implements SInstruction {
         if (cycles < 0) {
             throw new IllegalArgumentException("Cycles cannot be negative");
         }
-        if (expansionLevel < 0) {
-            throw new IllegalArgumentException("Expansion level cannot be negative");
-        }
+
 
         this.name = name.trim();
         this.type = type;
@@ -47,7 +45,7 @@ public abstract class BaseInstruction implements SInstruction {
         this.label = (label != null && !label.trim().isEmpty()) ? label.trim() : null;
         this.arguments = (arguments != null) ? Map.copyOf(arguments) : Map.of();
         this.cycles = cycles;
-        this.expansionLevel = expansionLevel;
+
         this.sourceInstruction = sourceInstruction;
     }
 
@@ -81,18 +79,7 @@ public abstract class BaseInstruction implements SInstruction {
         return cycles;
     }
 
-    @Override
-    public int getExpansionLevel() {
-        if (type == InstructionType.BASIC) {
-            return 0;
-        }
-        
-        return calculateExpansionLevel();
-    }
-    
-    protected int calculateExpansionLevel() {
-        return 1;
-    }
+
 
     @Override
     public SInstruction getSourceInstruction() {
@@ -100,30 +87,20 @@ public abstract class BaseInstruction implements SInstruction {
     }
 
     @Override
-    public List<SInstruction> expand(ExpansionContext context) {
-        return List.of(this);
-    }
+    public abstract List<SInstruction> expand(ExpansionContext context);
 
     @Override
-    public List<SInstruction> getDependencies(ExpansionContext context) {
-        if (type == InstructionType.BASIC) {
-            return List.of(this);
-        }
+    public final void execute(ExecutionContext context) {
+        int instructionPointerBefore = context.getCurrentInstructionIndex();
         
-        return createDependencies(context);
-    }
+        executeInstruction(context);
 
-    /**
-     * Create dependencies for synthetic instructions.
-     * Should be overridden by synthetic instruction classes.
-     */
-    protected List<SInstruction> createDependencies(ExpansionContext context) {
-        // Default implementation - should be overridden by synthetic instructions
-        return List.of(this);
+        if (context.getCurrentInstructionIndex() == instructionPointerBefore) {
+            context.incrementInstructionPointer();
+        }
     }
-
-    @Override
-    public abstract void execute(ExecutionContext context);
+    
+    protected abstract void executeInstruction(ExecutionContext context);
 
     @Override
     public abstract String getDisplayFormat();

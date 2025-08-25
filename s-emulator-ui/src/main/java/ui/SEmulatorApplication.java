@@ -18,15 +18,12 @@ public class SEmulatorApplication {
         SEmulatorEngine engine = null;
         
         try {
-            // Initialize console interface
             ui = new ConsoleInterface();
             
-            // Initialize S-Emulator engine
             ui.displayInfo("Initializing S-Emulator engine...");
             engine = new SEmulatorEngineImpl();
             ui.displaySuccess("S-Emulator engine initialized successfully!");
             
-            // Create menu manager and run main loop
             MenuManager menuManager = new MenuManager(ui);
             menuManager.runMainLoop(engine);
             
@@ -50,7 +47,6 @@ public class SEmulatorApplication {
             }
             
         } finally {
-            // Clean up resources
             if (ui != null) {
                 try {
                     ui.close();

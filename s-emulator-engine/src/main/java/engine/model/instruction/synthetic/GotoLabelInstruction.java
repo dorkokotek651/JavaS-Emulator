@@ -30,9 +30,9 @@ public class GotoLabelInstruction extends BaseInstruction {
     }
 
     public GotoLabelInstruction(String variable, String label, Map<String, String> arguments,
-                              int expansionLevel, SInstruction sourceInstruction) {
+                              SInstruction sourceInstruction) {
         super("GOTO_LABEL", InstructionType.SYNTHETIC, variable, label, arguments, 
-              SEmulatorConstants.GOTO_LABEL_CYCLES, expansionLevel, sourceInstruction);
+              SEmulatorConstants.GOTO_LABEL_CYCLES, sourceInstruction);
         
         if (arguments == null || !arguments.containsKey("gotoLabel")) {
             throw new IllegalArgumentException("GOTO_LABEL instruction requires 'gotoLabel' argument");
@@ -45,7 +45,7 @@ public class GotoLabelInstruction extends BaseInstruction {
     }
 
     @Override
-    public void execute(ExecutionContext context) {
+    protected void executeInstruction(ExecutionContext context) {
         context.addCycles(cycles);
         context.jumpToLabel(gotoLabel);
     }
@@ -83,18 +83,5 @@ public class GotoLabelInstruction extends BaseInstruction {
         return gotoLabel;
     }
     
-    @Override
-    protected int calculateExpansionLevel() {
-        return 1;
-    }
-    
-    @Override
-    protected List<SInstruction> createDependencies(ExpansionContext context) {
-        String workingVariable = context.getUniqueWorkingVariable();
-        
-        return List.of(
-            new IncreaseInstruction(workingVariable, null, Map.of()),
-            new JumpNotZeroInstruction(workingVariable, null, Map.of("JNZLabel", gotoLabel))
-        );
-    }
+
 }

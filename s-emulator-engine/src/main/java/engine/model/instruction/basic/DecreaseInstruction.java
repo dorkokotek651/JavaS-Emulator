@@ -4,6 +4,9 @@ import engine.model.instruction.BaseInstruction;
 import engine.model.InstructionType;
 import engine.model.SEmulatorConstants;
 import engine.execution.ExecutionContext;
+import engine.expansion.ExpansionContext;
+import engine.api.SInstruction;
+import java.util.List;
 import java.util.Map;
 
 public class DecreaseInstruction extends BaseInstruction {
@@ -13,10 +16,14 @@ public class DecreaseInstruction extends BaseInstruction {
     }
 
     @Override
-    public void execute(ExecutionContext context) {
+    protected void executeInstruction(ExecutionContext context) {
         context.getVariableManager().decrement(variable);
         context.addCycles(cycles);
-        context.incrementInstructionPointer();
+    }
+
+    @Override
+    public List<SInstruction> expand(ExpansionContext context) {
+        return List.of(this);
     }
 
     @Override

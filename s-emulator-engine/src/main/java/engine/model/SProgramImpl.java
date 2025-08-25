@@ -144,10 +144,38 @@ public class SProgramImpl implements SProgram {
         int maxLevel = 0;
         
         for (SInstruction instruction : instructions) {
-            maxLevel = Math.max(maxLevel, instruction.getExpansionLevel());
+            if (instruction.getType() == InstructionType.SYNTHETIC) {
+                int instructionLevel = getInstructionExpansionLevel(instruction.getName());
+                maxLevel = Math.max(maxLevel, instructionLevel);
+            }
         }
         
         return maxLevel;
+    }
+    
+
+    private int getInstructionExpansionLevel(String instructionName) {
+        switch (instructionName) {
+            case "ZERO_VARIABLE":
+            case "GOTO_LABEL":
+                return 1;
+            
+            case "ASSIGNMENT":
+            case "CONSTANT_ASSIGNMENT":
+            case "JUMP_ZERO":
+                return 2;
+            
+            case "JUMP_EQUAL_CONSTANT":
+            case "JUMP_EQUAL_VARIABLE":
+            case "QUOTE":
+                return 3;
+            
+            case "JUMP_EQUAL_FUNCTION":
+                return 4;
+            
+            default:
+                throw new IllegalArgumentException("Unknown synthetic instruction: " + instructionName);
+        }
     }
 
     public boolean isEmpty() {

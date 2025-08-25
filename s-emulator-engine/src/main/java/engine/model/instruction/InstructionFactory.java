@@ -17,7 +17,6 @@ import java.util.Map;
 public class InstructionFactory {
     
     private InstructionFactory() {
-        // Utility class - prevent instantiation
     }
 
     public static SInstruction createInstruction(String name, String variable, String label, Map<String, String> arguments) {

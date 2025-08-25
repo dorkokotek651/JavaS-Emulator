@@ -192,7 +192,7 @@ public class SProgramParser {
                 String argName = arg.getName().trim();
                 String argValue = arg.getValue().trim();
                 
-                if (argName.contains("Label") && LABEL_PATTERN.matcher(argValue).matches()) {
+                if (argName.contains("Label")) {
                     referencedLabels.add(argValue);
                 }
             }
@@ -201,6 +201,11 @@ public class SProgramParser {
 
     private void validateLabelReferences(Set<String> definedLabels, Set<String> referencedLabels) throws XMLValidationException {
         for (String referencedLabel : referencedLabels) {
+            if (!LABEL_PATTERN.matcher(referencedLabel).matches()) {
+                throw new XMLValidationException("Invalid label format: '" + referencedLabel + 
+                    "'. Must be 'L' followed by digits or 'EXIT'");
+            }
+            
             if (!definedLabels.contains(referencedLabel) && !referencedLabel.equals("EXIT")) {
                 throw new XMLValidationException("Referenced label '" + referencedLabel + "' is not defined in the program");
             }

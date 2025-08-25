@@ -21,9 +21,8 @@ public class LoadFileCommand implements Command {
             ui.displayInfo("Max expansion level: " + engine.getMaxExpansionLevel());
             
         } catch (SProgramException e) {
-            ui.displayError("Failed to load program: " + e.getMessage());
+            ui.displayError(e.getMessage());
             
-            // Show more detailed error information if available
             Throwable cause = e.getCause();
             if (cause != null && !cause.getMessage().equals(e.getMessage())) {
                 ui.displayError("Details: " + cause.getMessage());
@@ -41,6 +40,6 @@ public class LoadFileCommand implements Command {
 
     @Override
     public boolean isAvailable(SEmulatorEngine engine) {
-        return true; // Always available
+        return true;
     }
 }

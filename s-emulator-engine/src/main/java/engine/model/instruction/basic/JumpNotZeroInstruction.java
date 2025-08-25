@@ -4,6 +4,9 @@ import engine.model.instruction.BaseInstruction;
 import engine.model.InstructionType;
 import engine.model.SEmulatorConstants;
 import engine.execution.ExecutionContext;
+import engine.expansion.ExpansionContext;
+import engine.api.SInstruction;
+import java.util.List;
 import java.util.Map;
 
 public class JumpNotZeroInstruction extends BaseInstruction {
@@ -23,15 +26,18 @@ public class JumpNotZeroInstruction extends BaseInstruction {
     }
 
     @Override
-    public void execute(ExecutionContext context) {
+    protected void executeInstruction(ExecutionContext context) {
         context.addCycles(cycles);
         
         int variableValue = context.getVariableManager().getValue(variable);
         if (variableValue != 0) {
             context.jumpToLabel(jumpLabel);
-        } else {
-            context.incrementInstructionPointer();
         }
+    }
+
+    @Override
+    public List<SInstruction> expand(ExpansionContext context) {
+        return List.of(this);
     }
 
     @Override

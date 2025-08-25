@@ -47,7 +47,7 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
             this.executionHistory.clear();
             this.nextRunNumber = 1;
         } catch (XMLValidationException e) {
-            throw new SProgramException("Failed to load program from '" + xmlFilePath + "': " + e.getMessage(), e);
+            throw new SProgramException("Failed to load program from '" + xmlFilePath + "'", e);
         }
     }
 

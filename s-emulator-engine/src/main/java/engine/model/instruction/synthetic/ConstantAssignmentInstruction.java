@@ -3,7 +3,6 @@ package engine.model.instruction.synthetic;
 import engine.api.SInstruction;
 import engine.model.instruction.BaseInstruction;
 import engine.model.instruction.basic.IncreaseInstruction;
-import engine.model.instruction.synthetic.ZeroVariableInstruction;
 import engine.model.InstructionType;
 import engine.model.SEmulatorConstants;
 import engine.expansion.ExpansionContext;
@@ -39,9 +38,9 @@ public class ConstantAssignmentInstruction extends BaseInstruction {
     }
 
     public ConstantAssignmentInstruction(String variable, String label, Map<String, String> arguments,
-                                       int expansionLevel, SInstruction sourceInstruction) {
+                                       SInstruction sourceInstruction) {
         super("CONSTANT_ASSIGNMENT", InstructionType.SYNTHETIC, variable, label, arguments, 
-              SEmulatorConstants.CONSTANT_ASSIGNMENT_CYCLES, expansionLevel, sourceInstruction);
+              SEmulatorConstants.CONSTANT_ASSIGNMENT_CYCLES, sourceInstruction);
         
         if (arguments == null || !arguments.containsKey("constantValue")) {
             throw new IllegalArgumentException("CONSTANT_ASSIGNMENT instruction requires 'constantValue' argument");
@@ -63,10 +62,9 @@ public class ConstantAssignmentInstruction extends BaseInstruction {
     }
 
     @Override
-    public void execute(ExecutionContext context) {
+    protected void executeInstruction(ExecutionContext context) {
         context.getVariableManager().setValue(variable, constantValue);
         context.addCycles(cycles);
-        context.incrementInstructionPointer();
     }
 
     @Override
@@ -78,17 +76,11 @@ public class ConstantAssignmentInstruction extends BaseInstruction {
     public List<SInstruction> expand(ExpansionContext context) {
         List<SInstruction> expandedInstructions = new ArrayList<>();
         
-        // V ← K expansion pattern using ZERO_VARIABLE:
-        // 1. Use ZERO_VARIABLE to zero the target variable
-        // 2. Increment V exactly K times (basic instructions)
-        
-        // Step 1: Zero the target variable using ZERO_VARIABLE
         ZeroVariableInstruction zeroInstruction = new ZeroVariableInstruction(
             variable, null, Map.of()
         );
         expandedInstructions.add(zeroInstruction);
         
-        // Step 2: Increment V exactly K times
         for (int i = 0; i < constantValue; i++) {
             IncreaseInstruction increaseInstruction = new IncreaseInstruction(
                 variable,
@@ -105,23 +97,5 @@ public class ConstantAssignmentInstruction extends BaseInstruction {
         return constantValue;
     }
     
-    @Override
-    protected int calculateExpansionLevel() {
-        return 2;
-    }
-    
-    @Override
-    protected List<SInstruction> createDependencies(ExpansionContext context) {
-        List<SInstruction> dependencies = new ArrayList<>();
-        
-        // Step 1: Zero variable using ZERO_VARIABLE (Level 1 dependency)
-        dependencies.add(new ZeroVariableInstruction(variable, null, Map.of()));
-        
-        // Step 2: Increment K times (basic instructions)
-        for (int i = 0; i < constantValue; i++) {
-            dependencies.add(new IncreaseInstruction(variable, null, Map.of()));
-        }
-        
-        return dependencies;
-    }
+
 }

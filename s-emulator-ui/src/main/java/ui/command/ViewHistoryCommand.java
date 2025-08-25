@@ -20,12 +20,10 @@ public class ViewHistoryCommand implements Command {
             
             ui.displayInfo("Found " + history.size() + " execution(s) in history.");
             
-            // Display summary first
             ui.displaySeparator();
             System.out.println(OutputFormatter.formatExecutionHistory(history));
             ui.displaySeparator();
             
-            // Ask if user wants detailed view of any specific execution
             if (history.size() > 0) {
                 boolean viewDetails = ui.confirmAction("Would you like to view detailed results for a specific execution?");
                 

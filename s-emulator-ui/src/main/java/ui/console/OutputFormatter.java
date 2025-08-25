@@ -11,7 +11,6 @@ public class OutputFormatter {
     private static final String THIN_SEPARATOR = "-" + "-".repeat(80);
     
     private OutputFormatter() {
-        // Utility class - prevent instantiation
     }
 
     private static String formatIndex(int index) {

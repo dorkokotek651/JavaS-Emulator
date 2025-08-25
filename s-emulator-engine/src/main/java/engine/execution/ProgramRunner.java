@@ -25,6 +25,7 @@ public class ProgramRunner {
             throw new ExecutionException("Expansion level cannot be negative: " + expansionLevel);
         }
 
+
         List<SInstruction> instructions = program.getInstructions();
         if (instructions.isEmpty()) {
             throw new ExecutionException("Program must contain at least one instruction");

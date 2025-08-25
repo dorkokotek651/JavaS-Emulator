@@ -20,16 +20,15 @@ public class ZeroVariableInstruction extends BaseInstruction {
     }
 
     public ZeroVariableInstruction(String variable, String label, Map<String, String> arguments,
-                                 int expansionLevel, SInstruction sourceInstruction) {
+                                 SInstruction sourceInstruction) {
         super("ZERO_VARIABLE", InstructionType.SYNTHETIC, variable, label, arguments, 
-              SEmulatorConstants.ZERO_VARIABLE_CYCLES, expansionLevel, sourceInstruction);
+              SEmulatorConstants.ZERO_VARIABLE_CYCLES, sourceInstruction);
     }
 
     @Override
-    public void execute(ExecutionContext context) {
+    protected void executeInstruction(ExecutionContext context) {
         context.getVariableManager().setValue(variable, 0);
         context.addCycles(cycles);
-        context.incrementInstructionPointer();
     }
 
     @Override
@@ -61,18 +60,5 @@ public class ZeroVariableInstruction extends BaseInstruction {
         return expandedInstructions;
     }
     
-    @Override
-    protected int calculateExpansionLevel() {
-        return 1;
-    }
-    
-    @Override
-    protected List<SInstruction> createDependencies(ExpansionContext context) {
-        String loopLabel = context.getUniqueLabel();
-        
-        return List.of(
-            new DecreaseInstruction(variable, loopLabel, Map.of()),
-            new JumpNotZeroInstruction(variable, null, Map.of("JNZLabel", loopLabel))
-        );
-    }
+
 }

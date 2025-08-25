@@ -16,6 +16,7 @@ public class ExecutionContext {
     private final List<SInstruction> executedInstructions;
     private String pendingJumpLabel;
 
+
     public ExecutionContext() {
         this.variableManager = new VariableManager();
         this.currentInstructionIndex = 0;
@@ -93,6 +94,10 @@ public class ExecutionContext {
         this.labelToIndexMap = labelToIndexMap;
     }
 
+    public Map<String, Integer> getLabelToIndexMap() {
+        return labelToIndexMap;
+    }
+
     public String getPendingJumpLabel() {
         return pendingJumpLabel;
     }
@@ -124,4 +129,6 @@ public class ExecutionContext {
     public void initializeInputs(List<Integer> inputValues) {
         variableManager.initializeInputs(inputValues);
     }
+
+
 }

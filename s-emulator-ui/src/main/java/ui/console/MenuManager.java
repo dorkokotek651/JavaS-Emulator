@@ -68,13 +68,11 @@ public class MenuManager {
         } catch (Exception e) {
             ui.displayError("Command execution failed: " + e.getMessage());
             
-            // Show stack trace for debugging if needed
             if (e.getCause() != null) {
                 ui.displayError("Caused by: " + e.getCause().getMessage());
             }
         }
         
-        // Pause before returning to menu (except for exit command)
         if (!(selectedCommand instanceof ExitCommand) && ui.isRunning()) {
             ui.displayThinSeparator();
             ui.waitForEnter();
