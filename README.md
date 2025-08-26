@@ -28,15 +28,46 @@ Implemented the System State Save and Load bonus task.
    - Implemented JSON-based serialization for persisting and restoring complete system state
    - Designed to handle complex object graphs including programs, execution history, and internal counters
 
-### Additional Information
+### User Manual
 
-- **Java 21 Compliance**: The entire project is built using Java 21 features and follows modern Java conventions
-- **Input Validation**: Comprehensive input validation is implemented throughout the system with detailed error messages
-- **Error Handling**: Robust exception hierarchy with specific exception types for different error scenarios
-- **XML Schema Validation**: Programs are validated against the S-Emulator XML schema before processing
-- **Execution Safety**: Built-in safeguards against infinite loops and malformed programs
-- **Console Interface**: Clean, user-friendly console interface with formatted output and clear navigation
-- **Maven Build System**: Standard Maven project structure with proper dependency management and build configuration
+#### Quick Start
+1. **Run the Application**: Double-click `run_s_emulator.bat` or run it from command line
+2. **Load a Program**: Choose option 1 to load an S-language program from an XML file
+3. **Run the Program**: Choose option 4 to execute the program with input values
+4. **View Results**: The system displays execution results and maintains history
+
+#### System Requirements
+- **Java**: Java 21 or higher must be installed and accessible from PATH
+- **Operating System**: Windows, macOS, or Linux
+
+#### How to Use the Application
+
+**Starting the Application**
+Run the provided script: `run_s_emulator.bat`
+
+**Main Menu Options:**
+1. **Load XML File** - Load an S-language program from XML (example files in `EX 1` folder)
+2. **View Current Program** - Display details about the loaded program
+3. **Expand Program** - Convert synthetic instructions to basic instructions
+4. **Run Program** - Execute the program with input values (space-separated numbers)
+5. **View Execution History** - Show all previous program executions
+6. **Save System State** - Save current state to JSON file
+7. **Load System State** - Restore previously saved state
+8. **Exit** - Close the application
+
+**Input Format:**
+- **XML Files**: Must follow S-Emulator schema (see `S-Emulator-v1.xsd`)
+- **Program Input**: Space-separated numbers (e.g., `5 10 3` assigns x1=5, x2=10, x3=3)
+
+**Variable Types:**
+- **Input Variables** (x1, x2, x3, ...): Hold input values
+- **Work Variables** (z1, z2, z3, ...): Temporary variables
+- **Output Variable** (y): Contains final result
+
+**Troubleshooting:**
+- Ensure Java 21+ is installed and in PATH
+- Use full file paths or enclose paths with spaces in quotes
+- Validate XML files against the provided schema
 
 ## Classes Overview
 
@@ -297,6 +328,7 @@ classDiagram
 **Student 2:**
 - Name: Gilad Yavne 
 - ID: *******
+- Email: giladya2@mta.ac.il
 
 ## Repository
 
