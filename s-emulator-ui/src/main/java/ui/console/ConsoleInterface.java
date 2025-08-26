@@ -1,5 +1,6 @@
 package ui.console;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -82,8 +83,15 @@ public class ConsoleInterface {
             try {
                 String input = scanner.nextLine();
                 List<Integer> values = InputValidator.parseIntegerList(input);
-                InputValidator.validateInputCount(values, inputVariables);
-                return values;
+                List<Integer> adjustedValues = adjustInputsToRequiredSize(values, inputVariables);
+                
+                if (values.size() < inputVariables.size()) {
+                    displayInfo("Received " + values.size() + " inputs, padding missing variables with 0.");
+                } else if (values.size() > inputVariables.size()) {
+                    displayInfo("Received " + values.size() + " inputs, using first " + inputVariables.size() + " values.");
+                }
+                
+                return adjustedValues;
             } catch (IllegalArgumentException e) {
                 displayError(e.getMessage());
             }
@@ -175,5 +183,23 @@ public class ConsoleInterface {
             System.out.println(output);
             displaySeparator();
         }
+    }
+
+    private List<Integer> adjustInputsToRequiredSize(List<Integer> inputs, List<String> requiredInputs) {
+        if (inputs.size() == requiredInputs.size()) {
+            return new ArrayList<>(inputs);
+        }
+        
+        List<Integer> adjustedInputs = new ArrayList<>();
+        
+        for (int i = 0; i < requiredInputs.size(); i++) {
+            if (i < inputs.size()) {
+                adjustedInputs.add(inputs.get(i));
+            } else {
+                adjustedInputs.add(0);
+            }
+        }
+        
+        return adjustedInputs;
     }
 }

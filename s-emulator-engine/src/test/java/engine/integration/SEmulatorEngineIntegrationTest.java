@@ -410,16 +410,6 @@ public class SEmulatorEngineIntegrationTest {
     }
     
     @Test
-    void testRunProgram_WrongNumberOfInputs_ShouldThrowException() throws SProgramException {
-        String filePath = getXmlFilePath("successor.xml");
-        engine.loadProgram(filePath);
-        
-        assertThrows(IllegalArgumentException.class, () -> {
-            engine.runProgram(0, Arrays.asList(1, 2, 3));
-        });
-    }
-    
-    @Test
     void testRunProgram_NegativeInputs_ShouldThrowException() throws SProgramException {
         String filePath = getXmlFilePath("successor.xml");
         engine.loadProgram(filePath);

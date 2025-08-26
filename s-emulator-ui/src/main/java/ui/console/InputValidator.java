@@ -136,11 +136,5 @@ public class InputValidator {
         return input.trim();
     }
 
-    public static void validateInputCount(List<Integer> inputs, List<String> requiredInputs) throws IllegalArgumentException {
-        if (inputs.size() != requiredInputs.size()) {
-            throw new IllegalArgumentException("Expected " + requiredInputs.size() + 
-                " input values for variables " + requiredInputs + 
-                ", but got " + inputs.size() + " values: " + inputs);
-        }
-    }
+
 }

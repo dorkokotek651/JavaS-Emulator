@@ -194,9 +194,14 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
         }
 
         List<String> requiredInputs = currentProgram.getInputVariables();
-        if (inputs.size() != requiredInputs.size()) {
-            throw new IllegalArgumentException("Expected " + requiredInputs.size() + 
-                " inputs " + requiredInputs + ", but got " + inputs.size() + " inputs");
+        if (inputs.size() > requiredInputs.size()) {
+            inputs = inputs.subList(0, requiredInputs.size());
+        } else if (inputs.size() < requiredInputs.size()) {
+            List<Integer> paddedInputs = new ArrayList<>(inputs);
+            while (paddedInputs.size() < requiredInputs.size()) {
+                paddedInputs.add(0);
+            }
+            inputs = paddedInputs;
         }
 
         for (int input : inputs) {

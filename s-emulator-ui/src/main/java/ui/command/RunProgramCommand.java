@@ -8,6 +8,29 @@ import java.util.List;
 
 public class RunProgramCommand implements Command {
 
+    private String extractInstructionsFromProgram(String expandedProgram) {
+        if (expandedProgram == null || expandedProgram.trim().isEmpty()) {
+            return "No instructions found.";
+        }
+        
+        String[] lines = expandedProgram.split("\n");
+        StringBuilder instructionsOnly = new StringBuilder();
+        boolean inInstructionsSection = false;
+        
+        for (String line : lines) {
+            if (line.startsWith("Instructions:")) {
+                inInstructionsSection = true;
+                continue;
+            }
+            
+            if (inInstructionsSection && line.trim().startsWith("#")) {
+                instructionsOnly.append(line).append("\n");
+            }
+        }
+        
+        return instructionsOnly.toString().trim();
+    }
+
     @Override
     public void execute(ConsoleInterface ui, SEmulatorEngine engine) {
         try {
@@ -41,7 +64,23 @@ public class RunProgramCommand implements Command {
             
             ui.displaySuccess("Program executed successfully!");
             ui.displaySeparator();
-            System.out.println(OutputFormatter.formatExecutionResult(result));
+            
+            // Step 4: Show the actual running program
+            String expandedProgram = engine.expandProgramWithHistory(expansionLevel);
+            String instructionsOnly = extractInstructionsFromProgram(expandedProgram);
+            System.out.println("Program Executed:");
+            System.out.println(instructionsOnly);
+            ui.displaySeparator();
+            
+            // Step 5: Show the value of y (the formal result)
+            System.out.println("Result (y): " + result.getYValue());
+            
+            // Step 6: Show the other variables
+            System.out.println("Variable Values: " + OutputFormatter.formatVariableValues(
+                result.getYValue(), result.getInputVariables(), result.getWorkingVariables()));
+            
+            // Step 7: Show the number of cycles
+            System.out.println("Total Cycles: " + result.getTotalCycles());
             ui.displaySeparator();
             
             ui.displayInfo("Execution completed in " + result.getTotalCycles() + " cycles.");
