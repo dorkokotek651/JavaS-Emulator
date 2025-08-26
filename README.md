@@ -290,15 +290,14 @@ classDiagram
 ## Team Information
 
 **Student 1:**
-- Name: [Your Name Here]
-- ID: [Your ID Number Here]
-- Email: [Your Email Here]
+- Name: Dor Kokotek
+- ID: 318225901
+- Email: dorko@mta.ac.il
 
 **Student 2:**
-- Name: [Partner Name Here] 
-- ID: [Partner ID Number Here]
-- Email: [Partner Email Here]
+- Name: Gilad Yavne 
+- ID: 315385286
 
 ## Repository
 
-GitHub Repository: [Repository Link Here]
+GitHub Repository: https://github.com/dorkokotek651/JavaS-Emulator
