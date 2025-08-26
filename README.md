@@ -291,12 +291,12 @@ classDiagram
 
 **Student 1:**
 - Name: Dor Kokotek
-- ID: 318225901
+- ID: *******
 - Email: dorko@mta.ac.il
 
 **Student 2:**
 - Name: Gilad Yavne 
-- ID: 315385286
+- ID: *******
 
 ## Repository
 
