@@ -7,8 +7,8 @@ import java.util.Map;
 
 public class OutputFormatter {
     private static final int INDEX_WIDTH = 6;
-    private static final String SEPARATOR = "=" + "=".repeat(80);
-    private static final String THIN_SEPARATOR = "-" + "-".repeat(80);
+    private static final String SEPARATOR = "=" + "=".repeat(100);
+    private static final String THIN_SEPARATOR = "-" + "-".repeat(100);
     
     private OutputFormatter() {
     }

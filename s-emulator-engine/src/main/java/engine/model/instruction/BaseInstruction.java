@@ -49,7 +49,6 @@ public abstract class BaseInstruction implements SInstruction {
             throw new IllegalArgumentException("Cycles cannot be negative");
         }
 
-
         this.name = name.trim();
         this.type = type;
         this.variable = variable.trim();
@@ -146,7 +145,7 @@ public abstract class BaseInstruction implements SInstruction {
 
     @Override
     public String toString() {
-        return String.format("%-4s %s %-25s (%d)", 
+        return String.format("%-4s %s %-20s (%d)", 
                            formatTypeIndicator(), formatLabel(), 
                            getDisplayFormat(), cycles);
     }
@@ -168,9 +167,8 @@ public abstract class BaseInstruction implements SInstruction {
                 String.format("[ %-3s ]", ancestor.getLabel()) : "[     ]";
             String ancestorType = ancestor.getType() == InstructionType.BASIC ? "(B)" : "(S)";
             int ancestorLineNumber = getAncestorOriginalLineNumber(ancestor, currentLineNumber);
-            result.append(String.format(" <<< %s  %-4s %s %-25s (%d)",
+            result.append(String.format("  <<<  %s %-4s %s %-25s (%d)",
                 formatIndex(ancestorLineNumber), ancestorType, ancestorLabel, 
-                ancestorLineNumber, ancestorType, ancestorLabel, 
                 ancestor.getDisplayFormat(), ancestor.getCycles()));
         }
         
@@ -200,7 +198,7 @@ public abstract class BaseInstruction implements SInstruction {
                 String.format("[ %-3s ]", ancestor.instruction.getLabel()) : "[     ]";
             String ancestorType = ancestor.instruction.getType() == InstructionType.BASIC ? "(B)" : "(S)";
             
-            result.append(String.format(" <<< #%d %s %s %-25s (%d)", 
+            result.append(String.format("  <<<  #%d %s %s %-25s (%d)", 
                 ancestor.lineNumber, ancestorType, ancestorLabel, 
                 ancestor.instruction.getDisplayFormat(), ancestor.instruction.getCycles()));
         }
