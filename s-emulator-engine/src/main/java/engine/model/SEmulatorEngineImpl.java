@@ -3,12 +3,16 @@ package engine.model;
 import engine.api.ExecutionResult;
 import engine.api.SEmulatorEngine;
 import engine.api.SProgram;
+import engine.api.SystemState;
 import engine.exception.SProgramException;
+import engine.exception.StateSerializationException;
 import engine.exception.XMLValidationException;
 import engine.exception.ExecutionException;
 import engine.exception.ExpansionException;
 import engine.execution.ProgramRunner;
 import engine.expansion.ExpansionEngine;
+import engine.model.serialization.SystemStateImpl;
+import engine.model.serialization.SystemStateSerializer;
 import engine.xml.SProgramParser;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +24,7 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
     private final ProgramRunner runner;
     private final ExpansionEngine expansionEngine;
     private final engine.expansion.MultiLevelExpansionEngine multiLevelExpansionEngine;
+    private final SystemStateSerializer stateSerializer;
     private int nextRunNumber;
 
     public SEmulatorEngineImpl() throws SProgramException {
@@ -32,6 +37,7 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
             this.runner = new ProgramRunner();
             this.expansionEngine = new ExpansionEngine();
             this.multiLevelExpansionEngine = new engine.expansion.MultiLevelExpansionEngine();
+            this.stateSerializer = new SystemStateSerializer();
         } catch (XMLValidationException e) {
             throw new SProgramException("Failed to initialize S-Emulator engine", e);
         }
@@ -247,5 +253,49 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
 
     public int getExecutionCount() {
         return executionHistory.size();
+    }
+    
+    @Override
+    public void saveState(String filePath) throws StateSerializationException {
+        if (filePath == null || filePath.trim().isEmpty()) {
+            throw new StateSerializationException("File path cannot be null or empty");
+        }
+        
+        SystemState currentState = getCurrentState();
+        stateSerializer.saveToFile(currentState, filePath.trim());
+    }
+    
+    @Override
+    public void loadState(String filePath) throws StateSerializationException {
+        if (filePath == null || filePath.trim().isEmpty()) {
+            throw new StateSerializationException("File path cannot be null or empty");
+        }
+        
+        SystemState loadedState = stateSerializer.loadFromFile(filePath.trim());
+        
+        try {
+            restoreState(loadedState);
+        } catch (SProgramException e) {
+            throw new StateSerializationException("Failed to restore loaded state", e);
+        }
+    }
+    
+    @Override
+    public SystemState getCurrentState() {
+        return new SystemStateImpl(currentProgram, executionHistory, nextRunNumber);
+    }
+    
+    @Override
+    public void restoreState(SystemState state) throws SProgramException {
+        if (state == null) {
+            throw new SProgramException("System state cannot be null");
+        }
+        
+        this.currentProgram = state.getCurrentProgram();
+        
+        this.executionHistory.clear();
+        this.executionHistory.addAll(state.getExecutionHistory());
+        
+        this.nextRunNumber = state.getNextRunNumber();
     }
 }

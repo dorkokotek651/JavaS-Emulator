@@ -13,7 +13,7 @@ public class OutputFormatter {
     private OutputFormatter() {
     }
 
-    private static String formatIndex(int index) {
+    public static String formatIndex(int index) {
         String indexStr = "#" + index;
         for (int i = indexStr.length(); i < INDEX_WIDTH; i++) {
             indexStr = indexStr + " ";
@@ -57,8 +57,6 @@ public class OutputFormatter {
         sb.append("Input Values: ").append(formatInputValues(result.getInputs())).append("\n");
         sb.append("Result (y): ").append(result.getYValue()).append("\n");
         sb.append("Total Cycles: ").append(result.getTotalCycles()).append("\n");
-        sb.append("Variable Values: ").append(formatVariableValues(result.getYValue(), result.getInputVariables(), result.getWorkingVariables())).append("\n");
-        sb.append("Instructions Executed: ").append(result.getExecutedInstructions().size()).append("\n");
         
         return sb.toString();
     }

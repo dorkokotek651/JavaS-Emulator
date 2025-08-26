@@ -24,31 +24,31 @@ public class ViewHistoryCommand implements Command {
             System.out.println(OutputFormatter.formatExecutionHistory(history));
             ui.displaySeparator();
             
-            if (history.size() > 0) {
-                boolean viewDetails = ui.confirmAction("Would you like to view detailed results for a specific execution?");
+            // if (history.size() > 0) {
+            //     boolean viewDetails = ui.confirmAction("Would you like to view detailed results for a specific execution?");
                 
-                if (viewDetails) {
-                    while (true) {
-                        try {
-                            int runNumber = ui.getIntegerInput("Enter run number (1-" + history.size() + "): ");
+            //     if (viewDetails) {
+            //         while (true) {
+            //             try {
+            //                 int runNumber = ui.getIntegerInput("Enter run number (1-" + history.size() + "): ");
                             
-                            if (runNumber < 1 || runNumber > history.size()) {
-                                ui.displayError("Invalid run number. Please enter a value between 1 and " + history.size() + ".");
-                                continue;
-                            }
+            //                 if (runNumber < 1 || runNumber > history.size()) {
+            //                     ui.displayError("Invalid run number. Please enter a value between 1 and " + history.size() + ".");
+            //                     continue;
+            //                 }
                             
-                            ExecutionResult selectedResult = history.get(runNumber - 1);
-                            ui.displaySeparator();
-                            System.out.println("Detailed view of " + OutputFormatter.formatExecutionResult(selectedResult));
-                            ui.displaySeparator();
-                            break;
+            //                 ExecutionResult selectedResult = history.get(runNumber - 1);
+            //                 ui.displaySeparator();
+            //                 System.out.println("Detailed view of " + OutputFormatter.formatExecutionResult(selectedResult));
+            //                 ui.displaySeparator();
+            //                 break;
                             
-                        } catch (Exception e) {
-                            ui.displayError("Invalid input: " + e.getMessage());
-                        }
-                    }
-                }
-            }
+            //             } catch (Exception e) {
+            //                 ui.displayError("Invalid input: " + e.getMessage());
+            //             }
+            //         }
+            //     }
+            // }
             
         } catch (Exception e) {
             ui.displayError("Failed to display execution history: " + e.getMessage());

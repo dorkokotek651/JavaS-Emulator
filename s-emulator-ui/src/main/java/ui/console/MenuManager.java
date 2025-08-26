@@ -7,6 +7,8 @@ import ui.command.ViewProgramCommand;
 import ui.command.ExpandProgramCommand;
 import ui.command.RunProgramCommand;
 import ui.command.ViewHistoryCommand;
+import ui.command.SaveStateCommand;
+import ui.command.LoadStateCommand;
 import ui.command.ExitCommand;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +30,8 @@ public class MenuManager {
         commands.add(new ExpandProgramCommand());
         commands.add(new RunProgramCommand());
         commands.add(new ViewHistoryCommand());
+        commands.add(new SaveStateCommand());
+        commands.add(new LoadStateCommand());
         commands.add(new ExitCommand());
         
         return commands;

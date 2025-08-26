@@ -56,6 +56,29 @@ public class ConsoleInterface {
             }
         }
     }
+    
+    public String getFilePathInput(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            try {
+                String input = scanner.nextLine();
+                String trimmedInput = input.trim();
+                
+                if ((trimmedInput.startsWith("\"") && trimmedInput.endsWith("\"")) ||
+                    (trimmedInput.startsWith("'") && trimmedInput.endsWith("'"))) {
+                    trimmedInput = trimmedInput.substring(1, trimmedInput.length() - 1);
+                }
+                
+                if (trimmedInput.isEmpty()) {
+                    throw new IllegalArgumentException("File path cannot be empty");
+                }
+                
+                return trimmedInput;
+            } catch (IllegalArgumentException e) {
+                displayError(e.getMessage());
+            }
+        }
+    }
 
     public int getExpansionLevel(int maxLevel) {
         while (true) {

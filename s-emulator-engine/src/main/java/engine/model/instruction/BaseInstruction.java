@@ -19,6 +19,8 @@ public abstract class BaseInstruction implements SInstruction {
     protected final SInstruction sourceInstruction;
     protected final int originalLineNumber;
 
+    private static final int INDEX_WIDTH = 7;
+
     protected BaseInstruction(String name, InstructionType type, String variable, 
                             String label, Map<String, String> arguments, int cycles) {
         this(name, type, variable, label, arguments, cycles, null, -1);
@@ -165,14 +167,22 @@ public abstract class BaseInstruction implements SInstruction {
             String ancestorLabel = ancestor.getLabel() != null ? 
                 String.format("[ %-3s ]", ancestor.getLabel()) : "[     ]";
             String ancestorType = ancestor.getType() == InstructionType.BASIC ? "(B)" : "(S)";
-            
             int ancestorLineNumber = getAncestorOriginalLineNumber(ancestor, currentLineNumber);
-            result.append(String.format(" <<< #%d %s %s %-25s (%d)", 
+            result.append(String.format(" <<< %s  %-4s %s %-25s (%d)",
+                formatIndex(ancestorLineNumber), ancestorType, ancestorLabel, 
                 ancestorLineNumber, ancestorType, ancestorLabel, 
                 ancestor.getDisplayFormat(), ancestor.getCycles()));
         }
         
         return result.toString();
+    }
+
+    private static String formatIndex(int index) {
+        String indexStr = "#" + index;
+        for (int i = indexStr.length(); i < INDEX_WIDTH; i++) {
+            indexStr = indexStr + " ";
+        }
+        return indexStr;
     }
     
     @Override
