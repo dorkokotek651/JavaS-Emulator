@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="fx.controller.MainController">
+   <top>
+      <VBox>
+         <!-- Menu Bar -->
+         <MenuBar>
+            <Menu text="File">
+               <MenuItem fx:id="loadFileMenuItem" onAction="#handleLoadFile" text="Load Program File..." />
+               <SeparatorMenuItem />
+               <MenuItem fx:id="saveStateMenuItem" onAction="#handleSaveState" text="Save State..." />
+               <MenuItem fx:id="loadStateMenuItem" onAction="#handleLoadState" text="Load State..." />
+               <SeparatorMenuItem />
+               <MenuItem fx:id="exitMenuItem" onAction="#handleExit" text="Exit" />
+            </Menu>
+            <Menu text="Help">
+               <MenuItem fx:id="aboutMenuItem" onAction="#handleAbout" text="About" />
+            </Menu>
+         </MenuBar>
+         
+         <!-- Top Section: Horizontal Controls Bar (matching sketch) -->
+         <HBox fx:id="topControlsSection" alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 10; -fx-background-color: #f0f0f0;">
+            <!-- Load File Button (green) -->
+            <Button fx:id="loadFileButton" onAction="#handleLoadFile" prefHeight="30.0" 
+                    style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;" 
+                    text="Load File" />
+            
+            <!-- Currently Loaded File Path (dark background) -->
+            <Label fx:id="currentFilePathLabel" prefWidth="300.0" 
+                   style="-fx-background-color: #333333; -fx-text-fill: white; -fx-padding: 5; -fx-background-radius: 3;" 
+                   text="No file loaded" />
+            
+            <!-- Program/Function Selector (green dropdown) -->
+            <ComboBox fx:id="programFunctionSelector" prefWidth="150.0" 
+                      style="-fx-background-color: #4CAF50;" 
+                      promptText="Main Program" />
+            
+            <!-- Collapse Button -->
+            <Button fx:id="collapseButton" onAction="#handleCollapse" prefHeight="30.0" 
+                    text="Collapse" />
+            
+            <!-- Current/Maximum Degree Display -->
+            <Label fx:id="levelDisplayLabel" style="-fx-font-weight: bold;" 
+                   text="0/0" />
+            
+            <!-- Expand Button -->
+            <Button fx:id="expandButton" onAction="#handleExpand" prefHeight="30.0" 
+                    text="Expand" />
+            
+            <!-- Highlight Selection Dropdown -->
+            <ComboBox fx:id="highlightSelectionCombo" prefWidth="120.0" 
+                      promptText="Highlight..." />
+         </HBox>
+      </VBox>
+   </top>
+   
+   <center>
+      <!-- Middle Section: Split Pane (Instructions Table | Debug Panel) -->
+      <SplitPane fx:id="middleSplitPane" dividerPositions="0.6" orientation="HORIZONTAL">
+         
+         <!-- Left Side: Instructions Table Area -->
+         <VBox>
+            <!-- Instructions Table -->
+            <TableView fx:id="instructionsTable" VBox.vgrow="ALWAYS">
+               <columns>
+                  <TableColumn fx:id="commandNumberColumn" prefWidth="50.0" text="#" />
+                  <TableColumn fx:id="commandTypeColumn" prefWidth="50.0" text="B\S" />
+                  <TableColumn fx:id="cyclesColumn" prefWidth="70.0" text="Cycles" />
+                  <TableColumn fx:id="instructionColumn" prefWidth="300.0" text="Instruction" />
+               </columns>
+            </TableView>
+            
+            <!-- Summary Line -->
+            <Label fx:id="summaryLabel" style="-fx-padding: 5; -fx-background-color: #f5f5f5;" 
+                   text="No program loaded" />
+         </VBox>
+         
+         <!-- Right Side: Debugger/Execution Panel (Color-coded sections) -->
+         <VBox spacing="5" style="-fx-padding: 5;">
+            
+            <!-- Top: Debug/Execution Controls (Yellow section) -->
+            <VBox fx:id="debugControlsSection" spacing="5" style="-fx-background-color: #FFEB3B; -fx-padding: 10; -fx-background-radius: 5;">
+               <Label style="-fx-font-weight: bold;" text="Debug/Execution Controls" />
+               <HBox spacing="10">
+                  <Button fx:id="startRunButton" onAction="#handleStartRun" text="Start Run" />
+                  <Button fx:id="startDebugButton" onAction="#handleStartDebug" text="Start Debug" />
+                  <Button fx:id="stepOverButton" onAction="#handleStepOver" text="Step Over" />
+                  <Button fx:id="stopButton" onAction="#handleStop" text="Stop" />
+                  <Button fx:id="resumeButton" onAction="#handleResume" text="Resume" />
+               </HBox>
+            </VBox>
+            
+            <!-- Middle: Variables and Inputs (Pink and Blue sections) -->
+            <HBox spacing="5" VBox.vgrow="ALWAYS">
+               
+               <!-- Variables Display (Pink section) -->
+               <VBox fx:id="variablesSection" spacing="5" style="-fx-background-color: #E91E63; -fx-padding: 10; -fx-background-radius: 5;" HBox.hgrow="ALWAYS">
+                  <Label style="-fx-font-weight: bold; -fx-text-fill: white;" text="Variables" />
+                  <TableView fx:id="variablesTable" VBox.vgrow="ALWAYS">
+                     <columns>
+                        <TableColumn fx:id="variableNameColumn" prefWidth="80.0" text="Name" />
+                        <TableColumn fx:id="variableValueColumn" prefWidth="80.0" text="Value" />
+                     </columns>
+                  </TableView>
+               </VBox>
+               
+               <!-- Execution Inputs (Blue section) -->
+               <VBox fx:id="executionInputsSection" spacing="5" style="-fx-background-color: #2196F3; -fx-padding: 10; -fx-background-radius: 5;" HBox.hgrow="ALWAYS">
+                  <Label style="-fx-font-weight: bold; -fx-text-fill: white;" text="Execution Inputs" />
+                  <ScrollPane VBox.vgrow="ALWAYS">
+                     <VBox fx:id="inputsContainer" spacing="5" />
+                  </ScrollPane>
+                  <HBox spacing="5">
+                     <Button fx:id="addInputButton" onAction="#handleAddInput" text="Add Input" />
+                     <Button fx:id="removeInputButton" onAction="#handleRemoveInput" text="Remove Input" />
+                  </HBox>
+               </VBox>
+            </HBox>
+            
+            <!-- Bottom: Cycles Display (Pink section) -->
+            <VBox fx:id="cyclesSection" spacing="5" style="-fx-background-color: #E91E63; -fx-padding: 10; -fx-background-radius: 5;">
+               <Label style="-fx-font-weight: bold; -fx-text-fill: white;" text="Cycles" />
+               <Label fx:id="cyclesLabel" style="-fx-text-fill: white; -fx-font-size: 16;" text="0" />
+            </VBox>
+         </VBox>
+      </SplitPane>
+   </center>
+   
+   <bottom>
+      <!-- Bottom Section: Split Pane (History Chain | Statistics Table) -->
+      <SplitPane fx:id="bottomSplitPane" dividerPositions="0.5" orientation="HORIZONTAL" prefHeight="200.0">
+         
+         <!-- Left Side: Selected Instruction History Chain -->
+         <VBox>
+            <Label style="-fx-font-weight: bold; -fx-padding: 5;" text="Selected Instruction History Chain" />
+            <TableView fx:id="historyChainTable" VBox.vgrow="ALWAYS">
+               <columns>
+                  <TableColumn fx:id="historyCommandNumberColumn" prefWidth="50.0" text="#" />
+                  <TableColumn fx:id="historyCommandTypeColumn" prefWidth="50.0" text="B\S" />
+                  <TableColumn fx:id="historyCyclesColumn" prefWidth="70.0" text="Cycles" />
+                  <TableColumn fx:id="historyInstructionColumn" prefWidth="250.0" text="Instruction" />
+               </columns>
+            </TableView>
+         </VBox>
+         
+         <!-- Right Side: History/Statistics Table -->
+         <VBox>
+            <Label style="-fx-font-weight: bold; -fx-padding: 5;" text="History/Statistics Table" />
+            <TableView fx:id="statisticsTable" VBox.vgrow="ALWAYS">
+               <columns>
+                  <TableColumn fx:id="runNumberColumn" prefWidth="60.0" text="Run #" />
+                  <TableColumn fx:id="expansionLevelColumn" prefWidth="80.0" text="Level" />
+                  <TableColumn fx:id="inputsColumn" prefWidth="100.0" text="Inputs" />
+                  <TableColumn fx:id="yValueColumn" prefWidth="60.0" text="Y Value" />
+                  <TableColumn fx:id="totalCyclesColumn" prefWidth="70.0" text="Cycles" />
+                  <TableColumn fx:id="actionsColumn" prefWidth="100.0" text="Actions" />
+               </columns>
+            </TableView>
+         </VBox>
+      </SplitPane>
+   </bottom>
+</BorderPane>

@@ -9,13 +9,16 @@ import engine.exception.StateSerializationException;
 import engine.exception.XMLValidationException;
 import engine.exception.ExecutionException;
 import engine.exception.ExpansionException;
+import engine.execution.ExecutionContext;
 import engine.execution.ProgramRunner;
 import engine.expansion.ExpansionEngine;
 import engine.model.serialization.SystemStateImpl;
 import engine.model.serialization.SystemStateSerializer;
 import engine.xml.SProgramParser;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SEmulatorEngineImpl implements SEmulatorEngine {
     private SProgram currentProgram;
@@ -26,11 +29,25 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
     private final engine.expansion.MultiLevelExpansionEngine multiLevelExpansionEngine;
     private final SystemStateSerializer stateSerializer;
     private int nextRunNumber;
+    
+    // Debug session support
+    private boolean debugSessionActive;
+    private ExecutionContext debugExecutionContext;
+    private SProgram debugProgram;
+    private List<Integer> debugInputs;
+    private int debugExpansionLevel;
 
     public SEmulatorEngineImpl() throws SProgramException {
         this.currentProgram = null;
         this.executionHistory = new ArrayList<>();
         this.nextRunNumber = 1;
+        
+        // Initialize debug session fields
+        this.debugSessionActive = false;
+        this.debugExecutionContext = null;
+        this.debugProgram = null;
+        this.debugInputs = null;
+        this.debugExpansionLevel = 0;
         
         try {
             this.parser = new SProgramParser();
@@ -297,5 +314,123 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
         this.executionHistory.addAll(state.getExecutionHistory());
         
         this.nextRunNumber = state.getNextRunNumber();
+    }
+    
+    // Debug session implementation
+    
+    @Override
+    public void startDebugSession(int expansionLevel, List<Integer> inputs) throws SProgramException {
+        if (!isProgramLoaded()) {
+            throw new SProgramException("No program loaded");
+        }
+        
+        if (inputs == null) {
+            throw new SProgramException("Inputs cannot be null");
+        }
+        
+        if (expansionLevel < 0) {
+            throw new SProgramException("Expansion level cannot be negative: " + expansionLevel);
+        }
+        
+        if (expansionLevel > currentProgram.getMaxExpansionLevel()) {
+            throw new SProgramException("Expansion level " + expansionLevel + 
+                " exceeds maximum level " + currentProgram.getMaxExpansionLevel());
+        }
+        
+        // Stop any existing debug session
+        stopDebugSession();
+        
+        try {
+            // Prepare program for debug execution
+            if (expansionLevel == 0) {
+                this.debugProgram = currentProgram;
+            } else {
+                this.debugProgram = expansionEngine.expandProgram(currentProgram, expansionLevel);
+            }
+            
+            // Initialize debug execution context
+            this.debugExecutionContext = runner.createDebugExecutionContext(debugProgram, inputs);
+            this.debugInputs = new ArrayList<>(inputs);
+            this.debugExpansionLevel = expansionLevel;
+            this.debugSessionActive = true;
+            
+        } catch (ExpansionException e) {
+            throw new SProgramException("Failed to start debug session: " + e.getMessage(), e);
+        } catch (ExecutionException e) {
+            throw new SProgramException("Failed to initialize debug execution: " + e.getMessage(), e);
+        }
+    }
+    
+    @Override
+    public boolean stepForward() throws SProgramException {
+        if (!debugSessionActive || debugExecutionContext == null) {
+            throw new SProgramException("No active debug session");
+        }
+        
+        try {
+            return runner.executeSingleInstruction(debugProgram, debugExecutionContext);
+        } catch (ExecutionException e) {
+            throw new SProgramException("Error during debug step: " + e.getMessage(), e);
+        }
+    }
+    
+    @Override
+    public boolean canStepForward() {
+        if (!debugSessionActive || debugExecutionContext == null) {
+            return false;
+        }
+        
+        return !debugExecutionContext.isProgramTerminated() && 
+               debugExecutionContext.getCurrentInstructionIndex() < debugProgram.getInstructions().size();
+    }
+    
+    @Override
+    public void stopDebugSession() {
+        this.debugSessionActive = false;
+        if (this.debugExecutionContext != null) {
+            this.debugExecutionContext.disableDebugMode();
+        }
+        this.debugExecutionContext = null;
+        this.debugProgram = null;
+        this.debugInputs = null;
+        this.debugExpansionLevel = 0;
+    }
+    
+    @Override
+    public ExecutionResult resumeExecution() throws SProgramException {
+        if (!debugSessionActive || debugExecutionContext == null) {
+            throw new SProgramException("No active debug session");
+        }
+        
+        try {
+            // Continue execution from current state
+            ExecutionResult result = runner.continueExecution(
+                debugProgram, debugExecutionContext, nextRunNumber, debugExpansionLevel);
+            
+            // Add to history and update run number
+            executionHistory.add(result);
+            nextRunNumber++;
+            
+            // Stop debug session
+            stopDebugSession();
+            
+            return result;
+        } catch (ExecutionException e) {
+            throw new SProgramException("Error during debug resume: " + e.getMessage(), e);
+        }
+    }
+    
+    @Override
+    public ExecutionContext getCurrentExecutionState() {
+        return debugExecutionContext;
+    }
+    
+    @Override
+    public Map<String, Integer> getChangedVariables() {
+        if (!debugSessionActive || debugExecutionContext == null) {
+            return new HashMap<>();
+        }
+        
+        return debugExecutionContext.getChangedVariables();
     }
 }

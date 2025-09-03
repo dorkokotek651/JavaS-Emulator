@@ -3,6 +3,7 @@ package engine.execution;
 import engine.api.SInstruction;
 import engine.model.SEmulatorConstants;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,12 @@ public class ExecutionContext {
     private Map<String, Integer> labelToIndexMap;
     private final List<SInstruction> executedInstructions;
     private String pendingJumpLabel;
+    
+    // Debug mode support
+    private boolean debugMode;
+    private boolean pauseRequested;
+    private Map<String, Integer> previousVariableState;
+    private Map<String, Integer> changedVariables;
 
 
     public ExecutionContext() {
@@ -26,6 +33,12 @@ public class ExecutionContext {
         this.labelToIndexMap = null;
         this.executedInstructions = new ArrayList<>();
         this.pendingJumpLabel = null;
+        
+        // Initialize debug mode fields
+        this.debugMode = false;
+        this.pauseRequested = false;
+        this.previousVariableState = new HashMap<>();
+        this.changedVariables = new HashMap<>();
     }
 
     public VariableManager getVariableManager() {
@@ -130,5 +143,132 @@ public class ExecutionContext {
         variableManager.initializeInputs(inputValues);
     }
 
+    // Debug mode methods
+    
+    /**
+     * Enables debug mode for step-by-step execution.
+     */
+    public void enableDebugMode() {
+        this.debugMode = true;
+        this.pauseRequested = false;
+        takeVariableSnapshot();
+    }
+    
+    /**
+     * Disables debug mode and returns to normal execution.
+     */
+    public void disableDebugMode() {
+        this.debugMode = false;
+        this.pauseRequested = false;
+        this.previousVariableState.clear();
+        this.changedVariables.clear();
+    }
+    
+    /**
+     * Checks if execution is in debug mode.
+     * 
+     * @return true if in debug mode, false otherwise
+     */
+    public boolean isDebugMode() {
+        return debugMode;
+    }
+    
+    /**
+     * Requests pause after current instruction in debug mode.
+     */
+    public void requestPause() {
+        if (debugMode) {
+            this.pauseRequested = true;
+        }
+    }
+    
+    /**
+     * Resumes execution from paused state.
+     */
+    public void resume() {
+        this.pauseRequested = false;
+    }
+    
+    /**
+     * Checks if execution should pause after current instruction.
+     * 
+     * @return true if pause is requested, false otherwise
+     */
+    public boolean isPauseRequested() {
+        return pauseRequested;
+    }
+    
+    /**
+     * Takes a snapshot of current variable state for change detection.
+     */
+    public void takeVariableSnapshot() {
+        if (!debugMode) {
+            return;
+        }
+        
+        previousVariableState.clear();
+        
+        // Capture input variables
+        Map<String, Integer> inputVars = variableManager.getSortedInputVariablesMap();
+        previousVariableState.putAll(inputVars);
+        
+        // Capture working variables
+        Map<String, Integer> workingVars = variableManager.getSortedWorkingVariablesMap();
+        previousVariableState.putAll(workingVars);
+        
+        // Capture y variable
+        previousVariableState.put("y", variableManager.getYValue());
+    }
+    
+    /**
+     * Detects variables that changed since last snapshot.
+     */
+    public void detectVariableChanges() {
+        if (!debugMode) {
+            return;
+        }
+        
+        changedVariables.clear();
+        
+        // Check input variables
+        Map<String, Integer> currentInputVars = variableManager.getSortedInputVariablesMap();
+        for (Map.Entry<String, Integer> entry : currentInputVars.entrySet()) {
+            String varName = entry.getKey();
+            Integer currentValue = entry.getValue();
+            Integer previousValue = previousVariableState.get(varName);
+            
+            if (previousValue == null || !previousValue.equals(currentValue)) {
+                changedVariables.put(varName, currentValue);
+            }
+        }
+        
+        // Check working variables
+        Map<String, Integer> currentWorkingVars = variableManager.getSortedWorkingVariablesMap();
+        for (Map.Entry<String, Integer> entry : currentWorkingVars.entrySet()) {
+            String varName = entry.getKey();
+            Integer currentValue = entry.getValue();
+            Integer previousValue = previousVariableState.get(varName);
+            
+            if (previousValue == null || !previousValue.equals(currentValue)) {
+                changedVariables.put(varName, currentValue);
+            }
+        }
+        
+        // Check y variable
+        int currentY = variableManager.getYValue();
+        Integer previousY = previousVariableState.get("y");
+        if (previousY == null || !previousY.equals(currentY)) {
+            changedVariables.put("y", currentY);
+        }
+    }
+    
+    /**
+     * Gets variables that changed since last snapshot.
+     * 
+     * @return map of variable names to their new values
+     */
+    public Map<String, Integer> getChangedVariables() {
+        return new HashMap<>(changedVariables);
+    }
 
 }
