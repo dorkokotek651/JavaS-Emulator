@@ -1,0 +1,172 @@
+/* S-Emulator JavaFX Application Stylesheet */
+
+/* Input Field Styles */
+.input-field {
+    -fx-font-size: 14px;
+    -fx-padding: 5px;
+    -fx-background-radius: 3px;
+    -fx-border-radius: 3px;
+    -fx-border-color: #ddd;
+    -fx-border-width: 1px;
+}
+
+.input-field:focused {
+    -fx-border-color: #2196F3;
+    -fx-border-width: 2px;
+}
+
+.input-field-error {
+    -fx-border-color: #f44336;
+    -fx-border-width: 2px;
+    -fx-background-color: #ffebee;
+}
+
+/* Section Styles */
+.section-header {
+    -fx-font-weight: bold;
+    -fx-text-fill: gray;
+}
+
+.debug-section {
+    -fx-background-color: #FFC107;
+    -fx-padding: 10;
+    -fx-background-radius: 5;
+}
+
+.variables-section {
+    -fx-background-color: #E91E63;
+    -fx-padding: 10;
+    -fx-background-radius: 5;
+}
+
+.inputs-section {
+    -fx-background-color: #2196F3;
+    -fx-padding: 10;
+    -fx-background-radius: 5;
+}
+
+.cycles-section {
+    -fx-background-color: #E91E63;
+    -fx-padding: 10;
+    -fx-background-radius: 5;
+}
+
+/* Button Styles */
+.primary-button {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 3px;
+    -fx-cursor: hand;
+}
+
+.primary-button:hover {
+    -fx-background-color: #45a049;
+}
+
+.secondary-button {
+    -fx-background-color: #f1f1f1;
+    -fx-text-fill: black;
+    -fx-background-radius: 3px;
+    -fx-cursor: hand;
+}
+
+.secondary-button:hover {
+    -fx-background-color: #ddd;
+}
+
+.debug-button {
+    -fx-background-color: #FF9800;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 3px;
+    -fx-cursor: hand;
+}
+
+.debug-button:hover {
+    -fx-background-color: #f57c00;
+}
+
+/* Table Styles */
+.instruction-table {
+    -fx-selection-bar: #2196F3;
+    -fx-selection-bar-non-focused: #bbdefb;
+}
+
+.variable-table {
+    -fx-selection-bar: #E91E63;
+    -fx-selection-bar-non-focused: #f8bbd9;
+}
+
+.history-table {
+    -fx-selection-bar: #4CAF50;
+    -fx-selection-bar-non-focused: #c8e6c9;
+}
+
+/* Highlighting */
+.highlighted-row {
+    -fx-background-color: #fff3e0;
+    -fx-border-color: #ff9800;
+    -fx-border-width: 1px;
+}
+
+/* Status and Labels */
+.status-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #666;
+}
+
+.section-title {
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+}
+
+.file-path-label {
+    -fx-background-color: #333;
+    -fx-text-fill: white;
+    -fx-padding: 5px;
+    -fx-background-radius: 3px;
+    -fx-font-family: monospace;
+}
+
+.summary-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #444;
+    -fx-padding: 5px;
+}
+
+.level-label {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-text-fill: #333;
+}
+
+/* Dropdown Styles */
+.highlight-dropdown .list-cell:disabled {
+    -fx-opacity: 0.6;
+    -fx-text-fill: gray;
+}
+
+/* Error Dialog Styles */
+.error-dialog .dialog-pane {
+    -fx-background-color: #fff;
+}
+
+.error-dialog .dialog-pane .header-panel {
+    -fx-background-color: #f44336;
+}
+
+.error-dialog .dialog-pane .header-panel .label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+/* Tooltip Styles */
+.tooltip {
+    -fx-background-color: #333;
+    -fx-text-fill: white;
+    -fx-background-radius: 4px;
+    -fx-font-size: 12px;
+    -fx-padding: 5px;
+}

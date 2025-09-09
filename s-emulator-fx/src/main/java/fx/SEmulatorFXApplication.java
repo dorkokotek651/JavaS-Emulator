@@ -1,6 +1,7 @@
 package fx;
 
 import fx.controller.MainController;
+import fx.util.StyleManager;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -32,6 +33,9 @@ public class SEmulatorFXApplication extends Application {
         
         // Create scene
         Scene scene = new Scene(root, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
+        
+        // Apply application stylesheet
+        StyleManager.applyStylesheet(scene);
         
         // Configure primary stage
         primaryStage.setTitle(APPLICATION_TITLE);

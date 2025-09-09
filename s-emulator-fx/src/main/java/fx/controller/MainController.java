@@ -13,6 +13,7 @@ import fx.model.InstructionTableRow;
 import fx.model.VariableTableRow;
 import fx.service.FileService;
 import fx.util.ErrorDialogUtil;
+import fx.util.StyleManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -20,9 +21,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -110,9 +109,12 @@ public class MainController implements Initializable {
     // Application state
     private SEmulatorEngine engine;
     private FileService fileService;
+    private FileController fileController;
+    private ExecutionController executionController;
+    private InputController inputController;
+    private HighlightController highlightController;
     private Stage primaryStage;
     private int currentExpansionLevel = 0;
-    private List<TextField> inputFields = new ArrayList<>();
     private ObservableList<ExecutionHistoryRow> executionHistory = FXCollections.observableArrayList();
 
     @Override
@@ -120,10 +122,28 @@ public class MainController implements Initializable {
         try {
             this.engine = new SEmulatorEngineImpl();
             this.fileService = new FileService(engine);
+            
+            // Initialize FileController
+            this.fileController = new FileController(engine, fileService);
+            setupFileControllerCallbacks();
+            
+            // Initialize ExecutionController
+            this.executionController = new ExecutionController(engine);
+            setupExecutionControllerCallbacks();
+            
+            // Initialize InputController
+            this.inputController = new InputController();
+            setupInputControllerCallbacks();
+            
+            // Initialize HighlightController
+            this.highlightController = new HighlightController();
+            setupHighlightControllerCallbacks();
+            
             initializeTableColumns();
             initializeControlStates();
             initializeExecutionHistory();
-            addDefaultInput();
+            initializeTableStyling();
+            inputController.addDefaultInput();
             updateStatusLabel("S-Emulator initialized successfully");
         } catch (SProgramException e) {
             updateStatusLabel("Error: Failed to initialize S-Emulator engine - " + e.getMessage());
@@ -169,7 +189,7 @@ public class MainController implements Initializable {
         collapseButton.setDisable(true);
         expandButton.setDisable(true);
         programFunctionSelector.setDisable(true);
-        highlightSelectionCombo.setDisable(true);
+        highlightController.disableHighlightSelection();
         startRunButton.setDisable(true);
         startDebugButton.setDisable(true);
         
@@ -194,11 +214,87 @@ public class MainController implements Initializable {
     }
     
     /**
-     * Adds a default input field.
+     * Sets up callbacks for FileController communication.
      */
-    private void addDefaultInput() {
-        addInputField();
+    private void setupFileControllerCallbacks() {
+        fileController.setStatusUpdater(this::updateStatusLabel);
+        fileController.setOnProgramLoaded(this::onProgramLoaded);
+        fileController.setOnProgramStateCleared(this::clearAllProgramState);
     }
+    
+    /**
+     * Sets up callbacks and references for ExecutionController communication.
+     */
+    private void setupExecutionControllerCallbacks() {
+        executionController.setStatusUpdater(this::updateStatusLabel);
+        executionController.setOnHighlightingCleared(() -> highlightController.clearHighlighting());
+        
+        // Set UI component references (input fields will be set after InputController setup)
+        executionController.setVariablesTable(variablesTable);
+        executionController.setCyclesLabel(cyclesLabel);
+        executionController.setStatisticsTable(statisticsTable);
+        executionController.setExecutionHistory(executionHistory);
+    }
+    
+    /**
+     * Sets up callbacks and references for InputController communication.
+     */
+    private void setupInputControllerCallbacks() {
+        inputController.setStatusUpdater(this::updateStatusLabel);
+        
+        // Set UI component references
+        inputController.setInputsContainer(inputsContainer);
+        inputController.setRemoveInputButton(removeInputButton);
+        
+        // Initialize and connect with ExecutionController
+        inputController.initialize();
+        executionController.setInputFields(inputController.getInputFields());
+    }
+    
+    /**
+     * Sets up callbacks and references for HighlightController communication.
+     */
+    private void setupHighlightControllerCallbacks() {
+        highlightController.setStatusUpdater(this::updateStatusLabel);
+        
+        // Set UI component references
+        highlightController.setHighlightSelectionCombo(highlightSelectionCombo);
+        highlightController.setInstructionsTable(instructionsTable);
+        
+        // Set callback for highlighting with program context
+        highlightController.setHighlightCallback(this::highlightInstructionsWithCurrentProgram);
+        
+        // Initialize
+        highlightController.initialize();
+    }
+    
+    /**
+     * Initializes CSS styling for tables and other components.
+     */
+    private void initializeTableStyling() {
+        // Apply table styles
+        StyleManager.applyInstructionTableStyle(instructionsTable);
+        StyleManager.applyInstructionTableStyle(historyChainTable);
+        StyleManager.applyVariableTableStyle(variablesTable);
+        StyleManager.applyHistoryTableStyle(statisticsTable);
+        
+        // Apply status label style
+        StyleManager.applyStatusLabelStyle(statusLabel);
+    }
+    
+    /**
+     * Called when a program is successfully loaded.
+     */
+    private void onProgramLoaded() {
+        if (engine.isProgramLoaded()) {
+            SProgram program = engine.getCurrentProgram();
+            currentFilePathLabel.setText(program.getName());
+            currentExpansionLevel = 0;
+            updateProgramDisplay();
+            enableProgramControls();
+        }
+    }
+    
     
     /**
      * Sets the primary stage reference for file dialogs.
@@ -207,108 +303,29 @@ public class MainController implements Initializable {
      */
     public void setPrimaryStage(Stage primaryStage) {
         this.primaryStage = primaryStage;
+        if (fileController != null) {
+            fileController.setPrimaryStage(primaryStage);
+        }
+        if (executionController != null) {
+            executionController.setPrimaryStage(primaryStage);
+        }
     }
     
     // File menu handlers
     @FXML
     private void handleLoadFile() {
-        if (primaryStage == null) {
-            updateStatusLabel("Error: No primary stage available for file dialog");
-            return;
-        }
-        
-        File selectedFile = fileService.showLoadFileDialog(primaryStage);
-        if (selectedFile != null) {
-            updateStatusLabel("Selected file: " + selectedFile.getName());
-            loadProgramFileDirectly(selectedFile);
-        }
+        fileController.handleLoadFile();
     }
     
-    /**
-     * Loads a program file directly without progress dialog for testing.
-     */
-    private void loadProgramFileDirectly(File file) {
-        updateStatusLabel("Loading file: " + file.getName());
-        
-        try {
-            // Clear all previous program state before loading new program
-            clearAllProgramState();
-            
-            // Direct engine loading for debugging
-            engine.loadProgram(file.getAbsolutePath());
-            
-            updateStatusLabel("Engine loading completed");
-            
-            // Check if program was actually loaded
-            if (engine.isProgramLoaded()) {
-                SProgram program = engine.getCurrentProgram();
-                updateStatusLabel("Program loaded: " + program.getName() + " with " + program.getInstructions().size() + " instructions");
-                
-                // Update UI
-                currentFilePathLabel.setText(file.getName());
-                currentExpansionLevel = 0;
-                updateProgramDisplay();
-                enableProgramControls();
-                
-            } else {
-                updateStatusLabel("Error: Program not loaded in engine");
-            }
-            
-        } catch (SProgramException e) {
-            updateStatusLabel("Error loading program: " + e.getMessage());
-            ErrorDialogUtil.showError(primaryStage, "File Loading Failed", e.getMessage());
-        } catch (Exception e) {
-            updateStatusLabel("Unexpected error: " + e.getMessage());
-            ErrorDialogUtil.showError(primaryStage, "Unexpected Error", e.getMessage());
-        }
-    }
-    
-    /**
-     * Loads a program file with progress indication.
-     */
-    private void loadProgramFileWithProgress(File file) {
-        // Clear all previous program state before loading new program
-        clearAllProgramState();
-        
-        fileService.loadProgramFileWithProgress(
-            file, 
-            primaryStage,
-            () -> {
-                // Success callback - debug what's happening
-                System.out.println("File load success callback triggered");
-                System.out.println("Engine program loaded: " + engine.isProgramLoaded());
-                
-                if (engine.isProgramLoaded()) {
-                    SProgram program = engine.getCurrentProgram();
-                    System.out.println("Program: " + (program != null ? program.getName() : "null"));
-                    System.out.println("Instructions count: " + (program != null ? program.getInstructions().size() : "N/A"));
-                }
-                
-                currentFilePathLabel.setText(file.getName());
-                currentExpansionLevel = 0;
-                updateProgramDisplay();
-                enableProgramControls();
-                updateStatusLabel("Program loaded successfully: " + file.getName());
-            },
-            (errorMessage) -> {
-                // Error callback - debug what's happening
-                System.out.println("File load error callback triggered: " + errorMessage);
-                ErrorDialogUtil.showError(primaryStage, "File Loading Failed", errorMessage);
-                updateStatusLabel("Failed to load file: " + file.getName());
-            }
-        );
-    }
     
     @FXML
     private void handleSaveState() {
-        updateStatusLabel("Save state functionality will be implemented in Phase 6");
+        fileController.handleSaveState();
     }
     
     @FXML
     private void handleLoadState() {
-        // When loading state is implemented, we should also clear previous state
-        // clearAllProgramState(); // Uncomment when state loading is implemented
-        updateStatusLabel("Load state functionality will be implemented in Phase 6");
+        fileController.handleLoadState();
     }
     
     @FXML
@@ -328,6 +345,7 @@ public class MainController implements Initializable {
     private void handleCollapse() {
         if (currentExpansionLevel > 0) {
             currentExpansionLevel--;
+            executionController.setCurrentExpansionLevel(currentExpansionLevel);
             updateProgramDisplay();
             updateStatusLabel("Program collapsed to level " + currentExpansionLevel);
         }
@@ -337,6 +355,7 @@ public class MainController implements Initializable {
     private void handleExpand() {
         if (engine.isProgramLoaded() && currentExpansionLevel < engine.getMaxExpansionLevel()) {
             currentExpansionLevel++;
+            executionController.setCurrentExpansionLevel(currentExpansionLevel);
             updateProgramDisplay();
             updateStatusLabel("Program expanded to level " + currentExpansionLevel);
         }
@@ -345,69 +364,38 @@ public class MainController implements Initializable {
     // Execution control handlers
     @FXML
     private void handleStartRun() {
-        if (!engine.isProgramLoaded()) {
-            updateStatusLabel("Error: No program loaded");
-            return;
-        }
-        
-        try {
-            // Validate and collect inputs
-            if (!validateInputs()) {
-                updateStatusLabel("Error: Please correct invalid input values (must be natural numbers ≥ 0)");
-                return;
-            }
-            
-            List<Integer> inputs = collectInputs();
-            updateStatusLabel("Running program with inputs: " + inputs + " at expansion level " + currentExpansionLevel);
-            
-            // Execute the program
-            ExecutionResult result = engine.runProgram(currentExpansionLevel, inputs);
-            
-            // Update UI with results
-            updateExecutionResults(result);
-            clearHighlighting(); // Clear any previous highlighting
-            
-            updateStatusLabel("Program execution completed. Y = " + result.getYValue() + ", Total cycles: " + result.getTotalCycles());
-            
-        } catch (IllegalArgumentException e) {
-            updateStatusLabel("Error: " + e.getMessage());
-            ErrorDialogUtil.showError(primaryStage, "Input Validation Error", e.getMessage());
-        } catch (Exception e) {
-            updateStatusLabel("Error during execution: " + e.getMessage());
-            ErrorDialogUtil.showError(primaryStage, "Execution Error", 
-                "Failed to execute program: " + e.getMessage());
-        }
+        executionController.handleStartRun();
     }
     
     @FXML
     private void handleStartDebug() {
-        updateStatusLabel("Start debug functionality will be implemented in Phase 5");
+        executionController.handleStartDebug();
     }
     
     @FXML
     private void handleStepOver() {
-        updateStatusLabel("Step over functionality will be implemented in Phase 5");
+        executionController.handleStepOver();
     }
     
     @FXML
     private void handleStop() {
-        updateStatusLabel("Stop functionality will be implemented in Phase 5");
+        executionController.handleStop();
     }
     
     @FXML
     private void handleResume() {
-        updateStatusLabel("Resume functionality will be implemented in Phase 5");
+        executionController.handleResume();
     }
     
     // Input management handlers
     @FXML
     private void handleAddInput() {
-        addInputField();
+        inputController.handleAddInput();
     }
     
     @FXML
     private void handleRemoveInput() {
-        removeInputField();
+        inputController.handleRemoveInput();
     }
     
     // Private helper methods
@@ -443,7 +431,7 @@ public class MainController implements Initializable {
         updateSummaryLine(program);
         
         // Update highlight dropdown
-        updateHighlightDropdown(program);
+        highlightController.updateHighlightDropdown(program);
         
         // Update control states
         updateControlStates();
@@ -550,87 +538,6 @@ public class MainController implements Initializable {
         summaryLabel.setText(summary);
     }
     
-    /**
-     * Updates the highlight dropdown with available labels and variables.
-     */
-    private void updateHighlightDropdown(SProgram program) {
-        ObservableList<String> highlightItems = FXCollections.observableArrayList();
-        highlightItems.add("Clear Highlighting");
-        
-        // Add all labels
-        List<String> labels = program.getLabels();
-        if (!labels.isEmpty()) {
-            highlightItems.add("--- Labels ---");
-            highlightItems.addAll(labels);
-        }
-        
-        // Add all variables
-        List<String> inputVars = program.getInputVariables();
-        if (!inputVars.isEmpty()) {
-            highlightItems.add("--- Input Variables ---");
-            highlightItems.addAll(inputVars);
-        }
-        
-        // Add working variables (extract from instructions)
-        Set<String> workingVars = extractWorkingVariables(program);
-        if (!workingVars.isEmpty()) {
-            highlightItems.add("--- Working Variables ---");
-            highlightItems.addAll(workingVars.stream().sorted().collect(java.util.stream.Collectors.toList()));
-        }
-        
-        highlightSelectionCombo.setItems(highlightItems);
-        highlightSelectionCombo.setValue("Clear Highlighting");
-        
-        // Configure ComboBox to disable section headers
-        highlightSelectionCombo.setCellFactory(listView -> new ListCell<String>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setDisable(false);
-                } else {
-                    setText(item);
-                    // Disable section headers (items starting with "---")
-                    setDisable(item.startsWith("---"));
-                    // Style section headers differently
-                    if (item.startsWith("---")) {
-                        setStyle("-fx-font-weight: bold; -fx-text-fill: gray;");
-                    } else {
-                        setStyle("");
-                    }
-                }
-            }
-        });
-        
-        // Add selection listener
-        highlightSelectionCombo.setOnAction(e -> handleHighlightSelection());
-    }
-    
-    /**
-     * Extracts working variables from program instructions.
-     */
-    private Set<String> extractWorkingVariables(SProgram program) {
-        Set<String> workingVars = new java.util.HashSet<>();
-        
-        for (SInstruction instruction : program.getInstructions()) {
-            String variable = instruction.getVariable();
-            if (variable != null && variable.startsWith("z")) {
-                workingVars.add(variable);
-            }
-            
-            // Also check arguments for variables
-            for (String arg : instruction.getArguments().values()) {
-                if (arg != null && arg.matches("[xyz]\\d+")) {
-                    if (arg.startsWith("z")) {
-                        workingVars.add(arg);
-                    }
-                }
-            }
-        }
-        
-        return workingVars;
-    }
     
     /**
      * Clears the program display when no program is loaded.
@@ -640,7 +547,7 @@ public class MainController implements Initializable {
         historyChainTable.setItems(FXCollections.observableArrayList());
         summaryLabel.setText("No program loaded");
         levelDisplayLabel.setText("0/0");
-        highlightSelectionCombo.setItems(FXCollections.observableArrayList());
+        highlightController.clearHighlightDropdown();
     }
     
     /**
@@ -662,9 +569,8 @@ public class MainController implements Initializable {
         executionHistory.clear();
         
         // Clear highlighting
-        clearHighlighting();
-        highlightSelectionCombo.setItems(FXCollections.observableArrayList());
-        highlightSelectionCombo.setValue(null);
+        highlightController.clearHighlighting();
+        highlightController.clearHighlightDropdown();
         
         // Reset expansion level
         currentExpansionLevel = 0;
@@ -681,17 +587,14 @@ public class MainController implements Initializable {
         programFunctionSelector.setValue("Main Program");
         
         // Clear any input field error styling
-        for (TextField inputField : inputFields) {
-            inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
-                              "-fx-border-radius: 3px; -fx-border-color: #ddd; -fx-border-width: 1px;");
-        }
+        inputController.clearInputFieldStyling();
         
         updateStatusLabel("Clearing previous program state...");
     }
     
     private void enableProgramControls() {
         programFunctionSelector.setDisable(false);
-        highlightSelectionCombo.setDisable(false);
+        highlightController.enableHighlightSelection();
         startRunButton.setDisable(false);
         startDebugButton.setDisable(false);
     }
@@ -703,68 +606,6 @@ public class MainController implements Initializable {
         }
     }
     
-    private void addInputField() {
-        TextField inputField = new TextField();
-        inputField.setPromptText("Input " + (inputFields.size() + 1));
-        inputField.setPrefWidth(80);
-        
-        // Enhanced styling for better visual appearance
-        inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
-                          "-fx-border-radius: 3px; -fx-border-color: #ddd; -fx-border-width: 1px;");
-        
-        // Add validation for natural numbers only with enhanced feedback
-        inputField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.matches("\\d*")) {
-                inputField.setText(newValue.replaceAll("[^\\d]", ""));
-            }
-            // Clear any error styling when user types valid input
-            if (newValue.matches("\\d*")) {
-                inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
-                                  "-fx-border-radius: 3px; -fx-border-color: #ddd; -fx-border-width: 1px;");
-            }
-        });
-        
-        // Add focus listener for better user experience
-        inputField.focusedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                // Highlight field when focused
-                inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
-                                  "-fx-border-radius: 3px; -fx-border-color: #2196F3; -fx-border-width: 2px;");
-            } else {
-                // Reset to normal style when focus lost
-                inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
-                                  "-fx-border-radius: 3px; -fx-border-color: #ddd; -fx-border-width: 1px;");
-                
-                if (inputField.getText().isEmpty()) {
-                    // Set default value of 0 when field loses focus and is empty
-                    inputField.setText("0");
-                }
-            }
-        });
-        
-        // Add tooltip for better user guidance
-        Tooltip tooltip = new Tooltip("Enter a natural number (≥ 0). Default: 0");
-        inputField.setTooltip(tooltip);
-        
-        inputFields.add(inputField);
-        inputsContainer.getChildren().add(inputField);
-        
-        // Enable remove button if we have more than one input
-        removeInputButton.setDisable(inputFields.size() <= 1);
-        
-        // Focus the new field for better user experience
-        inputField.requestFocus();
-    }
-    
-    private void removeInputField() {
-        if (inputFields.size() > 1) {
-            TextField lastField = inputFields.remove(inputFields.size() - 1);
-            inputsContainer.getChildren().remove(lastField);
-            
-            // Disable remove button if we only have one input left
-            removeInputButton.setDisable(inputFields.size() <= 1);
-        }
-    }
     
     private void updateStatusLabel(String message) {
         if (statusLabel != null) {
@@ -775,248 +616,19 @@ public class MainController implements Initializable {
     }
     
     /**
-     * Collects input values from all input fields.
+     * Helper method to highlight instructions with current program context.
      * 
-     * @return list of integer inputs, with 0 as default for empty fields
+     * @param item the item to highlight
      */
-    private List<Integer> collectInputs() {
-        List<Integer> inputs = new ArrayList<>();
-        
-        for (TextField inputField : inputFields) {
-            String text = inputField.getText().trim();
-            if (text.isEmpty()) {
-                inputs.add(0); // Default value for empty fields
-            } else {
-                try {
-                    int value = Integer.parseInt(text);
-                    if (value < 0) {
-                        // Highlight invalid field with enhanced error styling
-                        inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
-                                          "-fx-border-radius: 3px; -fx-border-color: #f44336; -fx-border-width: 2px; " +
-                                          "-fx-background-color: #ffebee;");
-                        throw new NumberFormatException("Negative numbers not allowed");
-                    }
-                    inputs.add(value);
-                } catch (NumberFormatException e) {
-                    // Highlight invalid field with enhanced error styling
-                    inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
-                                      "-fx-border-radius: 3px; -fx-border-color: #f44336; -fx-border-width: 2px; " +
-                                      "-fx-background-color: #ffebee;");
-                    throw new IllegalArgumentException("Invalid input in field " + (inputFields.indexOf(inputField) + 1) + ": " + text);
-                }
+    private void highlightInstructionsWithCurrentProgram(String item) {
+        if (engine.isProgramLoaded()) {
+            SProgram program = getCurrentDisplayProgram();
+            if (program != null) {
+                highlightController.highlightInstructionsUsing(item, program);
             }
         }
-        
-        return inputs;
     }
     
-    /**
-     * Validates all input fields and returns true if all are valid.
-     * 
-     * @return true if all inputs are valid natural numbers, false otherwise
-     */
-    private boolean validateInputs() {
-        boolean allValid = true;
-        
-        for (TextField inputField : inputFields) {
-            String text = inputField.getText().trim();
-            if (!text.isEmpty()) {
-                try {
-                    int value = Integer.parseInt(text);
-                    if (value < 0) {
-                        inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
-                                          "-fx-border-radius: 3px; -fx-border-color: #f44336; -fx-border-width: 2px; " +
-                                          "-fx-background-color: #ffebee;");
-                        allValid = false;
-                    } else {
-                        inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
-                                          "-fx-border-radius: 3px; -fx-border-color: #ddd; -fx-border-width: 1px;");
-                    }
-                } catch (NumberFormatException e) {
-                    inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
-                                      "-fx-border-radius: 3px; -fx-border-color: #f44336; -fx-border-width: 2px; " +
-                                      "-fx-background-color: #ffebee;");
-                    allValid = false;
-                }
-            } else {
-                inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
-                                  "-fx-border-radius: 3px; -fx-border-color: #ddd; -fx-border-width: 1px;");
-            }
-        }
-        
-        return allValid;
-    }
-    
-    /**
-     * Updates the UI with execution results.
-     * 
-     * @param result the execution result to display
-     */
-    private void updateExecutionResults(ExecutionResult result) {
-        // Update variables table
-        updateVariablesTable(result);
-        
-        // Update cycles display
-        updateCyclesDisplay(result.getTotalCycles());
-        
-        // Add to execution history
-        addToExecutionHistory(result);
-        
-        System.out.println("Execution completed: Run " + result.getRunNumber() + 
-                          ", Y = " + result.getYValue() + 
-                          ", Cycles = " + result.getTotalCycles());
-    }
-    
-    /**
-     * Updates the variables table with execution results.
-     * 
-     * @param result the execution result containing variable values
-     */
-    private void updateVariablesTable(ExecutionResult result) {
-        ObservableList<VariableTableRow> variableData = FXCollections.observableArrayList();
-        
-        // Add input variables (x1, x2, x3, ...)
-        Map<String, Integer> inputVars = result.getInputVariables();
-        for (Map.Entry<String, Integer> entry : inputVars.entrySet()) {
-            variableData.add(new VariableTableRow(entry.getKey(), String.valueOf(entry.getValue())));
-        }
-        
-        // Add working variables (z1, z2, z3, ...)
-        Map<String, Integer> workingVars = result.getWorkingVariables();
-        for (Map.Entry<String, Integer> entry : workingVars.entrySet()) {
-            variableData.add(new VariableTableRow(entry.getKey(), String.valueOf(entry.getValue())));
-        }
-        
-        // Add y variable (result)
-        variableData.add(new VariableTableRow("y", String.valueOf(result.getYValue())));
-        
-        // Sort variables in proper order: x1, x2, ..., z1, z2, ..., y
-        variableData.sort((v1, v2) -> {
-            String name1 = v1.getVariableName();
-            String name2 = v2.getVariableName();
-            
-            // y always comes last
-            if ("y".equals(name1)) return 1;
-            if ("y".equals(name2)) return -1;
-            
-            // x variables come before z variables
-            if (name1.startsWith("x") && name2.startsWith("z")) return -1;
-            if (name1.startsWith("z") && name2.startsWith("x")) return 1;
-            
-            // Within same type, sort numerically
-            return name1.compareTo(name2);
-        });
-        
-        variablesTable.setItems(variableData);
-    }
-    
-    /**
-     * Updates the cycles display with the total execution cycles.
-     * 
-     * @param totalCycles the total number of cycles executed
-     */
-    private void updateCyclesDisplay(int totalCycles) {
-        cyclesLabel.setText("Total Cycles: " + totalCycles);
-    }
-    
-    /**
-     * Adds an execution result to the execution history table.
-     * 
-     * @param result the execution result to add
-     */
-    private void addToExecutionHistory(ExecutionResult result) {
-        // Format inputs as comma-separated string
-        String inputsString = result.getInputs().stream()
-            .map(String::valueOf)
-            .collect(java.util.stream.Collectors.joining(", "));
-        
-        // For Phase 4, use placeholder for actions (will be implemented in Phase 6)
-        String actions = "show | re-run";
-        
-        ExecutionHistoryRow historyRow = new ExecutionHistoryRow(
-            String.valueOf(result.getRunNumber()),
-            String.valueOf(result.getExpansionLevel()),
-            inputsString,
-            String.valueOf(result.getYValue()),
-            String.valueOf(result.getTotalCycles()),
-            actions
-        );
-        
-        executionHistory.add(historyRow);
-        
-        // Scroll to the new row for user visibility
-        statisticsTable.scrollTo(historyRow);
-    }
-    
-    /**
-     * Handles highlighting selection from dropdown.
-     */
-    private void handleHighlightSelection() {
-        String selectedItem = highlightSelectionCombo.getValue();
-        if (selectedItem == null || selectedItem.equals("Clear Highlighting") || selectedItem.startsWith("---")) {
-            clearHighlighting();
-            return;
-        }
-        
-        highlightInstructionsUsing(selectedItem);
-    }
-    
-    /**
-     * Highlights instructions that use the specified label or variable.
-     */
-    private void highlightInstructionsUsing(String item) {
-        if (!engine.isProgramLoaded()) {
-            return;
-        }
-        
-        SProgram program = getCurrentDisplayProgram();
-        if (program == null) {
-            return;
-        }
-        
-        // Clear previous highlighting
-        clearHighlighting();
-        
-        // Set selection mode to multiple to allow selecting multiple rows
-        instructionsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        
-        List<SInstruction> instructions = program.getInstructions();
-        List<Integer> rowsToHighlight = new ArrayList<>();
-        
-        for (int i = 0; i < instructions.size(); i++) {
-            SInstruction instruction = instructions.get(i);
-            
-            boolean shouldHighlight = 
-                item.equals(instruction.getLabel()) ||
-                item.equals(instruction.getVariable()) ||
-                instruction.getArguments().values().contains(item);
-            
-            if (shouldHighlight) {
-                rowsToHighlight.add(i);
-            }
-        }
-        
-        // Select all matching rows at once
-        if (!rowsToHighlight.isEmpty()) {
-            instructionsTable.getSelectionModel().selectIndices(
-                rowsToHighlight.get(0), 
-                rowsToHighlight.stream().skip(1).mapToInt(Integer::intValue).toArray()
-            );
-            updateStatusLabel("Highlighted " + rowsToHighlight.size() + " instructions using: " + item);
-        } else {
-            updateStatusLabel("No instructions found using: " + item);
-        }
-    }
-    
-    /**
-     * Clears instruction highlighting.
-     */
-    private void clearHighlighting() {
-        instructionsTable.getSelectionModel().clearSelection();
-        // Reset to single selection mode for normal operation
-        instructionsTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        updateStatusLabel("Highlighting cleared");
-    }
     
     /**
      * Handles program/function selection from dropdown.
