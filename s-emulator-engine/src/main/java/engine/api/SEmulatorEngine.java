@@ -19,6 +19,16 @@ public interface SEmulatorEngine {
     
     String expandProgramWithHistory(int level);
     
+    /**
+     * Gets the expanded program at the specified level as a structured SProgram object.
+     * This provides direct access to the expanded instructions without string parsing.
+     * 
+     * @param level the expansion level (0 for original program)
+     * @return the expanded program with structured instruction data
+     * @throws SProgramException if no program is loaded or expansion fails
+     */
+    SProgram getExpandedProgram(int level) throws SProgramException;
+    
     ExecutionResult runProgram(int expansionLevel, List<Integer> inputs);
     
     List<ExecutionResult> getExecutionHistory();

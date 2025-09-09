@@ -1,0 +1,239 @@
+---
+alwaysApply: true
+---
+
+# Java Coding Conventions
+
+## General Formatting
+
+### Brace Placement
+Use opening braces (`{`) on the same line, not on a new line:
+
+```java
+public class ValidFileTester {
+    // code here
+}
+```
+
+## Code Comments
+Never add comments to the code, if you see a comment nearby delete it
+
+## Naming Conventions
+
+### Classes, Enums, Interfaces
+- Start with capital letter
+- Use nouns, not verbs (e.g., `Controller` not `Control`)
+- Use camelCase for multiple words
+
+**Examples:**
+- `ServiceController`
+- `UserInputHandler`
+- `UniversityCourse`
+
+### Methods
+- Always start with lowercase letter (regardless of visibility: private/protected/public)
+- Use camelCase for multiple words
+
+**Examples:**
+- `processUserInput()`
+- `validateFileContent()`
+- `calculateTotalScore()`
+
+### Packages
+- Always lowercase
+- Use singular form, not plural (e.g., `exception` not `exceptions`, `rule` not `rules`)
+- For multiple words, split into separate packages instead of concatenating
+  - Prefer: `workflow.engine`
+  - Avoid: `workflowengine`
+- Use as many package levels as needed - empty intermediate packages are acceptable
+- **Never** place code directly under the `src` folder without a package
+
+### Variables
+- Keep names meaningful and descriptive
+- Avoid underscores (`_`) in names
+- No symbolic prefixes (avoid `i_`, `m_`, etc.)
+
+**Examples:**
+- `userName` (not `user_name` or `m_userName`)
+- `fileContent` (not `fc` or `i_fileContent`)
+
+### Constants
+- Maintain as `static final` (public or private as appropriate)
+- Use ALL_CAPS with underscores instead of spaces
+
+**Examples:**
+- `NUMBER_OF_ITERATIONS`
+- `MESSAGE_TO_THE_USER`
+- `DEFAULT_TIMEOUT_SECONDS`
+
+### Generic Types
+- Always use capital case
+- Prefer single letters over complete words
+- Limit to maximum 3 generic types per class for readability
+
+**Examples:**
+- `MyClass<T>`
+- `MyMap<K, V>`
+- `Repository<T, ID>`
+
+## Code Quality Standards
+
+### Code Structure
+- **Avoid code duplication** - extract common functionality into methods or classes
+- **Keep methods concise** - functions longer than one page should be refactored
+- **Use meaningful names** for classes, functions, and variables
+- **Maintain proper indentation** consistently throughout the codebase
+- **Remove unnecessary imports** - clean up unused import statements
+
+### Access Modifiers
+Use modifiers appropriately:
+- Mark classes that shouldn't be instantiated as `abstract`
+- Mark constants as `final`
+- Set class variables as `private` unless there's a legitimate reason otherwise
+- Follow visibility principles: use the most restrictive access level possible
+
+### Input Validation and Error Handling
+- **Validate user input** at every stage
+- **Provide informative error messages** - be specific about what's wrong
+- Avoid generic error messages like "file is invalid"
+- Instead, provide detailed feedback: "Missing required attribute 'id' in line 15"
+
+**Example of good error handling:**
+```java
+// Good
+throw new ValidationException("Invalid email format: missing '@' symbol in 'userexample.com'");
+
+// Bad
+throw new ValidationException("Invalid input");
+```
+
+## Summary Checklist
+- [ ] Opening braces on same line
+- [ ] Class names: CapitalCase, nouns
+- [ ] Method names: camelCase, start with lowercase
+- [ ] Package names: lowercase, singular
+- [ ] Variables: meaningful, no underscores or prefixes
+- [ ] Constants: ALL_CAPS with underscores
+- [ ] Generic types: single capital letters
+- [ ] No code duplication
+- [ ] Methods under one page length
+- [ ] Proper access modifiers
+- [ ] Comprehensive input validation
+- [ ] Detailed error messages
+- [ ] Clean imports and indentation
+# Java Coding Conventions
+
+## General Formatting
+
+### Brace Placement
+Use opening braces (`{`) on the same line, not on a new line:
+
+```java
+public class ValidFileTester {
+    // code here
+}
+```
+
+## Naming Conventions
+
+### Classes, Enums, Interfaces
+- Start with capital letter
+- Use nouns, not verbs (e.g., `Controller` not `Control`)
+- Use camelCase for multiple words
+
+**Examples:**
+- `ServiceController`
+- `UserInputHandler`
+- `UniversityCourse`
+
+### Methods
+- Always start with lowercase letter (regardless of visibility: private/protected/public)
+- Use camelCase for multiple words
+
+**Examples:**
+- `processUserInput()`
+- `validateFileContent()`
+- `calculateTotalScore()`
+
+### Packages
+- Always lowercase
+- Use singular form, not plural (e.g., `exception` not `exceptions`, `rule` not `rules`)
+- For multiple words, split into separate packages instead of concatenating
+  - Prefer: `workflow.engine`
+  - Avoid: `workflowengine`
+- Use as many package levels as needed - empty intermediate packages are acceptable
+- **Never** place code directly under the `src` folder without a package
+
+### Variables
+- Keep names meaningful and descriptive
+- Avoid underscores (`_`) in names
+- No symbolic prefixes (avoid `i_`, `m_`, etc.)
+
+**Examples:**
+- `userName` (not `user_name` or `m_userName`)
+- `fileContent` (not `fc` or `i_fileContent`)
+
+### Constants
+- Maintain as `static final` (public or private as appropriate)
+- Use ALL_CAPS with underscores instead of spaces
+
+**Examples:**
+- `NUMBER_OF_ITERATIONS`
+- `MESSAGE_TO_THE_USER`
+- `DEFAULT_TIMEOUT_SECONDS`
+
+### Generic Types
+- Always use capital case
+- Prefer single letters over complete words
+- Limit to maximum 3 generic types per class for readability
+
+**Examples:**
+- `MyClass<T>`
+- `MyMap<K, V>`
+- `Repository<T, ID>`
+
+## Code Quality Standards
+
+### Code Structure
+- **Avoid code duplication** - extract common functionality into methods or classes
+- **Keep methods concise** - functions longer than one page should be refactored
+- **Use meaningful names** for classes, functions, and variables
+- **Maintain proper indentation** consistently throughout the codebase
+- **Remove unnecessary imports** - clean up unused import statements
+
+### Access Modifiers
+Use modifiers appropriately:
+- Mark classes that shouldn't be instantiated as `abstract`
+- Mark constants as `final`
+- Set class variables as `private` unless there's a legitimate reason otherwise
+- Follow visibility principles: use the most restrictive access level possible
+
+### Input Validation and Error Handling
+- **Validate user input** at every stage
+- **Provide informative error messages** - be specific about what's wrong
+- Avoid generic error messages like "file is invalid"
+- Instead, provide detailed feedback: "Missing required attribute 'id' in line 15"
+
+**Example of good error handling:**
+```java
+// Good
+throw new ValidationException("Invalid email format: missing '@' symbol in 'userexample.com'");
+
+// Bad
+throw new ValidationException("Invalid input");
+```
+
+## Summary Checklist
+- [ ] Opening braces on same line
+- [ ] Class names: CapitalCase, nouns
+- [ ] Method names: camelCase, start with lowercase
+- [ ] Package names: lowercase, singular
+- [ ] Variables: meaningful, no underscores or prefixes
+- [ ] Constants: ALL_CAPS with underscores
+- [ ] Generic types: single capital letters
+- [ ] No code duplication
+- [ ] Methods under one page length
+- [ ] Proper access modifiers
+- [ ] Comprehensive input validation
+- [ ] Detailed error messages
+- [ ] Clean imports and indentation

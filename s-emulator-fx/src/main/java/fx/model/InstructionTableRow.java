@@ -11,6 +11,7 @@ public class InstructionTableRow {
     
     private final StringProperty commandNumber;
     private final StringProperty commandType;
+    private final StringProperty label;
     private final StringProperty cycles;
     private final StringProperty instruction;
     
@@ -19,12 +20,14 @@ public class InstructionTableRow {
      * 
      * @param commandNumber the command number (1-based)
      * @param commandType the command type (B for Basic, S for Synthetic)
+     * @param label the instruction label (if any)
      * @param cycles the number of cycles
      * @param instruction the instruction display text
      */
-    public InstructionTableRow(String commandNumber, String commandType, String cycles, String instruction) {
+    public InstructionTableRow(String commandNumber, String commandType, String label, String cycles, String instruction) {
         this.commandNumber = new SimpleStringProperty(commandNumber);
         this.commandType = new SimpleStringProperty(commandType);
+        this.label = new SimpleStringProperty(label);
         this.cycles = new SimpleStringProperty(cycles);
         this.instruction = new SimpleStringProperty(instruction);
     }
@@ -53,6 +56,19 @@ public class InstructionTableRow {
     
     public void setCommandType(String commandType) {
         this.commandType.set(commandType);
+    }
+    
+    // Label property
+    public StringProperty labelProperty() {
+        return label;
+    }
+    
+    public String getLabel() {
+        return label.get();
+    }
+    
+    public void setLabel(String label) {
+        this.label.set(label);
     }
     
     // Cycles property
@@ -86,6 +102,7 @@ public class InstructionTableRow {
         return "InstructionTableRow{" +
                 "commandNumber=" + getCommandNumber() +
                 ", commandType=" + getCommandType() +
+                ", label=" + getLabel() +
                 ", cycles=" + getCycles() +
                 ", instruction=" + getInstruction() +
                 '}';

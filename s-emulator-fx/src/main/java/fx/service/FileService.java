@@ -65,17 +65,23 @@ public class FileService {
         
         // Handle task completion
         loadTask.setOnSucceeded(e -> {
-            if (onSuccess != null) {
-                onSuccess.run();
-            }
+            // Ensure we're on JavaFX Application Thread
+            javafx.application.Platform.runLater(() -> {
+                if (onSuccess != null) {
+                    onSuccess.run();
+                }
+            });
         });
         
         loadTask.setOnFailed(e -> {
-            Throwable exception = loadTask.getException();
-            String errorMessage = getFriendlyErrorMessage(exception instanceof Exception ? (Exception) exception : new Exception(exception));
-            if (onError != null) {
-                onError.accept(errorMessage);
-            }
+            // Ensure we're on JavaFX Application Thread
+            javafx.application.Platform.runLater(() -> {
+                Throwable exception = loadTask.getException();
+                String errorMessage = getFriendlyErrorMessage(exception instanceof Exception ? (Exception) exception : new Exception(exception));
+                if (onError != null) {
+                    onError.accept(errorMessage);
+                }
+            });
         });
         
         progressDialog.showAndWait(loadTask, "Loading Program File");

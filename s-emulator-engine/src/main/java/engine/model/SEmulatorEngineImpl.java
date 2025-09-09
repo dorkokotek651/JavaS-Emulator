@@ -198,6 +198,39 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
     }
 
     @Override
+    public SProgram getExpandedProgram(int level) throws SProgramException {
+        if (!isProgramLoaded()) {
+            throw new SProgramException("No program loaded");
+        }
+
+        if (level < 0) {
+            throw new SProgramException("Expansion level cannot be negative: " + level);
+        }
+
+        if (level > currentProgram.getMaxExpansionLevel()) {
+            throw new SProgramException("Expansion level " + level + " exceeds maximum level " + currentProgram.getMaxExpansionLevel());
+        }
+
+        if (level == 0) {
+            return currentProgram;
+        }
+
+        try {
+            engine.expansion.MultiLevelExpansion multiLevel = multiLevelExpansionEngine.expandProgramToAllLevels(currentProgram);
+            SProgram targetProgram = multiLevel.getLevel(level);
+            
+            if (targetProgram == null) {
+                throw new SProgramException("Failed to expand program to level " + level);
+            }
+            
+            return targetProgram;
+            
+        } catch (engine.exception.ExpansionException e) {
+            throw new SProgramException("Failed to expand program to level " + level + ": " + e.getMessage(), e);
+        }
+    }
+
+    @Override
     public ExecutionResult runProgram(int expansionLevel, List<Integer> inputs) {
         if (!isProgramLoaded()) {
             throw new RuntimeException("No program loaded");

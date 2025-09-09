@@ -69,6 +69,7 @@
                <columns>
                   <TableColumn fx:id="commandNumberColumn" prefWidth="50.0" text="#" />
                   <TableColumn fx:id="commandTypeColumn" prefWidth="50.0" text="B\S" />
+                  <TableColumn fx:id="labelColumn" prefWidth="80.0" text="Label" />
                   <TableColumn fx:id="cyclesColumn" prefWidth="70.0" text="Cycles" />
                   <TableColumn fx:id="instructionColumn" prefWidth="300.0" text="Instruction" />
                </columns>
@@ -131,36 +132,42 @@
    </center>
    
    <bottom>
-      <!-- Bottom Section: Split Pane (History Chain | Statistics Table) -->
-      <SplitPane fx:id="bottomSplitPane" dividerPositions="0.5" orientation="HORIZONTAL" prefHeight="200.0">
+      <VBox>
+         <!-- Status Bar -->
+         <Label fx:id="statusLabel" style="-fx-padding: 5; -fx-background-color: #f0f0f0; -fx-border-color: #cccccc; -fx-border-width: 1 0 0 0;" text="Ready" />
          
-         <!-- Left Side: Selected Instruction History Chain -->
-         <VBox>
-            <Label style="-fx-font-weight: bold; -fx-padding: 5;" text="Selected Instruction History Chain" />
-            <TableView fx:id="historyChainTable" VBox.vgrow="ALWAYS">
-               <columns>
-                  <TableColumn fx:id="historyCommandNumberColumn" prefWidth="50.0" text="#" />
-                  <TableColumn fx:id="historyCommandTypeColumn" prefWidth="50.0" text="B\S" />
-                  <TableColumn fx:id="historyCyclesColumn" prefWidth="70.0" text="Cycles" />
-                  <TableColumn fx:id="historyInstructionColumn" prefWidth="250.0" text="Instruction" />
-               </columns>
-            </TableView>
-         </VBox>
-         
-         <!-- Right Side: History/Statistics Table -->
-         <VBox>
-            <Label style="-fx-font-weight: bold; -fx-padding: 5;" text="History/Statistics Table" />
-            <TableView fx:id="statisticsTable" VBox.vgrow="ALWAYS">
-               <columns>
-                  <TableColumn fx:id="runNumberColumn" prefWidth="60.0" text="Run #" />
-                  <TableColumn fx:id="expansionLevelColumn" prefWidth="80.0" text="Level" />
-                  <TableColumn fx:id="inputsColumn" prefWidth="100.0" text="Inputs" />
-                  <TableColumn fx:id="yValueColumn" prefWidth="60.0" text="Y Value" />
-                  <TableColumn fx:id="totalCyclesColumn" prefWidth="70.0" text="Cycles" />
-                  <TableColumn fx:id="actionsColumn" prefWidth="100.0" text="Actions" />
-               </columns>
-            </TableView>
-         </VBox>
-      </SplitPane>
+         <!-- Bottom Section: Split Pane (History Chain | Statistics Table) -->
+         <SplitPane fx:id="bottomSplitPane" dividerPositions="0.5" orientation="HORIZONTAL" prefHeight="200.0">
+            
+            <!-- Left Side: Selected Instruction History Chain -->
+            <VBox>
+               <Label style="-fx-font-weight: bold; -fx-padding: 5;" text="Selected Instruction History Chain" />
+               <TableView fx:id="historyChainTable" VBox.vgrow="ALWAYS">
+                  <columns>
+                     <TableColumn fx:id="historyCommandNumberColumn" prefWidth="50.0" text="#" />
+                     <TableColumn fx:id="historyCommandTypeColumn" prefWidth="50.0" text="B\S" />
+                     <TableColumn fx:id="historyLabelColumn" prefWidth="80.0" text="Label" />
+                     <TableColumn fx:id="historyCyclesColumn" prefWidth="70.0" text="Cycles" />
+                     <TableColumn fx:id="historyInstructionColumn" prefWidth="200.0" text="Instruction" />
+                  </columns>
+               </TableView>
+            </VBox>
+            
+            <!-- Right Side: History/Statistics Table -->
+            <VBox>
+               <Label style="-fx-font-weight: bold; -fx-padding: 5;" text="History/Statistics Table" />
+               <TableView fx:id="statisticsTable" VBox.vgrow="ALWAYS">
+                  <columns>
+                     <TableColumn fx:id="runNumberColumn" prefWidth="60.0" text="Run #" />
+                     <TableColumn fx:id="expansionLevelColumn" prefWidth="80.0" text="Level" />
+                     <TableColumn fx:id="inputsColumn" prefWidth="100.0" text="Inputs" />
+                     <TableColumn fx:id="yValueColumn" prefWidth="60.0" text="Y Value" />
+                     <TableColumn fx:id="totalCyclesColumn" prefWidth="70.0" text="Cycles" />
+                     <TableColumn fx:id="actionsColumn" prefWidth="100.0" text="Actions" />
+                  </columns>
+               </TableView>
+            </VBox>
+         </SplitPane>
+      </VBox>
    </bottom>
 </BorderPane>

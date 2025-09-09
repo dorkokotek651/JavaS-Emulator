@@ -3,6 +3,7 @@ package fx.controller;
 import engine.api.SEmulatorEngine;
 import engine.api.SProgram;
 import engine.api.SInstruction;
+import engine.api.ExecutionResult;
 import engine.exception.SProgramException;
 import engine.exception.ExpansionException;
 import engine.model.InstructionType;
@@ -25,6 +26,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -56,6 +58,7 @@ public class MainController implements Initializable {
     @FXML private TableView<InstructionTableRow> instructionsTable;
     @FXML private TableColumn<InstructionTableRow, String> commandNumberColumn;
     @FXML private TableColumn<InstructionTableRow, String> commandTypeColumn;
+    @FXML private TableColumn<InstructionTableRow, String> labelColumn;
     @FXML private TableColumn<InstructionTableRow, String> cyclesColumn;
     @FXML private TableColumn<InstructionTableRow, String> instructionColumn;
     @FXML private Label summaryLabel;
@@ -89,6 +92,7 @@ public class MainController implements Initializable {
     @FXML private TableView<InstructionTableRow> historyChainTable;
     @FXML private TableColumn<InstructionTableRow, String> historyCommandNumberColumn;
     @FXML private TableColumn<InstructionTableRow, String> historyCommandTypeColumn;
+    @FXML private TableColumn<InstructionTableRow, String> historyLabelColumn;
     @FXML private TableColumn<InstructionTableRow, String> historyCyclesColumn;
     @FXML private TableColumn<InstructionTableRow, String> historyInstructionColumn;
     
@@ -100,12 +104,16 @@ public class MainController implements Initializable {
     @FXML private TableColumn<ExecutionHistoryRow, String> totalCyclesColumn;
     @FXML private TableColumn<ExecutionHistoryRow, String> actionsColumn;
     
+    // Status bar
+    @FXML private Label statusLabel;
+    
     // Application state
     private SEmulatorEngine engine;
     private FileService fileService;
     private Stage primaryStage;
     private int currentExpansionLevel = 0;
     private List<TextField> inputFields = new ArrayList<>();
+    private ObservableList<ExecutionHistoryRow> executionHistory = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -114,6 +122,7 @@ public class MainController implements Initializable {
             this.fileService = new FileService(engine);
             initializeTableColumns();
             initializeControlStates();
+            initializeExecutionHistory();
             addDefaultInput();
             updateStatusLabel("S-Emulator initialized successfully");
         } catch (SProgramException e) {
@@ -128,6 +137,7 @@ public class MainController implements Initializable {
         // Instructions table columns
         commandNumberColumn.setCellValueFactory(cellData -> cellData.getValue().commandNumberProperty());
         commandTypeColumn.setCellValueFactory(cellData -> cellData.getValue().commandTypeProperty());
+        labelColumn.setCellValueFactory(cellData -> cellData.getValue().labelProperty());
         cyclesColumn.setCellValueFactory(cellData -> cellData.getValue().cyclesProperty());
         instructionColumn.setCellValueFactory(cellData -> cellData.getValue().instructionProperty());
         
@@ -138,6 +148,7 @@ public class MainController implements Initializable {
         // History chain table columns
         historyCommandNumberColumn.setCellValueFactory(cellData -> cellData.getValue().commandNumberProperty());
         historyCommandTypeColumn.setCellValueFactory(cellData -> cellData.getValue().commandTypeProperty());
+        historyLabelColumn.setCellValueFactory(cellData -> cellData.getValue().labelProperty());
         historyCyclesColumn.setCellValueFactory(cellData -> cellData.getValue().cyclesProperty());
         historyInstructionColumn.setCellValueFactory(cellData -> cellData.getValue().instructionProperty());
         
@@ -176,6 +187,13 @@ public class MainController implements Initializable {
     }
     
     /**
+     * Initializes the execution history table.
+     */
+    private void initializeExecutionHistory() {
+        statisticsTable.setItems(executionHistory);
+    }
+    
+    /**
      * Adds a default input field.
      */
     private void addDefaultInput() {
@@ -201,7 +219,47 @@ public class MainController implements Initializable {
         
         File selectedFile = fileService.showLoadFileDialog(primaryStage);
         if (selectedFile != null) {
-            loadProgramFileWithProgress(selectedFile);
+            updateStatusLabel("Selected file: " + selectedFile.getName());
+            loadProgramFileDirectly(selectedFile);
+        }
+    }
+    
+    /**
+     * Loads a program file directly without progress dialog for testing.
+     */
+    private void loadProgramFileDirectly(File file) {
+        updateStatusLabel("Loading file: " + file.getName());
+        
+        try {
+            // Clear all previous program state before loading new program
+            clearAllProgramState();
+            
+            // Direct engine loading for debugging
+            engine.loadProgram(file.getAbsolutePath());
+            
+            updateStatusLabel("Engine loading completed");
+            
+            // Check if program was actually loaded
+            if (engine.isProgramLoaded()) {
+                SProgram program = engine.getCurrentProgram();
+                updateStatusLabel("Program loaded: " + program.getName() + " with " + program.getInstructions().size() + " instructions");
+                
+                // Update UI
+                currentFilePathLabel.setText(file.getName());
+                currentExpansionLevel = 0;
+                updateProgramDisplay();
+                enableProgramControls();
+                
+            } else {
+                updateStatusLabel("Error: Program not loaded in engine");
+            }
+            
+        } catch (SProgramException e) {
+            updateStatusLabel("Error loading program: " + e.getMessage());
+            ErrorDialogUtil.showError(primaryStage, "File Loading Failed", e.getMessage());
+        } catch (Exception e) {
+            updateStatusLabel("Unexpected error: " + e.getMessage());
+            ErrorDialogUtil.showError(primaryStage, "Unexpected Error", e.getMessage());
         }
     }
     
@@ -209,11 +267,23 @@ public class MainController implements Initializable {
      * Loads a program file with progress indication.
      */
     private void loadProgramFileWithProgress(File file) {
+        // Clear all previous program state before loading new program
+        clearAllProgramState();
+        
         fileService.loadProgramFileWithProgress(
             file, 
             primaryStage,
             () -> {
-                // Success callback
+                // Success callback - debug what's happening
+                System.out.println("File load success callback triggered");
+                System.out.println("Engine program loaded: " + engine.isProgramLoaded());
+                
+                if (engine.isProgramLoaded()) {
+                    SProgram program = engine.getCurrentProgram();
+                    System.out.println("Program: " + (program != null ? program.getName() : "null"));
+                    System.out.println("Instructions count: " + (program != null ? program.getInstructions().size() : "N/A"));
+                }
+                
                 currentFilePathLabel.setText(file.getName());
                 currentExpansionLevel = 0;
                 updateProgramDisplay();
@@ -221,7 +291,8 @@ public class MainController implements Initializable {
                 updateStatusLabel("Program loaded successfully: " + file.getName());
             },
             (errorMessage) -> {
-                // Error callback
+                // Error callback - debug what's happening
+                System.out.println("File load error callback triggered: " + errorMessage);
                 ErrorDialogUtil.showError(primaryStage, "File Loading Failed", errorMessage);
                 updateStatusLabel("Failed to load file: " + file.getName());
             }
@@ -235,6 +306,8 @@ public class MainController implements Initializable {
     
     @FXML
     private void handleLoadState() {
+        // When loading state is implemented, we should also clear previous state
+        // clearAllProgramState(); // Uncomment when state loading is implemented
         updateStatusLabel("Load state functionality will be implemented in Phase 6");
     }
     
@@ -272,7 +345,38 @@ public class MainController implements Initializable {
     // Execution control handlers
     @FXML
     private void handleStartRun() {
-        updateStatusLabel("Start run functionality will be implemented in Phase 4");
+        if (!engine.isProgramLoaded()) {
+            updateStatusLabel("Error: No program loaded");
+            return;
+        }
+        
+        try {
+            // Validate and collect inputs
+            if (!validateInputs()) {
+                updateStatusLabel("Error: Please correct invalid input values (must be natural numbers ≥ 0)");
+                return;
+            }
+            
+            List<Integer> inputs = collectInputs();
+            updateStatusLabel("Running program with inputs: " + inputs + " at expansion level " + currentExpansionLevel);
+            
+            // Execute the program
+            ExecutionResult result = engine.runProgram(currentExpansionLevel, inputs);
+            
+            // Update UI with results
+            updateExecutionResults(result);
+            clearHighlighting(); // Clear any previous highlighting
+            
+            updateStatusLabel("Program execution completed. Y = " + result.getYValue() + ", Total cycles: " + result.getTotalCycles());
+            
+        } catch (IllegalArgumentException e) {
+            updateStatusLabel("Error: " + e.getMessage());
+            ErrorDialogUtil.showError(primaryStage, "Input Validation Error", e.getMessage());
+        } catch (Exception e) {
+            updateStatusLabel("Error during execution: " + e.getMessage());
+            ErrorDialogUtil.showError(primaryStage, "Execution Error", 
+                "Failed to execute program: " + e.getMessage());
+        }
     }
     
     @FXML
@@ -309,16 +413,25 @@ public class MainController implements Initializable {
     // Private helper methods
     
     private void updateProgramDisplay() {
+        System.out.println("updateProgramDisplay() called");
+        System.out.println("Engine loaded: " + engine.isProgramLoaded());
+        
         if (!engine.isProgramLoaded()) {
+            System.out.println("No program loaded, clearing display");
             clearProgramDisplay();
             return;
         }
         
         SProgram program = getCurrentDisplayProgram();
+        System.out.println("Display program: " + (program != null ? program.getName() : "null"));
+        
         if (program == null) {
+            System.out.println("Display program is null, clearing display");
             clearProgramDisplay();
             return;
         }
+        
+        System.out.println("Updating display for program: " + program.getName());
         
         // Update level display
         levelDisplayLabel.setText(currentExpansionLevel + "/" + engine.getMaxExpansionLevel());
@@ -334,24 +447,18 @@ public class MainController implements Initializable {
         
         // Update control states
         updateControlStates();
+        
+        System.out.println("Program display update completed");
     }
     
     /**
      * Gets the program to display based on current expansion level.
      */
     private SProgram getCurrentDisplayProgram() {
-        if (currentExpansionLevel == 0) {
-            return engine.getCurrentProgram();
-        }
-        
         try {
-            // Use engine's expansion method instead of program's expandToLevel
-            String expandedDisplay = engine.expandProgram(currentExpansionLevel);
-            
-            // For now, return the original program and let the display method handle expansion
-            // This will be improved when we implement proper expansion display
-            return engine.getCurrentProgram();
-        } catch (Exception e) {
+            // Use the new structured API to get expanded program
+            return engine.getExpandedProgram(currentExpansionLevel);
+        } catch (SProgramException e) {
             // If expansion fails, fall back to original program
             updateStatusLabel("Warning: Could not expand to level " + currentExpansionLevel + ": " + e.getMessage());
             return engine.getCurrentProgram();
@@ -362,27 +469,41 @@ public class MainController implements Initializable {
      * Populates the instructions table with program data.
      */
     private void populateInstructionsTable(SProgram program) {
+        System.out.println("populateInstructionsTable() called for program: " + program.getName());
+        System.out.println("Current expansion level: " + currentExpansionLevel);
+        
         ObservableList<InstructionTableRow> instructionData = FXCollections.observableArrayList();
         
+        // Now we can use consistent logic for all expansion levels
+        // The program parameter already contains the expanded instructions
         List<SInstruction> instructions = program.getInstructions();
+        System.out.println("Found " + instructions.size() + " instructions at level " + currentExpansionLevel);
+        
         for (int i = 0; i < instructions.size(); i++) {
             SInstruction instruction = instructions.get(i);
             
             String commandNumber = String.valueOf(i + 1); // 1-based indexing
             String commandType = instruction.getType() == InstructionType.BASIC ? "B" : "S";
+            String label = instruction.getLabel() != null ? instruction.getLabel() : "";
             String cycles = String.valueOf(instruction.getCycles());
             String instructionText = formatInstructionDisplay(instruction);
             
-            instructionData.add(new InstructionTableRow(commandNumber, commandType, cycles, instructionText));
+            System.out.println("Instruction " + commandNumber + ": " + instructionText);
+            
+            instructionData.add(new InstructionTableRow(commandNumber, commandType, label, cycles, instructionText));
         }
         
+        System.out.println("Setting " + instructionData.size() + " items to instructions table");
         instructionsTable.setItems(instructionData);
         
         // Add selection listener for history chain display
         instructionsTable.getSelectionModel().selectedItemProperty().addListener(
             (observable, oldValue, newValue) -> updateHistoryChain(newValue, program)
         );
+        
+        System.out.println("Instructions table populated successfully");
     }
+    
     
     /**
      * Formats an instruction for display in the table.
@@ -390,13 +511,7 @@ public class MainController implements Initializable {
     private String formatInstructionDisplay(SInstruction instruction) {
         StringBuilder display = new StringBuilder();
         
-        // Add label if present
-        String label = instruction.getLabel();
-        if (label != null && !label.trim().isEmpty()) {
-            display.append("[").append(label).append("] ");
-        }
-        
-        // Add instruction display format
+        // Add instruction display format (without label since we have a separate column)
         String displayFormat = instruction.getDisplayFormat();
         if (displayFormat != null && !displayFormat.trim().isEmpty()) {
             display.append(displayFormat);
@@ -466,6 +581,28 @@ public class MainController implements Initializable {
         highlightSelectionCombo.setItems(highlightItems);
         highlightSelectionCombo.setValue("Clear Highlighting");
         
+        // Configure ComboBox to disable section headers
+        highlightSelectionCombo.setCellFactory(listView -> new ListCell<String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setDisable(false);
+                } else {
+                    setText(item);
+                    // Disable section headers (items starting with "---")
+                    setDisable(item.startsWith("---"));
+                    // Style section headers differently
+                    if (item.startsWith("---")) {
+                        setStyle("-fx-font-weight: bold; -fx-text-fill: gray;");
+                    } else {
+                        setStyle("");
+                    }
+                }
+            }
+        });
+        
         // Add selection listener
         highlightSelectionCombo.setOnAction(e -> handleHighlightSelection());
     }
@@ -506,6 +643,52 @@ public class MainController implements Initializable {
         highlightSelectionCombo.setItems(FXCollections.observableArrayList());
     }
     
+    /**
+     * Clears all program-related state when loading a new program.
+     * This ensures a clean slate for the new program.
+     */
+    private void clearAllProgramState() {
+        // Clear instruction tables
+        instructionsTable.setItems(FXCollections.observableArrayList());
+        historyChainTable.setItems(FXCollections.observableArrayList());
+        
+        // Clear variables table
+        variablesTable.setItems(FXCollections.observableArrayList());
+        
+        // Reset cycles display
+        cyclesLabel.setText("Total Cycles: 0");
+        
+        // Clear execution history
+        executionHistory.clear();
+        
+        // Clear highlighting
+        clearHighlighting();
+        highlightSelectionCombo.setItems(FXCollections.observableArrayList());
+        highlightSelectionCombo.setValue(null);
+        
+        // Reset expansion level
+        currentExpansionLevel = 0;
+        levelDisplayLabel.setText("0/0");
+        
+        // Reset summary
+        summaryLabel.setText("Loading...");
+        
+        // Reset file path display
+        currentFilePathLabel.setText("No file loaded");
+        
+        // Reset program selector
+        programFunctionSelector.setItems(FXCollections.observableArrayList("Main Program"));
+        programFunctionSelector.setValue("Main Program");
+        
+        // Clear any input field error styling
+        for (TextField inputField : inputFields) {
+            inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
+                              "-fx-border-radius: 3px; -fx-border-color: #ddd; -fx-border-width: 1px;");
+        }
+        
+        updateStatusLabel("Clearing previous program state...");
+    }
+    
     private void enableProgramControls() {
         programFunctionSelector.setDisable(false);
         highlightSelectionCombo.setDisable(false);
@@ -525,18 +708,52 @@ public class MainController implements Initializable {
         inputField.setPromptText("Input " + (inputFields.size() + 1));
         inputField.setPrefWidth(80);
         
-        // Add validation for natural numbers only
+        // Enhanced styling for better visual appearance
+        inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
+                          "-fx-border-radius: 3px; -fx-border-color: #ddd; -fx-border-width: 1px;");
+        
+        // Add validation for natural numbers only with enhanced feedback
         inputField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.matches("\\d*")) {
                 inputField.setText(newValue.replaceAll("[^\\d]", ""));
             }
+            // Clear any error styling when user types valid input
+            if (newValue.matches("\\d*")) {
+                inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
+                                  "-fx-border-radius: 3px; -fx-border-color: #ddd; -fx-border-width: 1px;");
+            }
         });
+        
+        // Add focus listener for better user experience
+        inputField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                // Highlight field when focused
+                inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
+                                  "-fx-border-radius: 3px; -fx-border-color: #2196F3; -fx-border-width: 2px;");
+            } else {
+                // Reset to normal style when focus lost
+                inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
+                                  "-fx-border-radius: 3px; -fx-border-color: #ddd; -fx-border-width: 1px;");
+                
+                if (inputField.getText().isEmpty()) {
+                    // Set default value of 0 when field loses focus and is empty
+                    inputField.setText("0");
+                }
+            }
+        });
+        
+        // Add tooltip for better user guidance
+        Tooltip tooltip = new Tooltip("Enter a natural number (≥ 0). Default: 0");
+        inputField.setTooltip(tooltip);
         
         inputFields.add(inputField);
         inputsContainer.getChildren().add(inputField);
         
         // Enable remove button if we have more than one input
         removeInputButton.setDisable(inputFields.size() <= 1);
+        
+        // Focus the new field for better user experience
+        inputField.requestFocus();
     }
     
     private void removeInputField() {
@@ -550,7 +767,185 @@ public class MainController implements Initializable {
     }
     
     private void updateStatusLabel(String message) {
-        currentFilePathLabel.setText(message);
+        if (statusLabel != null) {
+            statusLabel.setText(message);
+        }
+        // Also print to console for debugging
+        System.out.println("Status: " + message);
+    }
+    
+    /**
+     * Collects input values from all input fields.
+     * 
+     * @return list of integer inputs, with 0 as default for empty fields
+     */
+    private List<Integer> collectInputs() {
+        List<Integer> inputs = new ArrayList<>();
+        
+        for (TextField inputField : inputFields) {
+            String text = inputField.getText().trim();
+            if (text.isEmpty()) {
+                inputs.add(0); // Default value for empty fields
+            } else {
+                try {
+                    int value = Integer.parseInt(text);
+                    if (value < 0) {
+                        // Highlight invalid field with enhanced error styling
+                        inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
+                                          "-fx-border-radius: 3px; -fx-border-color: #f44336; -fx-border-width: 2px; " +
+                                          "-fx-background-color: #ffebee;");
+                        throw new NumberFormatException("Negative numbers not allowed");
+                    }
+                    inputs.add(value);
+                } catch (NumberFormatException e) {
+                    // Highlight invalid field with enhanced error styling
+                    inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
+                                      "-fx-border-radius: 3px; -fx-border-color: #f44336; -fx-border-width: 2px; " +
+                                      "-fx-background-color: #ffebee;");
+                    throw new IllegalArgumentException("Invalid input in field " + (inputFields.indexOf(inputField) + 1) + ": " + text);
+                }
+            }
+        }
+        
+        return inputs;
+    }
+    
+    /**
+     * Validates all input fields and returns true if all are valid.
+     * 
+     * @return true if all inputs are valid natural numbers, false otherwise
+     */
+    private boolean validateInputs() {
+        boolean allValid = true;
+        
+        for (TextField inputField : inputFields) {
+            String text = inputField.getText().trim();
+            if (!text.isEmpty()) {
+                try {
+                    int value = Integer.parseInt(text);
+                    if (value < 0) {
+                        inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
+                                          "-fx-border-radius: 3px; -fx-border-color: #f44336; -fx-border-width: 2px; " +
+                                          "-fx-background-color: #ffebee;");
+                        allValid = false;
+                    } else {
+                        inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
+                                          "-fx-border-radius: 3px; -fx-border-color: #ddd; -fx-border-width: 1px;");
+                    }
+                } catch (NumberFormatException e) {
+                    inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
+                                      "-fx-border-radius: 3px; -fx-border-color: #f44336; -fx-border-width: 2px; " +
+                                      "-fx-background-color: #ffebee;");
+                    allValid = false;
+                }
+            } else {
+                inputField.setStyle("-fx-font-size: 14px; -fx-padding: 5px; -fx-background-radius: 3px; " +
+                                  "-fx-border-radius: 3px; -fx-border-color: #ddd; -fx-border-width: 1px;");
+            }
+        }
+        
+        return allValid;
+    }
+    
+    /**
+     * Updates the UI with execution results.
+     * 
+     * @param result the execution result to display
+     */
+    private void updateExecutionResults(ExecutionResult result) {
+        // Update variables table
+        updateVariablesTable(result);
+        
+        // Update cycles display
+        updateCyclesDisplay(result.getTotalCycles());
+        
+        // Add to execution history
+        addToExecutionHistory(result);
+        
+        System.out.println("Execution completed: Run " + result.getRunNumber() + 
+                          ", Y = " + result.getYValue() + 
+                          ", Cycles = " + result.getTotalCycles());
+    }
+    
+    /**
+     * Updates the variables table with execution results.
+     * 
+     * @param result the execution result containing variable values
+     */
+    private void updateVariablesTable(ExecutionResult result) {
+        ObservableList<VariableTableRow> variableData = FXCollections.observableArrayList();
+        
+        // Add input variables (x1, x2, x3, ...)
+        Map<String, Integer> inputVars = result.getInputVariables();
+        for (Map.Entry<String, Integer> entry : inputVars.entrySet()) {
+            variableData.add(new VariableTableRow(entry.getKey(), String.valueOf(entry.getValue())));
+        }
+        
+        // Add working variables (z1, z2, z3, ...)
+        Map<String, Integer> workingVars = result.getWorkingVariables();
+        for (Map.Entry<String, Integer> entry : workingVars.entrySet()) {
+            variableData.add(new VariableTableRow(entry.getKey(), String.valueOf(entry.getValue())));
+        }
+        
+        // Add y variable (result)
+        variableData.add(new VariableTableRow("y", String.valueOf(result.getYValue())));
+        
+        // Sort variables in proper order: x1, x2, ..., z1, z2, ..., y
+        variableData.sort((v1, v2) -> {
+            String name1 = v1.getVariableName();
+            String name2 = v2.getVariableName();
+            
+            // y always comes last
+            if ("y".equals(name1)) return 1;
+            if ("y".equals(name2)) return -1;
+            
+            // x variables come before z variables
+            if (name1.startsWith("x") && name2.startsWith("z")) return -1;
+            if (name1.startsWith("z") && name2.startsWith("x")) return 1;
+            
+            // Within same type, sort numerically
+            return name1.compareTo(name2);
+        });
+        
+        variablesTable.setItems(variableData);
+    }
+    
+    /**
+     * Updates the cycles display with the total execution cycles.
+     * 
+     * @param totalCycles the total number of cycles executed
+     */
+    private void updateCyclesDisplay(int totalCycles) {
+        cyclesLabel.setText("Total Cycles: " + totalCycles);
+    }
+    
+    /**
+     * Adds an execution result to the execution history table.
+     * 
+     * @param result the execution result to add
+     */
+    private void addToExecutionHistory(ExecutionResult result) {
+        // Format inputs as comma-separated string
+        String inputsString = result.getInputs().stream()
+            .map(String::valueOf)
+            .collect(java.util.stream.Collectors.joining(", "));
+        
+        // For Phase 4, use placeholder for actions (will be implemented in Phase 6)
+        String actions = "show | re-run";
+        
+        ExecutionHistoryRow historyRow = new ExecutionHistoryRow(
+            String.valueOf(result.getRunNumber()),
+            String.valueOf(result.getExpansionLevel()),
+            inputsString,
+            String.valueOf(result.getYValue()),
+            String.valueOf(result.getTotalCycles()),
+            actions
+        );
+        
+        executionHistory.add(historyRow);
+        
+        // Scroll to the new row for user visibility
+        statisticsTable.scrollTo(historyRow);
     }
     
     /**
@@ -582,7 +977,12 @@ public class MainController implements Initializable {
         // Clear previous highlighting
         clearHighlighting();
         
+        // Set selection mode to multiple to allow selecting multiple rows
+        instructionsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        
         List<SInstruction> instructions = program.getInstructions();
+        List<Integer> rowsToHighlight = new ArrayList<>();
+        
         for (int i = 0; i < instructions.size(); i++) {
             SInstruction instruction = instructions.get(i);
             
@@ -592,16 +992,20 @@ public class MainController implements Initializable {
                 instruction.getArguments().values().contains(item);
             
             if (shouldHighlight) {
-                // Select and highlight the row
-                instructionsTable.getSelectionModel().select(i);
-                
-                // Apply highlighting style (will be enhanced in later phases)
-                InstructionTableRow row = instructionsTable.getItems().get(i);
-                // For now, just select the row - visual highlighting will be improved later
+                rowsToHighlight.add(i);
             }
         }
         
-        updateStatusLabel("Highlighted instructions using: " + item);
+        // Select all matching rows at once
+        if (!rowsToHighlight.isEmpty()) {
+            instructionsTable.getSelectionModel().selectIndices(
+                rowsToHighlight.get(0), 
+                rowsToHighlight.stream().skip(1).mapToInt(Integer::intValue).toArray()
+            );
+            updateStatusLabel("Highlighted " + rowsToHighlight.size() + " instructions using: " + item);
+        } else {
+            updateStatusLabel("No instructions found using: " + item);
+        }
     }
     
     /**
@@ -609,6 +1013,8 @@ public class MainController implements Initializable {
      */
     private void clearHighlighting() {
         instructionsTable.getSelectionModel().clearSelection();
+        // Reset to single selection mode for normal operation
+        instructionsTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         updateStatusLabel("Highlighting cleared");
     }
     
@@ -658,6 +1064,7 @@ public class MainController implements Initializable {
                     historyData.add(new InstructionTableRow(
                         "1",
                         instruction.getType() == InstructionType.BASIC ? "B" : "S",
+                        instruction.getLabel() != null ? instruction.getLabel() : "",
                         String.valueOf(instruction.getCycles()),
                         formatInstructionDisplay(instruction) + " (Original)"
                     ));
@@ -677,13 +1084,16 @@ public class MainController implements Initializable {
                             instructionText += " (Level " + i + ")";
                         }
                         
-                        historyData.add(new InstructionTableRow(commandNumber, commandType, cycles, instructionText));
+                        historyData.add(new InstructionTableRow(commandNumber, commandType, 
+                            ancestorInstruction.getLabel() != null ? ancestorInstruction.getLabel() : "", 
+                            cycles, instructionText));
                     }
                     
                     // Add the current instruction as the final result
                     historyData.add(new InstructionTableRow(
                         String.valueOf(ancestryChain.size() + 1),
                         instruction.getType() == InstructionType.BASIC ? "B" : "S",
+                        instruction.getLabel() != null ? instruction.getLabel() : "",
                         String.valueOf(instruction.getCycles()),
                         formatInstructionDisplay(instruction) + " (Current)"
                     ));
