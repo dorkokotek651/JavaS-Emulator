@@ -22,39 +22,46 @@
             </Menu>
          </MenuBar>
          
-         <!-- Top Section: Horizontal Controls Bar (matching sketch) -->
-         <HBox fx:id="topControlsSection" alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 10; -fx-background-color: #f0f0f0;">
-            <!-- Load File Button (green) -->
-            <Button fx:id="loadFileButton" onAction="#handleLoadFile" prefHeight="30.0" 
-                    style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;" 
-                    text="Load File" />
+         <!-- Top Section: Two-row Controls Layout -->
+         <VBox fx:id="topControlsSection" spacing="5" style="-fx-padding: 10; -fx-background-color: #f0f0f0;">
             
-            <!-- Currently Loaded File Path (dark background) -->
-            <Label fx:id="currentFilePathLabel" prefWidth="300.0" 
-                   style="-fx-background-color: #333333; -fx-text-fill: white; -fx-padding: 5; -fx-background-radius: 3;" 
-                   text="No file loaded" />
+            <!-- First Row: Load File + Currently Loaded File Path -->
+            <HBox alignment="CENTER_LEFT" spacing="10">
+               <!-- Load File Button (green) -->
+               <Button fx:id="loadFileButton" onAction="#handleLoadFile" prefHeight="30.0" 
+                       style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;" 
+                       text="Load File" />
+               
+               <!-- Currently Loaded File Path (dark background) -->
+               <Label fx:id="currentFilePathLabel" prefWidth="300.0" prefHeight="30.0"
+                      style="-fx-background-color: #333333; -fx-text-fill: white; -fx-padding: 5; -fx-background-radius: 3; -fx-alignment: CENTER_LEFT;" 
+                      text="No file loaded" HBox.hgrow="ALWAYS" />
+            </HBox>
             
-            <!-- Program/Function Selector (green dropdown) -->
-            <ComboBox fx:id="programFunctionSelector" prefWidth="150.0" 
-                      style="-fx-background-color: #4CAF50;" 
-                      promptText="Main Program" />
-            
-            <!-- Collapse Button -->
-            <Button fx:id="collapseButton" onAction="#handleCollapse" prefHeight="30.0" 
-                    text="Collapse" />
-            
-            <!-- Current/Maximum Degree Display -->
-            <Label fx:id="levelDisplayLabel" style="-fx-font-weight: bold;" 
-                   text="0/0" />
-            
-            <!-- Expand Button -->
-            <Button fx:id="expandButton" onAction="#handleExpand" prefHeight="30.0" 
-                    text="Expand" />
-            
-            <!-- Highlight Selection Dropdown -->
-            <ComboBox fx:id="highlightSelectionCombo" prefWidth="120.0" 
-                      promptText="Highlight..." />
-         </HBox>
+            <!-- Second Row: Program Controls + Expansion Controls + Highlight -->
+            <HBox alignment="CENTER_LEFT" spacing="10">
+               <!-- Program/Function Selector (green dropdown) -->
+               <ComboBox fx:id="programFunctionSelector" prefWidth="150.0" prefHeight="30.0"
+                         style="-fx-background-color: #4CAF50;" 
+                         promptText="Main Program" />
+               
+               <!-- Collapse Button -->
+               <Button fx:id="collapseButton" onAction="#handleCollapse" prefHeight="30.0" 
+                       text="Collapse" />
+               
+               <!-- Current/Maximum Degree Display -->
+               <Label fx:id="levelDisplayLabel" prefHeight="30.0" style="-fx-font-weight: bold; -fx-alignment: CENTER;" 
+                      text="0/0" />
+               
+               <!-- Expand Button -->
+               <Button fx:id="expandButton" onAction="#handleExpand" prefHeight="30.0" 
+                       text="Expand" />
+               
+               <!-- Highlight Selection Dropdown -->
+               <ComboBox fx:id="highlightSelectionCombo" prefWidth="150.0" prefHeight="30.0"
+                         promptText="Highlight..." />
+            </HBox>
+         </VBox>
       </VBox>
    </top>
    
@@ -98,18 +105,27 @@
             <!-- Middle: Variables and Inputs (Pink and Blue sections) -->
             <HBox spacing="5" VBox.vgrow="ALWAYS">
                
-               <!-- Variables Display (Pink section) -->
-               <VBox fx:id="variablesSection" spacing="5" style="-fx-background-color: #E91E63; -fx-padding: 10; -fx-background-radius: 5;" HBox.hgrow="ALWAYS">
-                  <Label style="-fx-font-weight: bold; -fx-text-fill: white;" text="Variables" />
-                  <TableView fx:id="variablesTable" VBox.vgrow="ALWAYS">
-                     <columns>
-                        <TableColumn fx:id="variableNameColumn" prefWidth="80.0" text="Name" />
-                        <TableColumn fx:id="variableValueColumn" prefWidth="80.0" text="Value" />
-                     </columns>
-                  </TableView>
+               <!-- Left Column: Variables and Cycles (Pink sections) -->
+               <VBox spacing="5" HBox.hgrow="ALWAYS">
+                  <!-- Variables Display (Pink section) -->
+                  <VBox fx:id="variablesSection" spacing="5" style="-fx-background-color: #E91E63; -fx-padding: 10; -fx-background-radius: 5;" VBox.vgrow="ALWAYS">
+                     <Label style="-fx-font-weight: bold; -fx-text-fill: white;" text="Variables" />
+                     <TableView fx:id="variablesTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                           <TableColumn fx:id="variableNameColumn" prefWidth="80.0" text="Name" />
+                           <TableColumn fx:id="variableValueColumn" prefWidth="80.0" text="Value" />
+                        </columns>
+                     </TableView>
+                  </VBox>
+                  
+                  <!-- Cycles Display (Pink section) -->
+                  <VBox fx:id="cyclesSection" spacing="5" style="-fx-background-color: #E91E63; -fx-padding: 10; -fx-background-radius: 5;">
+                     <Label style="-fx-font-weight: bold; -fx-text-fill: white;" text="Cycles" />
+                     <Label fx:id="cyclesLabel" style="-fx-text-fill: white; -fx-font-size: 16;" text="Total Cycles: 0" />
+                  </VBox>
                </VBox>
                
-               <!-- Execution Inputs (Blue section) -->
+               <!-- Right Column: Execution Inputs (Blue section) -->
                <VBox fx:id="executionInputsSection" spacing="5" style="-fx-background-color: #2196F3; -fx-padding: 10; -fx-background-radius: 5;" HBox.hgrow="ALWAYS">
                   <Label style="-fx-font-weight: bold; -fx-text-fill: white;" text="Execution Inputs" />
                   <ScrollPane VBox.vgrow="ALWAYS">
@@ -121,12 +137,6 @@
                   </HBox>
                </VBox>
             </HBox>
-            
-            <!-- Bottom: Cycles Display (Pink section) -->
-            <VBox fx:id="cyclesSection" spacing="5" style="-fx-background-color: #E91E63; -fx-padding: 10; -fx-background-radius: 5;">
-               <Label style="-fx-font-weight: bold; -fx-text-fill: white;" text="Cycles" />
-               <Label fx:id="cyclesLabel" style="-fx-text-fill: white; -fx-font-size: 16;" text="0" />
-            </VBox>
          </VBox>
       </SplitPane>
    </center>

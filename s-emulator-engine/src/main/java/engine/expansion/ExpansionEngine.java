@@ -33,12 +33,13 @@ public class ExpansionEngine {
         
         ExpansionContext context = createExpansionContext(program);
         context.setCurrentLevel(targetLevel);
+        context.setFunctionRegistry(program.getFunctionRegistry());
         
         return expandProgramToLevel(program, targetLevel, context);
     }
 
     private SProgram expandProgramToLevel(SProgram program, int targetLevel, ExpansionContext context) throws ExpansionException {
-        SProgramImpl expandedProgram = new SProgramImpl(program.getName() + " (expanded to level " + targetLevel + ")");
+        SProgramImpl expandedProgram = new SProgramImpl(program.getName());
         
         List<SInstruction> currentInstructions = new ArrayList<>(program.getInstructions());
         

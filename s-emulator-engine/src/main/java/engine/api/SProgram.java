@@ -1,5 +1,6 @@
 package engine.api;
 
+import engine.model.FunctionRegistry;
 import java.util.List;
 
 public interface SProgram {
@@ -14,4 +15,8 @@ public interface SProgram {
     int getMaxExpansionLevel();
     
     SProgram expandToLevel(int level);
+    
+    FunctionRegistry getFunctionRegistry();
+    
+    void setFunctionRegistry(FunctionRegistry functionRegistry);
 }

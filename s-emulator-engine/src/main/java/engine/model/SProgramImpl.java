@@ -14,6 +14,7 @@ public class SProgramImpl implements SProgram {
     private List<String> cachedInputVariables;
     private List<String> cachedLabels;
     private Integer cachedMaxExpansionLevel;
+    private FunctionRegistry functionRegistry;
 
     public SProgramImpl(String name) {
         if (name == null || name.trim().isEmpty()) {
@@ -145,12 +146,51 @@ public class SProgramImpl implements SProgram {
         
         for (SInstruction instruction : instructions) {
             if (instruction.getType() == InstructionType.SYNTHETIC) {
-                int instructionLevel = getInstructionExpansionLevel(instruction.getName());
+                int instructionLevel = calculateDeepExpansionLevel(instruction);
                 maxLevel = Math.max(maxLevel, instructionLevel);
             }
         }
         
         return maxLevel;
+    }
+    
+    private int calculateDeepExpansionLevel(SInstruction instruction) {
+        int baseLevel = getInstructionExpansionLevel(instruction.getName());
+        
+        // For QUOTE instructions with function compositions, we need one additional level
+        // because the composition creates new synthetic instructions that need expansion
+        if (instruction.getName().equals(SEmulatorConstants.QUOTE_NAME)) {
+            String functionArguments = instruction.getArguments().get(SEmulatorConstants.FUNCTION_ARGUMENTS_ARG);
+            
+            // If we have nested function compositions, we need additional levels
+            if (functionArguments != null && hasNestedFunctionComposition(functionArguments)) {
+                baseLevel = Math.max(baseLevel, 6); // QUOTE with nested composition needs more levels
+            }
+        }
+        
+        return baseLevel;
+    }
+    
+    private boolean hasNestedFunctionComposition(String functionArguments) {
+        // Check if arguments contain nested function calls like (NOT,(EQUAL,...))
+        if (!functionArguments.contains("(") || !functionArguments.contains(")")) {
+            return false;
+        }
+        
+        // Count nested parentheses to detect composition depth
+        int depth = 0;
+        int maxDepth = 0;
+        for (char c : functionArguments.toCharArray()) {
+            if (c == '(') {
+                depth++;
+                maxDepth = Math.max(maxDepth, depth);
+            } else if (c == ')') {
+                depth--;
+            }
+        }
+        
+        // If we have nesting depth > 1, it's a nested composition
+        return maxDepth > 1;
     }
     
 
@@ -167,10 +207,10 @@ public class SProgramImpl implements SProgram {
             
             case SEmulatorConstants.JUMP_EQUAL_CONSTANT_NAME:
             case SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME:
-            case "QUOTE":
+            case SEmulatorConstants.QUOTE_NAME:
                 return 3;
             
-            case "JUMP_EQUAL_FUNCTION":
+            case SEmulatorConstants.JUMP_EQUAL_FUNCTION_NAME:
                 return 4;
             
             default:
@@ -216,5 +256,15 @@ public class SProgramImpl implements SProgram {
                 throw new IllegalStateException("Referenced label '" + referencedLabel + "' is not defined in the program");
             }
         }
+    }
+    
+    @Override
+    public FunctionRegistry getFunctionRegistry() {
+        return functionRegistry;
+    }
+    
+    @Override
+    public void setFunctionRegistry(FunctionRegistry functionRegistry) {
+        this.functionRegistry = functionRegistry;
     }
 }

@@ -12,6 +12,9 @@ public class SProgramXml {
     @JacksonXmlProperty(localName = "S-Instructions")
     private SInstructionsXml sInstructions;
     
+    @JacksonXmlProperty(localName = "S-Functions")
+    private SFunctionsXml sFunctions;
+    
     public SProgramXml() {
     }
     
@@ -29,5 +32,13 @@ public class SProgramXml {
     
     public void setSInstructions(SInstructionsXml sInstructions) {
         this.sInstructions = sInstructions;
+    }
+    
+    public SFunctionsXml getSFunctions() {
+        return sFunctions;
+    }
+    
+    public void setSFunctions(SFunctionsXml sFunctions) {
+        this.sFunctions = sFunctions;
     }
 }

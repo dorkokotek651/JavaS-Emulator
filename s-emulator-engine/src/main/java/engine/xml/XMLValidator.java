@@ -10,7 +10,7 @@ import java.io.File;
 import java.io.InputStream;
 
 public class XMLValidator {
-    private static final String XSD_RESOURCE_PATH = "/S-Emulator-v1.xsd";
+    private static final String XSD_RESOURCE_PATH = "/S-Emulator-v2.xsd";
     private final Schema schema;
 
     public XMLValidator() throws XMLValidationException {

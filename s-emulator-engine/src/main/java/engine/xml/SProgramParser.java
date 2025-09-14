@@ -3,12 +3,14 @@ package engine.xml;
 import engine.api.SProgram;
 import engine.api.SInstruction;
 import engine.exception.XMLValidationException;
+import engine.model.FunctionRegistry;
 import engine.model.SProgramImpl;
 import engine.model.SEmulatorConstants;
 import engine.model.instruction.InstructionFactory;
 import engine.xml.model.SInstructionArgumentXml;
 import engine.xml.model.SProgramXml;
 import engine.xml.model.SInstructionXml;
+import engine.xml.model.SFunctionXml;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import java.io.File;
@@ -77,9 +79,65 @@ public class SProgramParser {
         }
 
         validateLabelReferences(definedLabels, referencedLabels);
+        
+        // Parse and register functions if they exist
+        FunctionRegistry functionRegistry = new FunctionRegistry();
+        if (xmlProgram.getSFunctions() != null && xmlProgram.getSFunctions().getSFunctions() != null) {
+            for (SFunctionXml xmlFunction : xmlProgram.getSFunctions().getSFunctions()) {
+                SProgram functionProgram = convertXmlFunctionToSProgram(xmlFunction);
+                functionRegistry.registerFunction(xmlFunction.getName(), xmlFunction.getUserString(), functionProgram);
+            }
+        }
+        
+        // Set the function registry in the program
+        program.setFunctionRegistry(functionRegistry);
+        
         program.validate();
 
         return program;
+    }
+    
+    private SProgram convertXmlFunctionToSProgram(SFunctionXml xmlFunction) throws XMLValidationException {
+        if (xmlFunction.getName() == null || xmlFunction.getName().trim().isEmpty()) {
+            throw new XMLValidationException("Function name cannot be null or empty");
+        }
+        
+        if (xmlFunction.getUserString() == null || xmlFunction.getUserString().trim().isEmpty()) {
+            throw new XMLValidationException("Function user-string cannot be null or empty");
+        }
+        
+        if (xmlFunction.getSInstructions() == null || 
+            xmlFunction.getSInstructions().getSInstruction() == null ||
+            xmlFunction.getSInstructions().getSInstruction().isEmpty()) {
+            throw new XMLValidationException("Function '" + xmlFunction.getName() + "' must contain at least one instruction");
+        }
+        
+        SProgramImpl functionProgram = new SProgramImpl(xmlFunction.getName().trim());
+        
+        Set<String> definedLabels = new HashSet<>();
+        Set<String> referencedLabels = new HashSet<>();
+        
+        for (SInstructionXml xmlInstruction : xmlFunction.getSInstructions().getSInstruction()) {
+            validateInstruction(xmlInstruction);
+            
+            if (xmlInstruction.getSLabel() != null && !xmlInstruction.getSLabel().trim().isEmpty()) {
+                String label = xmlInstruction.getSLabel().trim();
+                if (definedLabels.contains(label)) {
+                    throw new XMLValidationException("Duplicate label found in function '" + xmlFunction.getName() + "': " + label);
+                }
+                definedLabels.add(label);
+            }
+            
+            collectReferencedLabels(xmlInstruction, referencedLabels);
+            
+            SInstruction instruction = convertXmlInstructionToSInstruction(xmlInstruction);
+            functionProgram.addInstruction(instruction);
+        }
+        
+        validateLabelReferences(definedLabels, referencedLabels);
+        functionProgram.validate();
+        
+        return functionProgram;
     }
 
     private void validateInstruction(SInstructionXml xmlInstruction) throws XMLValidationException {
@@ -179,6 +237,20 @@ public class SProgramParser {
             case SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME:
                 if (!arguments.containsKey(SEmulatorConstants.JE_VARIABLE_LABEL_ARG) || !arguments.containsKey(SEmulatorConstants.VARIABLE_NAME_ARG)) {
                     throw new XMLValidationException(SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME + " instruction requires '" + SEmulatorConstants.JE_VARIABLE_LABEL_ARG + "' and '" + SEmulatorConstants.VARIABLE_NAME_ARG + "' arguments");
+                }
+                break;
+            case SEmulatorConstants.QUOTE_NAME:
+                if (!arguments.containsKey(SEmulatorConstants.FUNCTION_NAME_ARG) || !arguments.containsKey(SEmulatorConstants.FUNCTION_ARGUMENTS_ARG)) {
+                    throw new XMLValidationException(SEmulatorConstants.QUOTE_NAME + " instruction requires '" + SEmulatorConstants.FUNCTION_NAME_ARG + "' and '" + SEmulatorConstants.FUNCTION_ARGUMENTS_ARG + "' arguments");
+                }
+                break;
+            case SEmulatorConstants.JUMP_EQUAL_FUNCTION_NAME:
+                if (!arguments.containsKey(SEmulatorConstants.JE_FUNCTION_LABEL_ARG) || 
+                    !arguments.containsKey(SEmulatorConstants.FUNCTION_NAME_ARG) || 
+                    !arguments.containsKey(SEmulatorConstants.FUNCTION_ARGUMENTS_ARG)) {
+                    throw new XMLValidationException(SEmulatorConstants.JUMP_EQUAL_FUNCTION_NAME + " instruction requires '" + 
+                        SEmulatorConstants.JE_FUNCTION_LABEL_ARG + "', '" + SEmulatorConstants.FUNCTION_NAME_ARG + "', and '" + 
+                        SEmulatorConstants.FUNCTION_ARGUMENTS_ARG + "' arguments");
                 }
                 break;
         }

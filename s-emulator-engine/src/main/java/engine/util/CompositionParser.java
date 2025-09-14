@@ -75,20 +75,26 @@ public class CompositionParser {
         // Remove outer parentheses
         String content = functionCallStr.substring(1, functionCallStr.length() - 1);
         
-        // Find function name (first token before comma)
+        // Find function name (first token before comma, or entire content if no comma)
         int firstCommaIndex = findTopLevelComma(content, 0);
+        String functionName;
+        String remainingContent;
+        
         if (firstCommaIndex == -1) {
-            throw new IllegalArgumentException("Invalid function call format: " + functionCallStr);
+            // No comma found - this is a zero-argument function
+            functionName = content.trim();
+            remainingContent = "";
+        } else {
+            functionName = content.substring(0, firstCommaIndex).trim();
+            remainingContent = content.substring(firstCommaIndex + 1);
         }
         
-        String functionName = content.substring(0, firstCommaIndex).trim();
         if (functionName.isEmpty()) {
             throw new IllegalArgumentException("Function name cannot be empty: " + functionCallStr);
         }
         
         // Parse arguments
         List<String> arguments = new ArrayList<>();
-        String remainingContent = content.substring(firstCommaIndex + 1);
         
         int startIndex = 0;
         while (startIndex < remainingContent.length()) {

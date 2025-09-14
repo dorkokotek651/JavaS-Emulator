@@ -110,6 +110,29 @@
     -fx-border-width: 1px;
 }
 
+/* Debug Mode Highlighting */
+.debug-current-instruction {
+    -fx-background-color: #ffecb3 !important;
+    -fx-border-color: #ffa000 !important;
+    -fx-border-width: 2px !important;
+    -fx-effect: dropshadow(gaussian, rgba(255, 160, 0, 0.3), 4, 0, 0, 0);
+}
+
+.debug-current-instruction .table-cell {
+    -fx-font-weight: bold;
+    -fx-text-fill: #e65100;
+}
+
+.variable-changed {
+    -fx-font-weight: bold;
+    -fx-text-fill: #d32f2f;
+    -fx-background-color: #ffebee;
+}
+
+.variable-changed .table-cell {
+    -fx-effect: dropshadow(gaussian, rgba(211, 47, 47, 0.2), 2, 0, 0, 0);
+}
+
 /* Status and Labels */
 .status-label {
     -fx-font-size: 12px;

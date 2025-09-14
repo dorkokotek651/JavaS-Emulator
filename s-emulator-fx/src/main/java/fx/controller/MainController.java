@@ -22,6 +22,8 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.application.Platform;
+import javafx.scene.Node;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +45,7 @@ public class MainController implements Initializable {
     @FXML private MenuItem aboutMenuItem;
     
     // Top section controls
-    @FXML private HBox topControlsSection;
+    @FXML private VBox topControlsSection;
     @FXML private Button loadFileButton;
     @FXML private Label currentFilePathLabel;
     @FXML private ComboBox<String> programFunctionSelector;
@@ -165,6 +167,44 @@ public class MainController implements Initializable {
         variableNameColumn.setCellValueFactory(cellData -> cellData.getValue().variableNameProperty());
         variableValueColumn.setCellValueFactory(cellData -> cellData.getValue().variableValueProperty());
         
+        // Set row factory for instructions table (prevents null row factory issues)
+        instructionsTable.setRowFactory(tv -> new TableRow<>());
+        
+        // Set row factory for variables table to apply changed highlighting
+        variablesTable.setRowFactory(tv -> {
+            TableRow<VariableTableRow> row = new TableRow<VariableTableRow>() {
+                @Override
+                protected void updateItem(VariableTableRow item, boolean empty) {
+                    super.updateItem(item, empty);
+                    
+                    if (empty || item == null) {
+                        getStyleClass().remove("variable-changed");
+                    } else {
+                        // Listen for changes to the changed property
+                        item.changedProperty().addListener((obs, oldVal, newVal) -> {
+                            if (newVal) {
+                                if (!getStyleClass().contains("variable-changed")) {
+                                    getStyleClass().add("variable-changed");
+                                }
+                            } else {
+                                getStyleClass().remove("variable-changed");
+                            }
+                        });
+                        
+                        // Apply initial styling
+                        if (item.isChanged()) {
+                            if (!getStyleClass().contains("variable-changed")) {
+                                getStyleClass().add("variable-changed");
+                            }
+                        } else {
+                            getStyleClass().remove("variable-changed");
+                        }
+                    }
+                }
+            };
+            return row;
+        });
+        
         // History chain table columns
         historyCommandNumberColumn.setCellValueFactory(cellData -> cellData.getValue().commandNumberProperty());
         historyCommandTypeColumn.setCellValueFactory(cellData -> cellData.getValue().commandTypeProperty());
@@ -234,6 +274,45 @@ public class MainController implements Initializable {
         executionController.setCyclesLabel(cyclesLabel);
         executionController.setStatisticsTable(statisticsTable);
         executionController.setExecutionHistory(executionHistory);
+        
+        // Set debug-specific callbacks
+        executionController.setInstructionsTable(instructionsTable);
+        executionController.setOnCurrentInstructionChanged(this::highlightCurrentInstruction);
+        executionController.setOnVariablesChanged(this::highlightChangedVariables);
+        
+        // Set debug button state management callbacks
+        executionController.setOnDebugSessionStarted(() -> {
+            stepOverButton.setDisable(false);
+            stopButton.setDisable(false);
+            resumeButton.setDisable(false);
+            startDebugButton.setDisable(true);
+            startRunButton.setDisable(true);
+            
+            // Disable expand/collapse buttons during debug
+            collapseButton.setDisable(true);
+            expandButton.setDisable(true);
+            
+            // Disable input controls during debug
+            addInputButton.setDisable(true);
+            removeInputButton.setDisable(true);
+            executionInputsSection.setDisable(true);
+        });
+        
+        executionController.setOnDebugSessionEnded(() -> {
+            stepOverButton.setDisable(true);
+            stopButton.setDisable(true);
+            resumeButton.setDisable(true);
+            startDebugButton.setDisable(false);
+            startRunButton.setDisable(false);
+            
+            // Re-enable expand/collapse buttons after debug
+            updateControlStates();
+            
+            // Re-enable input controls after debug
+            addInputButton.setDisable(false);
+            removeInputButton.setDisable(false);
+            executionInputsSection.setDisable(false);
+        });
     }
     
     /**
@@ -347,7 +426,6 @@ public class MainController implements Initializable {
             currentExpansionLevel--;
             executionController.setCurrentExpansionLevel(currentExpansionLevel);
             updateProgramDisplay();
-            updateStatusLabel("Program collapsed to level " + currentExpansionLevel);
         }
     }
     
@@ -357,7 +435,6 @@ public class MainController implements Initializable {
             currentExpansionLevel++;
             executionController.setCurrentExpansionLevel(currentExpansionLevel);
             updateProgramDisplay();
-            updateStatusLabel("Program expanded to level " + currentExpansionLevel);
         }
     }
     
@@ -568,6 +645,9 @@ public class MainController implements Initializable {
         // Clear execution history
         executionHistory.clear();
         
+        // Reset execution controller state
+        executionController.resetExecutionState();
+        
         // Clear highlighting
         highlightController.clearHighlighting();
         highlightController.clearHighlightDropdown();
@@ -668,47 +748,45 @@ public class MainController implements Initializable {
                 // Get ancestry chain
                 List<SInstruction> ancestryChain = instruction.getAncestryChain();
                 
-                // Populate history chain table (reverse order - most historical at bottom)
+                // Populate history chain table - show selected instruction first, then its parents if they differ
                 ObservableList<InstructionTableRow> historyData = FXCollections.observableArrayList();
                 
-                if (ancestryChain.isEmpty()) {
-                    // If no ancestry, show the instruction itself
-                    historyData.add(new InstructionTableRow(
-                        "1",
-                        instruction.getType() == InstructionType.BASIC ? "B" : "S",
-                        instruction.getLabel() != null ? instruction.getLabel() : "",
-                        String.valueOf(instruction.getCycles()),
-                        formatInstructionDisplay(instruction) + " (Original)"
-                    ));
-                } else {
-                    // Show full ancestry chain (most historical first, most recent last)
+                // First row: Always show the selected instruction
+                historyData.add(new InstructionTableRow(
+                    "1",
+                    instruction.getType() == InstructionType.BASIC ? "B" : "S",
+                    instruction.getLabel() != null ? instruction.getLabel() : "",
+                    String.valueOf(instruction.getCycles()),
+                    formatInstructionDisplay(instruction)
+                ));
+                
+                // Subsequent rows: Show ancestry chain only if it represents actual different instructions
+                if (!ancestryChain.isEmpty()) {
+                    // Filter out ancestors that are identical to the current instruction
                     for (int i = 0; i < ancestryChain.size(); i++) {
                         SInstruction ancestorInstruction = ancestryChain.get(i);
-                        String commandNumber = String.valueOf(i + 1);
-                        String commandType = ancestorInstruction.getType() == InstructionType.BASIC ? "B" : "S";
-                        String cycles = String.valueOf(ancestorInstruction.getCycles());
-                        String instructionText = formatInstructionDisplay(ancestorInstruction);
                         
-                        // Add level information to show expansion history
-                        if (i == 0) {
-                            instructionText += " (Original)";
-                        } else {
-                            instructionText += " (Level " + i + ")";
+                        // Skip if this ancestor is essentially the same as the selected instruction
+                        if (ancestorInstruction != instruction && 
+                            !formatInstructionDisplay(ancestorInstruction).equals(formatInstructionDisplay(instruction))) {
+                            
+                            String commandNumber = String.valueOf(historyData.size() + 1);
+                            String commandType = ancestorInstruction.getType() == InstructionType.BASIC ? "B" : "S";
+                            String cycles = String.valueOf(ancestorInstruction.getCycles());
+                            String instructionText = formatInstructionDisplay(ancestorInstruction);
+                            
+                            // Add level information to show expansion history
+                            if (i == 0) {
+                                instructionText += " (Original)";
+                            } else {
+                                instructionText += " (Level " + i + ")";
+                            }
+                            
+                            historyData.add(new InstructionTableRow(commandNumber, commandType, 
+                                ancestorInstruction.getLabel() != null ? ancestorInstruction.getLabel() : "", 
+                                cycles, instructionText));
                         }
-                        
-                        historyData.add(new InstructionTableRow(commandNumber, commandType, 
-                            ancestorInstruction.getLabel() != null ? ancestorInstruction.getLabel() : "", 
-                            cycles, instructionText));
                     }
-                    
-                    // Add the current instruction as the final result
-                    historyData.add(new InstructionTableRow(
-                        String.valueOf(ancestryChain.size() + 1),
-                        instruction.getType() == InstructionType.BASIC ? "B" : "S",
-                        instruction.getLabel() != null ? instruction.getLabel() : "",
-                        String.valueOf(instruction.getCycles()),
-                        formatInstructionDisplay(instruction) + " (Current)"
-                    ));
                 }
                 
                 historyChainTable.setItems(historyData);
@@ -726,5 +804,56 @@ public class MainController implements Initializable {
      */
     public SEmulatorEngine getEngine() {
         return engine;
+    }
+    
+    /**
+     * Highlights the current instruction during debug mode.
+     * 
+     * @param instructionIndex the index of the current instruction, or -1 to clear highlighting
+     */
+    private void highlightCurrentInstruction(Integer instructionIndex) {
+        if (instructionsTable == null) {
+            return;
+        }
+        
+        // Clear previous selection
+        instructionsTable.getSelectionModel().clearSelection();
+        
+        if (instructionIndex != null && instructionIndex >= 0 && instructionIndex < instructionsTable.getItems().size()) {
+            // Highlight current instruction using selection
+            instructionsTable.getSelectionModel().select(instructionIndex);
+            instructionsTable.scrollTo(instructionIndex);
+            
+            // Focus on the table to make the selection visible
+            instructionsTable.requestFocus();
+        }
+    }
+    
+    /**
+     * Highlights variables that changed during the last debug step.
+     * 
+     * @param changedVariables map of variable names to their new values
+     */
+    private void highlightChangedVariables(Map<String, Integer> changedVariables) {
+        if (variablesTable == null || changedVariables == null) {
+            return;
+        }
+        
+        // Clear previous highlighting
+        for (VariableTableRow row : variablesTable.getItems()) {
+            if (row != null) {
+                row.setChanged(false);
+            }
+        }
+        
+        // Highlight changed variables
+        for (VariableTableRow row : variablesTable.getItems()) {
+            if (row != null && changedVariables.containsKey(row.getVariableName())) {
+                row.setChanged(true);
+            }
+        }
+        
+        // Refresh table to apply highlighting
+        variablesTable.refresh();
     }
 }

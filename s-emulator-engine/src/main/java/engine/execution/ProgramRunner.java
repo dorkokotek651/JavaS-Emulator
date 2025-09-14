@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ProgramRunner {
-    private static final int MAX_EXECUTION_STEPS = 100000;
+    private static final int MAX_EXECUTION_STEPS = 1000000;
 
     public ExecutionResult executeProgram(SProgram program, List<Integer> inputs, int runNumber, int expansionLevel) throws ExecutionException {
         if (program == null) {

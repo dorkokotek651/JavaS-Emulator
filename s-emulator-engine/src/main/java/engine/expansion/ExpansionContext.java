@@ -1,5 +1,6 @@
 package engine.expansion;
 
+import engine.model.FunctionRegistry;
 import engine.model.SEmulatorConstants;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +15,7 @@ public class ExpansionContext {
     private final Set<String> usedWorkingVariables;
     private int workingVariableCounter;
     private int currentOriginalLineNumber;
+    private FunctionRegistry functionRegistry;
 
     public ExpansionContext() {
         this.labelManager = new LabelManager();
@@ -147,5 +149,13 @@ public class ExpansionContext {
 
     public void setCurrentOriginalLineNumber(int currentOriginalLineNumber) {
         this.currentOriginalLineNumber = currentOriginalLineNumber;
+    }
+    
+    public FunctionRegistry getFunctionRegistry() {
+        return functionRegistry;
+    }
+    
+    public void setFunctionRegistry(FunctionRegistry functionRegistry) {
+        this.functionRegistry = functionRegistry;
     }
 }

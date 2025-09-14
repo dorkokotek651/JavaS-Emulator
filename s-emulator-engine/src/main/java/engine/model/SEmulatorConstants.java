@@ -24,6 +24,8 @@ public final class SEmulatorConstants {
     public static final String JUMP_ZERO_NAME = "JUMP_ZERO";
     public static final String JUMP_EQUAL_CONSTANT_NAME = "JUMP_EQUAL_CONSTANT";
     public static final String JUMP_EQUAL_VARIABLE_NAME = "JUMP_EQUAL_VARIABLE";
+    public static final String QUOTE_NAME = "QUOTE";
+    public static final String JUMP_EQUAL_FUNCTION_NAME = "JUMP_EQUAL_FUNCTION";
     
     public static final int ZERO_VARIABLE_CYCLES = 1;
     public static final int GOTO_LABEL_CYCLES = 1;
@@ -32,6 +34,8 @@ public final class SEmulatorConstants {
     public static final int JUMP_ZERO_CYCLES = 2;
     public static final int JUMP_EQUAL_CONSTANT_CYCLES = 2;
     public static final int JUMP_EQUAL_VARIABLE_CYCLES = 2;
+    public static final int QUOTE_CYCLES = 5;
+    public static final int JUMP_EQUAL_FUNCTION_CYCLES = 6;
     
     public static final Pattern X_VARIABLE_PATTERN = Pattern.compile("^x\\d+$");
     public static final Pattern Z_VARIABLE_PATTERN = Pattern.compile("^z\\d+$");
@@ -48,6 +52,9 @@ public final class SEmulatorConstants {
     public static final String JE_VARIABLE_LABEL_ARG = "JEVariableLabel";
     public static final String CONSTANT_VALUE_ARG = "constantValue";
     public static final String VARIABLE_NAME_ARG = "variableName";
+    public static final String FUNCTION_NAME_ARG = "functionName";
+    public static final String FUNCTION_ARGUMENTS_ARG = "functionArguments";
+    public static final String JE_FUNCTION_LABEL_ARG = "JEFunctionLabel";
     
     public static final String INSTRUCTION_TYPE_BASIC = "basic";
     public static final String INSTRUCTION_TYPE_SYNTHETIC = "synthetic";

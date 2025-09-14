@@ -12,6 +12,8 @@ import engine.model.instruction.synthetic.ConstantAssignmentInstruction;
 import engine.model.instruction.synthetic.JumpZeroInstruction;
 import engine.model.instruction.synthetic.JumpEqualConstantInstruction;
 import engine.model.instruction.synthetic.JumpEqualVariableInstruction;
+import engine.model.instruction.synthetic.QuoteInstruction;
+import engine.model.instruction.synthetic.JumpEqualFunctionInstruction;
 import engine.model.SEmulatorConstants;
 import java.util.Map;
 
@@ -43,11 +45,14 @@ public class InstructionFactory {
             case SEmulatorConstants.JUMP_ZERO_NAME -> new JumpZeroInstruction(variable, label, arguments, null);
             case SEmulatorConstants.JUMP_EQUAL_CONSTANT_NAME -> new JumpEqualConstantInstruction(variable, label, arguments, null);
             case SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME -> new JumpEqualVariableInstruction(variable, label, arguments, null);
+            case SEmulatorConstants.QUOTE_NAME -> new QuoteInstruction(variable, label, arguments);
+            case SEmulatorConstants.JUMP_EQUAL_FUNCTION_NAME -> new JumpEqualFunctionInstruction(variable, label, arguments);
             default -> throw new IllegalArgumentException("Unknown instruction type: " + instructionName + 
                 ". Supported instructions: " + SEmulatorConstants.INCREASE_NAME + ", " + SEmulatorConstants.DECREASE_NAME + ", " + 
                 SEmulatorConstants.JUMP_NOT_ZERO_NAME + ", " + SEmulatorConstants.NEUTRAL_NAME + ", " + SEmulatorConstants.ZERO_VARIABLE_NAME + ", " + 
                 SEmulatorConstants.GOTO_LABEL_NAME + ", " + SEmulatorConstants.ASSIGNMENT_NAME + ", " + SEmulatorConstants.CONSTANT_ASSIGNMENT_NAME + ", " + 
-                SEmulatorConstants.JUMP_ZERO_NAME + ", " + SEmulatorConstants.JUMP_EQUAL_CONSTANT_NAME + ", " + SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME);
+                SEmulatorConstants.JUMP_ZERO_NAME + ", " + SEmulatorConstants.JUMP_EQUAL_CONSTANT_NAME + ", " + SEmulatorConstants.JUMP_EQUAL_VARIABLE_NAME + ", " +
+                SEmulatorConstants.QUOTE_NAME + ", " + SEmulatorConstants.JUMP_EQUAL_FUNCTION_NAME);
         };
     }
 }
