@@ -339,6 +339,14 @@ public class ExecutionController {
             // Execute single instruction
             boolean continueExecution = engine.stepForward();
             
+            // Check if we can still step forward after execution
+            if (!engine.canStepForward()) {
+                // Program ended after this instruction
+                updateStatus("Program execution completed.");
+                handleDebugSessionEnd();
+                return;
+            }
+            
             if (continueExecution) {
                 // Update variable display with changes
                 updateDebugVariableDisplay();
