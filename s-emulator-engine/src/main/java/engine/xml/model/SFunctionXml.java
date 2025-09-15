@@ -2,9 +2,6 @@ package engine.xml.model;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
-/**
- * XML model class for S-Function elements in V2 schema.
- */
 public class SFunctionXml {
     
     @JacksonXmlProperty(isAttribute = true, localName = "name")

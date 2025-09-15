@@ -3,10 +3,6 @@ package fx.model;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-/**
- * Model class for instruction table rows in the JavaFX TableView.
- * Represents a single instruction with its display properties.
- */
 public class InstructionTableRow {
     
     private final StringProperty commandNumber;
@@ -15,15 +11,6 @@ public class InstructionTableRow {
     private final StringProperty cycles;
     private final StringProperty instruction;
     
-    /**
-     * Creates a new instruction table row.
-     * 
-     * @param commandNumber the command number (1-based)
-     * @param commandType the command type (B for Basic, S for Synthetic)
-     * @param label the instruction label (if any)
-     * @param cycles the number of cycles
-     * @param instruction the instruction display text
-     */
     public InstructionTableRow(String commandNumber, String commandType, String label, String cycles, String instruction) {
         this.commandNumber = new SimpleStringProperty(commandNumber);
         this.commandType = new SimpleStringProperty(commandType);
@@ -32,7 +19,7 @@ public class InstructionTableRow {
         this.instruction = new SimpleStringProperty(instruction);
     }
     
-    // Command Number property
+
     public StringProperty commandNumberProperty() {
         return commandNumber;
     }
@@ -45,7 +32,7 @@ public class InstructionTableRow {
         this.commandNumber.set(commandNumber);
     }
     
-    // Command Type property
+
     public StringProperty commandTypeProperty() {
         return commandType;
     }
@@ -58,7 +45,7 @@ public class InstructionTableRow {
         this.commandType.set(commandType);
     }
     
-    // Label property
+
     public StringProperty labelProperty() {
         return label;
     }
@@ -71,7 +58,7 @@ public class InstructionTableRow {
         this.label.set(label);
     }
     
-    // Cycles property
+
     public StringProperty cyclesProperty() {
         return cycles;
     }
@@ -84,7 +71,7 @@ public class InstructionTableRow {
         this.cycles.set(cycles);
     }
     
-    // Instruction property
+
     public StringProperty instructionProperty() {
         return instruction;
     }

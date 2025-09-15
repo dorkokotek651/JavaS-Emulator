@@ -10,24 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Implementation of the JUMP_EQUAL_FUNCTION instruction (Expansion Level 4).
- * 
- * This instruction makes a jump to a label if a certain variable equals the result
- * of a function run. It combines QUOTATION with JUMP_EQUAL_VARIABLE logic.
- * 
- * Cycles: 6 as per Appendix C
- * User view: IF V = Q(x1,...) GOTO L (Example: IF X2 = ID(x2) GOTO L)
- */
 public class JumpEqualFunctionInstruction extends BaseInstruction {
     
-    /**
-     * Creates a new JUMP_EQUAL_FUNCTION instruction.
-     * 
-     * @param variable the variable to compare against the function result
-     * @param label the instruction label (can be null)
-     * @param arguments map containing JEFunctionLabel, functionName, and functionArguments
-     */
     public JumpEqualFunctionInstruction(String variable, String label, Map<String, String> arguments) {
         super(SEmulatorConstants.JUMP_EQUAL_FUNCTION_NAME, InstructionType.SYNTHETIC, 
               variable, label, arguments, SEmulatorConstants.JUMP_EQUAL_FUNCTION_CYCLES);
@@ -35,9 +19,6 @@ public class JumpEqualFunctionInstruction extends BaseInstruction {
         validateArguments();
     }
     
-    /**
-     * Creates a new JUMP_EQUAL_FUNCTION instruction with source instruction for expansion tracking.
-     */
     public JumpEqualFunctionInstruction(String variable, String label, Map<String, String> arguments, 
                                        SInstruction sourceInstruction) {
         super(SEmulatorConstants.JUMP_EQUAL_FUNCTION_NAME, InstructionType.SYNTHETIC, 
@@ -63,8 +44,6 @@ public class JumpEqualFunctionInstruction extends BaseInstruction {
     
     @Override
     public List<SInstruction> expand(ExpansionContext context) {
-        // For now, return a simple placeholder expansion
-        // TODO: Implement full JUMP_EQUAL_FUNCTION expansion logic
         List<SInstruction> expandedInstructions = new ArrayList<>();
         
         String jumpLabel = arguments.get(SEmulatorConstants.JE_FUNCTION_LABEL_ARG);
@@ -75,10 +54,8 @@ public class JumpEqualFunctionInstruction extends BaseInstruction {
             throw new IllegalArgumentException("JUMP_EQUAL_FUNCTION instruction requires JEFunctionLabel argument");
         }
         
-        // Step 1: Create a working variable to store the function result
         String workingVar = context.getUniqueWorkingVariable();
         
-        // Step 2: Create a QUOTE instruction to call the function
         Map<String, String> quoteArgs = new HashMap<>();
         quoteArgs.put(SEmulatorConstants.FUNCTION_NAME_ARG, functionName);
         quoteArgs.put(SEmulatorConstants.FUNCTION_ARGUMENTS_ARG, functionArguments);
@@ -86,7 +63,6 @@ public class JumpEqualFunctionInstruction extends BaseInstruction {
         SInstruction quoteInstruction = new QuoteInstruction(workingVar, null, quoteArgs, this);
         expandedInstructions.add(quoteInstruction);
         
-        // Step 3: Create a JUMP_EQUAL_VARIABLE instruction to compare the result
         Map<String, String> jumpArgs = new HashMap<>();
         jumpArgs.put(SEmulatorConstants.JE_VARIABLE_LABEL_ARG, jumpLabel);
         jumpArgs.put(SEmulatorConstants.VARIABLE_NAME_ARG, workingVar);

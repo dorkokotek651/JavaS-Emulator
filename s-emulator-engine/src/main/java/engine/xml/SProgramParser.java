@@ -80,7 +80,6 @@ public class SProgramParser {
 
         validateLabelReferences(definedLabels, referencedLabels);
         
-        // Parse and register functions if they exist
         FunctionRegistry functionRegistry = new FunctionRegistry();
         if (xmlProgram.getSFunctions() != null && xmlProgram.getSFunctions().getSFunctions() != null) {
             for (SFunctionXml xmlFunction : xmlProgram.getSFunctions().getSFunctions()) {
@@ -89,7 +88,6 @@ public class SProgramParser {
             }
         }
         
-        // Set the function registry in the program
         program.setFunctionRegistry(functionRegistry);
         
         program.validate();

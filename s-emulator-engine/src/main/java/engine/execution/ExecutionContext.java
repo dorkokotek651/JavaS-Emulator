@@ -18,16 +18,13 @@ public class ExecutionContext {
     private final List<SInstruction> executedInstructions;
     private String pendingJumpLabel;
     
-    // Debug mode support
     private boolean debugMode;
     private boolean pauseRequested;
     private Map<String, Integer> previousVariableState;
     private Map<String, Integer> changedVariables;
     
-    // Virtual execution mode support
     private boolean virtualExecutionMode;
     
-    // Function registry for virtual execution
     private FunctionRegistry functionRegistry;
 
 
@@ -41,16 +38,13 @@ public class ExecutionContext {
         this.executedInstructions = new ArrayList<>();
         this.pendingJumpLabel = null;
         
-        // Initialize debug mode fields
         this.debugMode = false;
         this.pauseRequested = false;
         this.previousVariableState = new HashMap<>();
         this.changedVariables = new HashMap<>();
         
-        // Initialize virtual execution mode
         this.virtualExecutionMode = false;
         
-        // Initialize function registry
         this.functionRegistry = null;
     }
 
@@ -156,20 +150,13 @@ public class ExecutionContext {
         variableManager.initializeInputs(inputValues);
     }
 
-    // Debug mode methods
     
-    /**
-     * Enables debug mode for step-by-step execution.
-     */
     public void enableDebugMode() {
         this.debugMode = true;
         this.pauseRequested = false;
         takeVariableSnapshot();
     }
     
-    /**
-     * Disables debug mode and returns to normal execution.
-     */
     public void disableDebugMode() {
         this.debugMode = false;
         this.pauseRequested = false;
@@ -177,84 +164,44 @@ public class ExecutionContext {
         this.changedVariables.clear();
     }
     
-    /**
-     * Checks if execution is in debug mode.
-     * 
-     * @return true if in debug mode, false otherwise
-     */
     public boolean isDebugMode() {
         return debugMode;
     }
     
-    /**
-     * Enables virtual execution mode for QUOTE instructions.
-     */
     public void enableVirtualExecutionMode() {
         this.virtualExecutionMode = true;
     }
     
-    /**
-     * Disables virtual execution mode.
-     */
     public void disableVirtualExecutionMode() {
         this.virtualExecutionMode = false;
     }
     
-    /**
-     * Checks if virtual execution mode is enabled.
-     * 
-     * @return true if virtual execution mode is enabled, false otherwise
-     */
     public boolean isVirtualExecutionMode() {
         return virtualExecutionMode;
     }
     
-    /**
-     * Sets the function registry for virtual execution.
-     * 
-     * @param functionRegistry the function registry to use
-     */
     public void setFunctionRegistry(FunctionRegistry functionRegistry) {
         this.functionRegistry = functionRegistry;
     }
     
-    /**
-     * Gets the function registry for virtual execution.
-     * 
-     * @return the function registry, or null if not set
-     */
     public FunctionRegistry getFunctionRegistry() {
         return functionRegistry;
     }
     
-    /**
-     * Requests pause after current instruction in debug mode.
-     */
     public void requestPause() {
         if (debugMode) {
             this.pauseRequested = true;
         }
     }
     
-    /**
-     * Resumes execution from paused state.
-     */
     public void resume() {
         this.pauseRequested = false;
     }
     
-    /**
-     * Checks if execution should pause after current instruction.
-     * 
-     * @return true if pause is requested, false otherwise
-     */
     public boolean isPauseRequested() {
         return pauseRequested;
     }
     
-    /**
-     * Takes a snapshot of current variable state for change detection.
-     */
     public void takeVariableSnapshot() {
         if (!debugMode) {
             return;
@@ -262,21 +209,15 @@ public class ExecutionContext {
         
         previousVariableState.clear();
         
-        // Capture input variables
         Map<String, Integer> inputVars = variableManager.getSortedInputVariablesMap();
         previousVariableState.putAll(inputVars);
         
-        // Capture working variables
         Map<String, Integer> workingVars = variableManager.getSortedWorkingVariablesMap();
         previousVariableState.putAll(workingVars);
         
-        // Capture y variable
         previousVariableState.put("y", variableManager.getYValue());
     }
     
-    /**
-     * Detects variables that changed since last snapshot.
-     */
     public void detectVariableChanges() {
         if (!debugMode) {
             return;
@@ -284,7 +225,6 @@ public class ExecutionContext {
         
         changedVariables.clear();
         
-        // Check input variables
         Map<String, Integer> currentInputVars = variableManager.getSortedInputVariablesMap();
         for (Map.Entry<String, Integer> entry : currentInputVars.entrySet()) {
             String varName = entry.getKey();
@@ -296,7 +236,6 @@ public class ExecutionContext {
             }
         }
         
-        // Check working variables
         Map<String, Integer> currentWorkingVars = variableManager.getSortedWorkingVariablesMap();
         for (Map.Entry<String, Integer> entry : currentWorkingVars.entrySet()) {
             String varName = entry.getKey();
@@ -308,7 +247,6 @@ public class ExecutionContext {
             }
         }
         
-        // Check y variable
         int currentY = variableManager.getYValue();
         Integer previousY = previousVariableState.get("y");
         if (previousY == null || !previousY.equals(currentY)) {
@@ -316,11 +254,6 @@ public class ExecutionContext {
         }
     }
     
-    /**
-     * Gets variables that changed since last snapshot.
-     * 
-     * @return map of variable names to their new values
-     */
     public Map<String, Integer> getChangedVariables() {
         return new HashMap<>(changedVariables);
     }

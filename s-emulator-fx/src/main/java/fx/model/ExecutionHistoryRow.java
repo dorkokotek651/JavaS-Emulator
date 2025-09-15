@@ -3,10 +3,6 @@ package fx.model;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-/**
- * Model class for execution history table rows in the JavaFX TableView.
- * Represents a single execution run with its details.
- */
 public class ExecutionHistoryRow {
     
     private final StringProperty runNumber;
@@ -16,16 +12,6 @@ public class ExecutionHistoryRow {
     private final StringProperty totalCycles;
     private final StringProperty actions;
     
-    /**
-     * Creates a new execution history table row.
-     * 
-     * @param runNumber the run number
-     * @param expansionLevel the expansion level used
-     * @param inputs the inputs (comma-separated)
-     * @param yValue the final Y value
-     * @param totalCycles the total cycles consumed
-     * @param actions the action buttons (show | re-run)
-     */
     public ExecutionHistoryRow(String runNumber, String expansionLevel, String inputs, 
                               String yValue, String totalCycles, String actions) {
         this.runNumber = new SimpleStringProperty(runNumber);
@@ -36,7 +22,7 @@ public class ExecutionHistoryRow {
         this.actions = new SimpleStringProperty(actions);
     }
     
-    // Run Number property
+
     public StringProperty runNumberProperty() {
         return runNumber;
     }
@@ -49,7 +35,7 @@ public class ExecutionHistoryRow {
         this.runNumber.set(runNumber);
     }
     
-    // Expansion Level property
+
     public StringProperty expansionLevelProperty() {
         return expansionLevel;
     }
@@ -62,7 +48,7 @@ public class ExecutionHistoryRow {
         this.expansionLevel.set(expansionLevel);
     }
     
-    // Inputs property
+
     public StringProperty inputsProperty() {
         return inputs;
     }
@@ -75,7 +61,7 @@ public class ExecutionHistoryRow {
         this.inputs.set(inputs);
     }
     
-    // Y Value property
+
     public StringProperty yValueProperty() {
         return yValue;
     }
@@ -88,7 +74,7 @@ public class ExecutionHistoryRow {
         this.yValue.set(yValue);
     }
     
-    // Total Cycles property
+
     public StringProperty totalCyclesProperty() {
         return totalCycles;
     }
@@ -101,7 +87,7 @@ public class ExecutionHistoryRow {
         this.totalCycles.set(totalCycles);
     }
     
-    // Actions property
+
     public StringProperty actionsProperty() {
         return actions;
     }

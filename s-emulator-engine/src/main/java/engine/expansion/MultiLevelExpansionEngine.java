@@ -31,7 +31,6 @@ public class MultiLevelExpansionEngine {
     private SProgram expandToNextLevel(SProgram sourceProgram, int targetLevel, MultiLevelExpansion multiLevel) throws ExpansionException {
         SProgramImpl expandedProgram = new SProgramImpl(sourceProgram.getName());
         
-        // Copy the function registry to the expanded program
         expandedProgram.setFunctionRegistry(sourceProgram.getFunctionRegistry());
         
         ExpansionContext context = createExpansionContext(sourceProgram);

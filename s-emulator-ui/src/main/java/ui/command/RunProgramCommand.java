@@ -65,21 +65,21 @@ public class RunProgramCommand implements Command {
             ui.displaySuccess("Program executed successfully!");
             ui.displaySeparator();
             
-            // Step 4: Show the actual running program
+
             String expandedProgram = engine.expandProgramWithHistory(expansionLevel);
             String instructionsOnly = extractInstructionsFromProgram(expandedProgram);
             System.out.println("Program Executed:");
             System.out.println(instructionsOnly);
             ui.displaySeparator();
             
-            // Step 5: Show the value of y (the formal result)
+
             System.out.println("Result (y): " + result.getYValue());
             
-            // Step 6: Show the other variables
+
             System.out.println("Variable Values: " + OutputFormatter.formatVariableValues(
                 result.getYValue(), result.getInputVariables(), result.getWorkingVariables()));
             
-            // Step 7: Show the number of cycles
+
             System.out.println("Total Cycles: " + result.getTotalCycles());
             ui.displaySeparator();
             

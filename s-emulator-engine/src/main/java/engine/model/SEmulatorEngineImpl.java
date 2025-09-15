@@ -30,11 +30,9 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
     private final SystemStateSerializer stateSerializer;
     private int nextRunNumber;
     
-    // Debug session support
     private boolean debugSessionActive;
     private ExecutionContext debugExecutionContext;
     private SProgram debugProgram;
-    private List<Integer> debugInputs;
     private int debugExpansionLevel;
 
     public SEmulatorEngineImpl() throws SProgramException {
@@ -42,11 +40,9 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
         this.executionHistory = new ArrayList<>();
         this.nextRunNumber = 1;
         
-        // Initialize debug session fields
         this.debugSessionActive = false;
         this.debugExecutionContext = null;
         this.debugProgram = null;
-        this.debugInputs = null;
         this.debugExpansionLevel = 0;
         
         try {
@@ -275,7 +271,6 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
                 programToRun = expansionEngine.expandProgram(currentProgram, expansionLevel);
             }
             
-            // Enable virtual execution mode for level 0 to handle QUOTE instructions
             ExecutionResult result;
             if (expansionLevel == 0) {
                 result = runner.executeProgramWithVirtualExecution(programToRun, inputs, nextRunNumber, expansionLevel, currentProgram.getFunctionRegistry());
@@ -357,8 +352,6 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
         this.nextRunNumber = state.getNextRunNumber();
     }
     
-    // Debug session implementation
-    
     @Override
     public void startDebugSession(int expansionLevel, List<Integer> inputs) throws SProgramException {
         if (!isProgramLoaded()) {
@@ -378,26 +371,21 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
                 " exceeds maximum level " + currentProgram.getMaxExpansionLevel());
         }
         
-        // Stop any existing debug session
         stopDebugSession();
         
         try {
-            // Prepare program for debug execution
             if (expansionLevel == 0) {
                 this.debugProgram = currentProgram;
             } else {
                 this.debugProgram = expansionEngine.expandProgram(currentProgram, expansionLevel);
             }
             
-            // Initialize debug execution context
             this.debugExecutionContext = runner.createDebugExecutionContext(debugProgram, inputs);
             
-            // Set function registry for virtual execution
             if (currentProgram.getFunctionRegistry() != null) {
                 this.debugExecutionContext.setFunctionRegistry(currentProgram.getFunctionRegistry());
             }
             
-            this.debugInputs = new ArrayList<>(inputs);
             this.debugExpansionLevel = expansionLevel;
             this.debugSessionActive = true;
             
@@ -439,7 +427,6 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
         }
         this.debugExecutionContext = null;
         this.debugProgram = null;
-        this.debugInputs = null;
         this.debugExpansionLevel = 0;
     }
     
@@ -450,15 +437,12 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
         }
         
         try {
-            // Continue execution from current state
             ExecutionResult result = runner.continueExecution(
                 debugProgram, debugExecutionContext, nextRunNumber, debugExpansionLevel);
             
-            // Add to history and update run number
             executionHistory.add(result);
             nextRunNumber++;
             
-            // Stop debug session
             stopDebugSession();
             
             return result;

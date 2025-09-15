@@ -4,9 +4,6 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import java.util.List;
 
-/**
- * XML model class for S-Functions container element in V2 schema.
- */
 public class SFunctionsXml {
     
     @JacksonXmlElementWrapper(useWrapping = false)

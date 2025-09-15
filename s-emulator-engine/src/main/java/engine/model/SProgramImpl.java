@@ -98,12 +98,9 @@ public class SProgramImpl implements SProgram {
             
             for (String argValue : instruction.getArguments().values()) {
                 if (argValue != null) {
-                    // Check if the entire argument value matches the X variable pattern
                     if (SEmulatorConstants.X_VARIABLE_PATTERN.matcher(argValue).matches()) {
                         inputVariables.add(argValue);
                     } else {
-                        // Search for X variables within the argument value (for complex expressions)
-                        // Use a pattern without anchors for partial matching
                         java.util.regex.Pattern xPattern = java.util.regex.Pattern.compile("x\\d+");
                         java.util.regex.Matcher matcher = xPattern.matcher(argValue);
                         while (matcher.find()) {
@@ -169,14 +166,11 @@ public class SProgramImpl implements SProgram {
     private int calculateDeepExpansionLevel(SInstruction instruction) {
         int baseLevel = getInstructionExpansionLevel(instruction.getName());
         
-        // For QUOTE instructions with function compositions, we need one additional level
-        // because the composition creates new synthetic instructions that need expansion
         if (instruction.getName().equals(SEmulatorConstants.QUOTE_NAME)) {
             String functionArguments = instruction.getArguments().get(SEmulatorConstants.FUNCTION_ARGUMENTS_ARG);
             
-            // If we have nested function compositions, we need additional levels
             if (functionArguments != null && hasNestedFunctionComposition(functionArguments)) {
-                baseLevel = Math.max(baseLevel, 6); // QUOTE with nested composition needs more levels
+                baseLevel = Math.max(baseLevel, 6);
             }
         }
         
@@ -184,12 +178,10 @@ public class SProgramImpl implements SProgram {
     }
     
     private boolean hasNestedFunctionComposition(String functionArguments) {
-        // Check if arguments contain nested function calls like (NOT,(EQUAL,...))
         if (!functionArguments.contains("(") || !functionArguments.contains(")")) {
             return false;
         }
         
-        // Count nested parentheses to detect composition depth
         int depth = 0;
         int maxDepth = 0;
         for (char c : functionArguments.toCharArray()) {
@@ -201,7 +193,6 @@ public class SProgramImpl implements SProgram {
             }
         }
         
-        // If we have nesting depth > 1, it's a nested composition
         return maxDepth > 1;
     }
     

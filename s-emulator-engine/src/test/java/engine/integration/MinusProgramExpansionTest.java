@@ -91,12 +91,12 @@ public class MinusProgramExpansionTest {
         System.out.println("Testing expansion level " + expansionLevel);
         
         int[][] testCases = {
-            {5, 2},     // 5 - 2 = 3
-            {10, 4},    // 10 - 4 = 6  
-            {7, 7},     // 7 - 7 = 0
-            {15, 0},    // 15 - 0 = 15
-            {0, 0},     // 0 - 0 = 0
-            {20, 5}     // 20 - 5 = 15
+            {5, 2},
+            {10, 4},
+            {7, 7},
+            {15, 0},
+            {0, 0},
+            {20, 5}
         };
         
         for (int[] testCase : testCases) {
@@ -161,11 +161,11 @@ public class MinusProgramExpansionTest {
         System.out.println("=== EDGE CASES ===");
         
         int[][] edgeCases = {
-            {0, 5},     // 0 - 5 = 0 (can't go negative)
-            {3, 10},    // 3 - 10 = 0 (can't go negative) 
-            {100, 100}, // 100 - 100 = 0
-            {1, 0},     // 1 - 0 = 1
-            {0, 0}      // 0 - 0 = 0
+            {0, 5},
+            {3, 10},
+            {100, 100},
+            {1, 0},
+            {0, 0}
         };
         
         for (int level = 0; level <= Math.min(maxLevel, 2); level++) {
@@ -174,7 +174,7 @@ public class MinusProgramExpansionTest {
             for (int[] testCase : edgeCases) {
                 int x1 = testCase[0];
                 int x2 = testCase[1];
-                int expected = Math.max(0, x1 - x2); // S-Emulator can't handle negative numbers
+                int expected = Math.max(0, x1 - x2);
                 
                 List<Integer> inputs = Arrays.asList(x1, x2);
                 ExecutionResult result = engine.runProgram(level, inputs);

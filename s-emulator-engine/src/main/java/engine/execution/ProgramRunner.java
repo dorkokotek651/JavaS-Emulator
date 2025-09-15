@@ -53,19 +53,6 @@ public class ProgramRunner {
         );
     }
 
-    /**
-     * Executes a program with virtual execution mode enabled for QUOTE instructions.
-     * This method is used for regular execution at level 0 to handle QUOTE instructions
-     * without requiring full expansion.
-     * 
-     * @param program the program to execute
-     * @param inputs the input values
-     * @param runNumber the run number for this execution
-     * @param expansionLevel the expansion level used
-     * @param functionRegistry the function registry for virtual execution
-     * @return the execution result
-     * @throws ExecutionException if execution fails
-     */
     public ExecutionResult executeProgramWithVirtualExecution(SProgram program, List<Integer> inputs, int runNumber, 
                                                            int expansionLevel, engine.model.FunctionRegistry functionRegistry) throws ExecutionException {
         if (program == null) {
@@ -89,7 +76,6 @@ public class ProgramRunner {
         ExecutionContext context = new ExecutionContext();
         context.initializeInputs(inputs);
         
-        // Enable virtual execution mode and set function registry
         context.enableVirtualExecutionMode();
         if (functionRegistry != null) {
             context.setFunctionRegistry(functionRegistry);
@@ -170,17 +156,7 @@ public class ProgramRunner {
             throw new ExecutionException("Jump to undefined label: " + pendingJump);
         }
     }
-    
-    // Debug execution methods
-    
-    /**
-     * Creates a debug execution context for step-by-step execution.
-     * 
-     * @param program the program to debug
-     * @param inputs the input values
-     * @return initialized execution context in debug mode
-     * @throws ExecutionException if context cannot be created
-     */
+
     public ExecutionContext createDebugExecutionContext(SProgram program, List<Integer> inputs) throws ExecutionException {
         if (program == null) {
             throw new ExecutionException("Program cannot be null");
@@ -204,14 +180,6 @@ public class ProgramRunner {
         return context;
     }
     
-    /**
-     * Executes a single instruction in debug mode.
-     * 
-     * @param program the program being debugged
-     * @param context the debug execution context
-     * @return true if instruction was executed, false if program ended
-     * @throws ExecutionException if execution fails
-     */
     public boolean executeSingleInstruction(SProgram program, ExecutionContext context) throws ExecutionException {
         if (program == null) {
             throw new ExecutionException("Program cannot be null");
@@ -225,15 +193,12 @@ public class ProgramRunner {
         
         List<SInstruction> instructions = program.getInstructions();
         
-        // Check if program has ended
         if (context.isProgramTerminated() || context.getCurrentInstructionIndex() >= instructions.size()) {
             return false;
         }
         
-        // Take snapshot before execution
         context.takeVariableSnapshot();
         
-        // Execute single instruction
         int currentIndex = context.getCurrentInstructionIndex();
         SInstruction currentInstruction = instructions.get(currentIndex);
         context.addExecutedInstruction(currentInstruction);
@@ -245,25 +210,13 @@ public class ProgramRunner {
                 " (" + currentInstruction.getName() + "): " + e.getMessage(), e);
         }
         
-        // Handle pending jumps
         handlePendingJump(context);
         
-        // Detect variable changes
         context.detectVariableChanges();
         
         return !context.isProgramTerminated();
     }
     
-    /**
-     * Continues execution from debug state to completion.
-     * 
-     * @param program the program being debugged
-     * @param context the debug execution context
-     * @param runNumber the run number for the result
-     * @param expansionLevel the expansion level used
-     * @return execution result after completion
-     * @throws ExecutionException if execution fails
-     */
     public ExecutionResult continueExecution(SProgram program, ExecutionContext context, 
                                            int runNumber, int expansionLevel) throws ExecutionException {
         if (program == null) {
@@ -273,18 +226,15 @@ public class ProgramRunner {
             throw new ExecutionException("Execution context cannot be null");
         }
         
-        // Disable debug mode and continue normal execution
         context.disableDebugMode();
         
         List<SInstruction> instructions = program.getInstructions();
         executeInstructionLoop(instructions, context);
         
-        // Get original inputs from context
         VariableManager variableManager = context.getVariableManager();
         List<Integer> originalInputs = new java.util.ArrayList<>();
         Map<String, Integer> inputVars = variableManager.getSortedInputVariablesMap();
         
-        // Reconstruct input list (this is a simplified approach)
         for (int i = 1; i <= inputVars.size(); i++) {
             String varName = "x" + i;
             originalInputs.add(inputVars.getOrDefault(varName, 0));
