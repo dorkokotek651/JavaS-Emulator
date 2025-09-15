@@ -275,7 +275,14 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
                 programToRun = expansionEngine.expandProgram(currentProgram, expansionLevel);
             }
             
-            ExecutionResult result = runner.executeProgram(programToRun, inputs, nextRunNumber, expansionLevel);
+            // Enable virtual execution mode for level 0 to handle QUOTE instructions
+            ExecutionResult result;
+            if (expansionLevel == 0) {
+                result = runner.executeProgramWithVirtualExecution(programToRun, inputs, nextRunNumber, expansionLevel, currentProgram.getFunctionRegistry());
+            } else {
+                result = runner.executeProgram(programToRun, inputs, nextRunNumber, expansionLevel);
+            }
+            
             executionHistory.add(result);
             nextRunNumber++;
             return result;
@@ -384,6 +391,12 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
             
             // Initialize debug execution context
             this.debugExecutionContext = runner.createDebugExecutionContext(debugProgram, inputs);
+            
+            // Set function registry for virtual execution
+            if (currentProgram.getFunctionRegistry() != null) {
+                this.debugExecutionContext.setFunctionRegistry(currentProgram.getFunctionRegistry());
+            }
+            
             this.debugInputs = new ArrayList<>(inputs);
             this.debugExpansionLevel = expansionLevel;
             this.debugSessionActive = true;

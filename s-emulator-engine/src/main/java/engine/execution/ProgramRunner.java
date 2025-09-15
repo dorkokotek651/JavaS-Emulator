@@ -53,6 +53,68 @@ public class ProgramRunner {
         );
     }
 
+    /**
+     * Executes a program with virtual execution mode enabled for QUOTE instructions.
+     * This method is used for regular execution at level 0 to handle QUOTE instructions
+     * without requiring full expansion.
+     * 
+     * @param program the program to execute
+     * @param inputs the input values
+     * @param runNumber the run number for this execution
+     * @param expansionLevel the expansion level used
+     * @param functionRegistry the function registry for virtual execution
+     * @return the execution result
+     * @throws ExecutionException if execution fails
+     */
+    public ExecutionResult executeProgramWithVirtualExecution(SProgram program, List<Integer> inputs, int runNumber, 
+                                                           int expansionLevel, engine.model.FunctionRegistry functionRegistry) throws ExecutionException {
+        if (program == null) {
+            throw new ExecutionException("Program cannot be null");
+        }
+        if (inputs == null) {
+            throw new ExecutionException("Inputs cannot be null");
+        }
+        if (runNumber <= 0) {
+            throw new ExecutionException("Run number must be positive: " + runNumber);
+        }
+        if (expansionLevel < 0) {
+            throw new ExecutionException("Expansion level cannot be negative: " + expansionLevel);
+        }
+        
+        List<SInstruction> instructions = program.getInstructions();
+        if (instructions.isEmpty()) {
+            throw new ExecutionException("Program must contain at least one instruction");
+        }
+
+        ExecutionContext context = new ExecutionContext();
+        context.initializeInputs(inputs);
+        
+        // Enable virtual execution mode and set function registry
+        context.enableVirtualExecutionMode();
+        if (functionRegistry != null) {
+            context.setFunctionRegistry(functionRegistry);
+        }
+        
+        Map<String, Integer> labelToIndexMap = buildLabelToIndexMap(instructions);
+        context.setLabelToIndexMap(labelToIndexMap);
+
+        executeInstructionLoop(instructions, context);
+
+        VariableManager variableManager = context.getVariableManager();
+        int result = variableManager.getYValue();
+        
+        return new ExecutionResult(
+            runNumber,
+            expansionLevel,
+            inputs,
+            result,
+            variableManager.getSortedInputVariablesMap(),
+            variableManager.getSortedWorkingVariablesMap(),
+            context.getTotalCycles(),
+            context.getExecutedInstructions()
+        );
+    }
+
     private Map<String, Integer> buildLabelToIndexMap(List<SInstruction> instructions) {
         Map<String, Integer> labelToIndexMap = new HashMap<>();
         

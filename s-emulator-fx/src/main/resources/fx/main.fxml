@@ -80,6 +80,9 @@
                   <TableColumn fx:id="cyclesColumn" prefWidth="70.0" text="Cycles" />
                   <TableColumn fx:id="instructionColumn" prefWidth="300.0" text="Instruction" />
                </columns>
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy>
             </TableView>
             
             <!-- Summary Line -->
@@ -115,6 +118,9 @@
                            <TableColumn fx:id="variableNameColumn" prefWidth="80.0" text="Name" />
                            <TableColumn fx:id="variableValueColumn" prefWidth="80.0" text="Value" />
                         </columns>
+                        <columnResizePolicy>
+                           <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                        </columnResizePolicy>
                      </TableView>
                   </VBox>
                   
@@ -160,6 +166,9 @@
                      <TableColumn fx:id="historyCyclesColumn" prefWidth="70.0" text="Cycles" />
                      <TableColumn fx:id="historyInstructionColumn" prefWidth="200.0" text="Instruction" />
                   </columns>
+                  <columnResizePolicy>
+                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                  </columnResizePolicy>
                </TableView>
             </VBox>
             
@@ -175,6 +184,9 @@
                      <TableColumn fx:id="totalCyclesColumn" prefWidth="70.0" text="Cycles" />
                      <TableColumn fx:id="actionsColumn" prefWidth="100.0" text="Actions" />
                   </columns>
+                  <columnResizePolicy>
+                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                  </columnResizePolicy>
                </TableView>
             </VBox>
          </SplitPane>

@@ -216,14 +216,9 @@ public class ExecutionController {
             List<Integer> inputs = collectInputs();
             List<Integer> displayInputs = formatInputsForDisplay(inputs);
             
-            // Determine the execution level - only expand if necessary
+            // Determine the execution level - always use current level for virtual execution
             int executionLevel = determineExecutionLevel();
-            if (executionLevel != currentExpansionLevel) {
-                updateStatus("Running program with inputs: " + displayInputs + " at expansion level " + executionLevel + 
-                           " (expanded from level " + currentExpansionLevel + " due to QUOTE/JUMP_EQUAL_FUNCTION instructions)");
-            } else {
-                updateStatus("Running program with inputs: " + displayInputs + " at expansion level " + executionLevel);
-            }
+            updateStatus("Running program with inputs: " + displayInputs + " at expansion level " + executionLevel);
             
             // Execute the program
             ExecutionResult result = engine.runProgram(executionLevel, inputs);
@@ -278,14 +273,10 @@ public class ExecutionController {
             
             List<Integer> inputs = collectInputs();
             
-            // Determine the execution level - only expand if necessary
+            // Determine the execution level - always use current level for virtual execution
             int executionLevel = determineExecutionLevel();
-            if (executionLevel != currentExpansionLevel) {
-                updateStatus("Starting debug session with inputs: " + inputs + " at expansion level " + executionLevel + 
-                           " (expanded from level " + currentExpansionLevel + " due to QUOTE/JUMP_EQUAL_FUNCTION instructions)");
-            } else {
-                updateStatus("Starting debug session with inputs: " + inputs + " at expansion level " + executionLevel);
-            }
+            updateStatus("Starting debug session with inputs: " + inputs + " at expansion level " + executionLevel + 
+                       " (virtual execution mode enabled for QUOTE instructions)");
             
             // Store original inputs for later use in history
             debugOriginalInputs = new ArrayList<>(inputs);
@@ -293,6 +284,9 @@ public class ExecutionController {
             // Start debug session
             engine.startDebugSession(executionLevel, inputs);
             debugSessionActive = true;
+            
+            // Enable virtual execution mode for QUOTE instructions
+            engine.getCurrentExecutionState().enableVirtualExecutionMode();
             
             // Notify UI that debug session started
             if (onDebugSessionStarted != null) {
@@ -870,72 +864,16 @@ public class ExecutionController {
     
     /**
      * Determines the appropriate execution level based on the current display level.
-     * Only expands when synthetic instructions cannot be executed directly.
+     * For debugging, always use the current expansion level to enable virtual execution.
      */
     private int determineExecutionLevel() {
         if (!engine.isProgramLoaded()) {
             return currentExpansionLevel;
         }
         
-        try {
-            // Get the program at the current expansion level
-            engine.api.SProgram currentProgram = engine.getExpandedProgram(currentExpansionLevel);
-            
-            // Check if the program contains any synthetic instructions that cannot be executed directly
-            boolean hasUnexecutableInstructions = currentProgram.getInstructions().stream()
-                .anyMatch(instruction -> instruction.getType().name().equals("SYNTHETIC") && 
-                          !canExecuteDirectly(instruction));
-            
-            if (hasUnexecutableInstructions) {
-                // Find the minimum level where all instructions can be executed
-                return findMinimumExecutableLevel();
-            }
-            
-            // All instructions can be executed at current level
-            return currentExpansionLevel;
-            
-        } catch (Exception e) {
-            // If there's any error, fallback to max expansion level for safety
-            return engine.getMaxExpansionLevel();
-        }
+        // Always use the current expansion level for debugging
+        // Virtual execution mode will handle QUOTE instructions
+        return currentExpansionLevel;
     }
     
-    /**
-     * Checks if a synthetic instruction can be executed directly without expansion.
-     * Only QUOTE and JUMP_EQUAL_FUNCTION require expansion.
-     */
-    private boolean canExecuteDirectly(engine.api.SInstruction instruction) {
-        String instructionName = instruction.getName();
-        
-        // These instructions throw UnsupportedOperationException and must be expanded
-        return !instructionName.equals("QUOTE") && !instructionName.equals("JUMP_EQUAL_FUNCTION");
-    }
-    
-    /**
-     * Finds the minimum expansion level where all instructions can be executed.
-     */
-    private int findMinimumExecutableLevel() {
-        int maxLevel = engine.getMaxExpansionLevel();
-        
-        // Start from current level and work up to find the minimum level where all instructions are executable
-        for (int level = currentExpansionLevel; level <= maxLevel; level++) {
-            try {
-                engine.api.SProgram programAtLevel = engine.getExpandedProgram(level);
-                
-                boolean allExecutable = programAtLevel.getInstructions().stream()
-                    .allMatch(instruction -> instruction.getType().name().equals("BASIC") || 
-                              canExecuteDirectly(instruction));
-                
-                if (allExecutable) {
-                    return level;
-                }
-            } catch (Exception e) {
-                // Continue to next level if this one fails
-                continue;
-            }
-        }
-        
-        // If no level works, return max level as fallback
-        return maxLevel;
-    }
 }

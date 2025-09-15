@@ -1,6 +1,7 @@
 package engine.execution;
 
 import engine.api.SInstruction;
+import engine.model.FunctionRegistry;
 import engine.model.SEmulatorConstants;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +23,12 @@ public class ExecutionContext {
     private boolean pauseRequested;
     private Map<String, Integer> previousVariableState;
     private Map<String, Integer> changedVariables;
+    
+    // Virtual execution mode support
+    private boolean virtualExecutionMode;
+    
+    // Function registry for virtual execution
+    private FunctionRegistry functionRegistry;
 
 
     public ExecutionContext() {
@@ -39,6 +46,12 @@ public class ExecutionContext {
         this.pauseRequested = false;
         this.previousVariableState = new HashMap<>();
         this.changedVariables = new HashMap<>();
+        
+        // Initialize virtual execution mode
+        this.virtualExecutionMode = false;
+        
+        // Initialize function registry
+        this.functionRegistry = null;
     }
 
     public VariableManager getVariableManager() {
@@ -171,6 +184,47 @@ public class ExecutionContext {
      */
     public boolean isDebugMode() {
         return debugMode;
+    }
+    
+    /**
+     * Enables virtual execution mode for QUOTE instructions.
+     */
+    public void enableVirtualExecutionMode() {
+        this.virtualExecutionMode = true;
+    }
+    
+    /**
+     * Disables virtual execution mode.
+     */
+    public void disableVirtualExecutionMode() {
+        this.virtualExecutionMode = false;
+    }
+    
+    /**
+     * Checks if virtual execution mode is enabled.
+     * 
+     * @return true if virtual execution mode is enabled, false otherwise
+     */
+    public boolean isVirtualExecutionMode() {
+        return virtualExecutionMode;
+    }
+    
+    /**
+     * Sets the function registry for virtual execution.
+     * 
+     * @param functionRegistry the function registry to use
+     */
+    public void setFunctionRegistry(FunctionRegistry functionRegistry) {
+        this.functionRegistry = functionRegistry;
+    }
+    
+    /**
+     * Gets the function registry for virtual execution.
+     * 
+     * @return the function registry, or null if not set
+     */
+    public FunctionRegistry getFunctionRegistry() {
+        return functionRegistry;
     }
     
     /**
