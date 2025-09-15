@@ -97,8 +97,20 @@ public class SProgramImpl implements SProgram {
             }
             
             for (String argValue : instruction.getArguments().values()) {
-                if (argValue != null && SEmulatorConstants.X_VARIABLE_PATTERN.matcher(argValue).matches()) {
-                    inputVariables.add(argValue);
+                if (argValue != null) {
+                    // Check if the entire argument value matches the X variable pattern
+                    if (SEmulatorConstants.X_VARIABLE_PATTERN.matcher(argValue).matches()) {
+                        inputVariables.add(argValue);
+                    } else {
+                        // Search for X variables within the argument value (for complex expressions)
+                        // Use a pattern without anchors for partial matching
+                        java.util.regex.Pattern xPattern = java.util.regex.Pattern.compile("x\\d+");
+                        java.util.regex.Matcher matcher = xPattern.matcher(argValue);
+                        while (matcher.find()) {
+                            String foundVar = matcher.group();
+                            inputVariables.add(foundVar);
+                        }
+                    }
                 }
             }
         }

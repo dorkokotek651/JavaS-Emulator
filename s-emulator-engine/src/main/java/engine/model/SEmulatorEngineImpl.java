@@ -250,6 +250,7 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
         }
 
         List<String> requiredInputs = currentProgram.getInputVariables();
+        
         if (inputs.size() > requiredInputs.size()) {
             inputs = inputs.subList(0, requiredInputs.size());
         } else if (inputs.size() < requiredInputs.size()) {

@@ -82,6 +82,7 @@ public class QuoteInstruction extends BaseInstruction {
             throw new IllegalArgumentException("Function registry not available in expansion context");
         }
         
+        
         List<SInstruction> expandedInstructions = new ArrayList<>();
         
         // Parse function arguments - handle both simple variables and compositions
@@ -114,7 +115,6 @@ public class QuoteInstruction extends BaseInstruction {
                 resolvedArgs.add(arg);
             }
         }
-        
         return resolvedArgs;
     }
     
@@ -154,6 +154,7 @@ public class QuoteInstruction extends BaseInstruction {
      */
     private void expandSingleFunction(String functionName, List<String> args, String resultVar, 
                                     List<SInstruction> expandedInstructions, ExpansionContext context) {
+        
         
         // Get the function program from registry
         SProgram functionProgram = context.getFunctionRegistry().getFunction(functionName);

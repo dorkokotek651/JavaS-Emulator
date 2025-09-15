@@ -19,7 +19,9 @@ public class VariableManager {
         if (variableName == null || variableName.trim().isEmpty()) {
             throw new IllegalArgumentException("Variable name cannot be null or empty");
         }
-        return variables.getOrDefault(variableName.trim(), 0);
+        String trimmedName = variableName.trim();
+        int value = variables.getOrDefault(trimmedName, 0);
+        return value;
     }
 
     public void setValue(String variableName, int value) {
@@ -29,7 +31,8 @@ public class VariableManager {
         if (value < 0) {
             throw new IllegalArgumentException("Variable value cannot be negative: " + value);
         }
-        variables.put(variableName.trim(), value);
+        String trimmedName = variableName.trim();
+        variables.put(trimmedName, value);
     }
 
     public void increment(String variableName) {
@@ -90,7 +93,8 @@ public class VariableManager {
         
         for (int i = 0; i < inputValues.size(); i++) {
             String variableName = "x" + (i + 1);
-            setValue(variableName, inputValues.get(i));
+            int value = inputValues.get(i);
+            setValue(variableName, value);
         }
     }
 
