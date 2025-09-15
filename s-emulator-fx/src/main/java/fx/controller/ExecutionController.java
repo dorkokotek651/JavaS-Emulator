@@ -216,9 +216,14 @@ public class ExecutionController {
             List<Integer> inputs = collectInputs();
             List<Integer> displayInputs = formatInputsForDisplay(inputs);
             
-            // Determine the execution level - use max level if current level has synthetic instructions
+            // Determine the execution level - only expand if necessary
             int executionLevel = determineExecutionLevel();
-            updateStatus("Running program with inputs: " + displayInputs + " at expansion level " + executionLevel);
+            if (executionLevel != currentExpansionLevel) {
+                updateStatus("Running program with inputs: " + displayInputs + " at expansion level " + executionLevel + 
+                           " (expanded from level " + currentExpansionLevel + " due to QUOTE/JUMP_EQUAL_FUNCTION instructions)");
+            } else {
+                updateStatus("Running program with inputs: " + displayInputs + " at expansion level " + executionLevel);
+            }
             
             // Execute the program
             ExecutionResult result = engine.runProgram(executionLevel, inputs);
@@ -273,9 +278,14 @@ public class ExecutionController {
             
             List<Integer> inputs = collectInputs();
             
-            // Determine the execution level - use max level if current level has synthetic instructions
+            // Determine the execution level - only expand if necessary
             int executionLevel = determineExecutionLevel();
-            updateStatus("Starting debug session with inputs: " + inputs + " at expansion level " + executionLevel);
+            if (executionLevel != currentExpansionLevel) {
+                updateStatus("Starting debug session with inputs: " + inputs + " at expansion level " + executionLevel + 
+                           " (expanded from level " + currentExpansionLevel + " due to QUOTE/JUMP_EQUAL_FUNCTION instructions)");
+            } else {
+                updateStatus("Starting debug session with inputs: " + inputs + " at expansion level " + executionLevel);
+            }
             
             // Store original inputs for later use in history
             debugOriginalInputs = new ArrayList<>(inputs);
@@ -859,8 +869,8 @@ public class ExecutionController {
     }
     
     /**
-     * Determines the appropriate execution level based on the current display level
-     * and whether the program contains synthetic instructions that must be expanded.
+     * Determines the appropriate execution level based on the current display level.
+     * Only expands when synthetic instructions cannot be executed directly.
      */
     private int determineExecutionLevel() {
         if (!engine.isProgramLoaded()) {
@@ -871,21 +881,61 @@ public class ExecutionController {
             // Get the program at the current expansion level
             engine.api.SProgram currentProgram = engine.getExpandedProgram(currentExpansionLevel);
             
-            // Check if the program contains any synthetic instructions
-            boolean hasSyntheticInstructions = currentProgram.getInstructions().stream()
-                .anyMatch(instruction -> instruction.getType().name().equals("SYNTHETIC"));
+            // Check if the program contains any synthetic instructions that cannot be executed directly
+            boolean hasUnexecutableInstructions = currentProgram.getInstructions().stream()
+                .anyMatch(instruction -> instruction.getType().name().equals("SYNTHETIC") && 
+                          !canExecuteDirectly(instruction));
             
-            // If we have synthetic instructions at the current level, we need to expand to max level
-            if (hasSyntheticInstructions) {
-                return engine.getMaxExpansionLevel();
+            if (hasUnexecutableInstructions) {
+                // Find the minimum level where all instructions can be executed
+                return findMinimumExecutableLevel();
             }
             
-            // Otherwise, use the current expansion level
+            // All instructions can be executed at current level
             return currentExpansionLevel;
             
         } catch (Exception e) {
             // If there's any error, fallback to max expansion level for safety
             return engine.getMaxExpansionLevel();
         }
+    }
+    
+    /**
+     * Checks if a synthetic instruction can be executed directly without expansion.
+     * Only QUOTE and JUMP_EQUAL_FUNCTION require expansion.
+     */
+    private boolean canExecuteDirectly(engine.api.SInstruction instruction) {
+        String instructionName = instruction.getName();
+        
+        // These instructions throw UnsupportedOperationException and must be expanded
+        return !instructionName.equals("QUOTE") && !instructionName.equals("JUMP_EQUAL_FUNCTION");
+    }
+    
+    /**
+     * Finds the minimum expansion level where all instructions can be executed.
+     */
+    private int findMinimumExecutableLevel() {
+        int maxLevel = engine.getMaxExpansionLevel();
+        
+        // Start from current level and work up to find the minimum level where all instructions are executable
+        for (int level = currentExpansionLevel; level <= maxLevel; level++) {
+            try {
+                engine.api.SProgram programAtLevel = engine.getExpandedProgram(level);
+                
+                boolean allExecutable = programAtLevel.getInstructions().stream()
+                    .allMatch(instruction -> instruction.getType().name().equals("BASIC") || 
+                              canExecuteDirectly(instruction));
+                
+                if (allExecutable) {
+                    return level;
+                }
+            } catch (Exception e) {
+                // Continue to next level if this one fails
+                continue;
+            }
+        }
+        
+        // If no level works, return max level as fallback
+        return maxLevel;
     }
 }
