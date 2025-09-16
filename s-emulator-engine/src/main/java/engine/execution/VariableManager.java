@@ -19,9 +19,7 @@ public class VariableManager {
         if (variableName == null || variableName.trim().isEmpty()) {
             throw new IllegalArgumentException("Variable name cannot be null or empty");
         }
-        String trimmedName = variableName.trim();
-        int value = variables.getOrDefault(trimmedName, 0);
-        return value;
+        return variables.getOrDefault(variableName.trim(), 0);
     }
 
     public void setValue(String variableName, int value) {

@@ -5,6 +5,10 @@ import java.util.List;
 
 public class CompositionParser {
     
+    private CompositionParser() {
+        // Utility class - prevent instantiation
+    }
+    
     public static class FunctionCall {
         private final String functionName;
         private final List<String> arguments;

@@ -44,7 +44,8 @@ public class ExpansionContext {
     public String getUniqueWorkingVariable() {
         String variable;
         do {
-            variable = "z" + workingVariableCounter++;
+            variable = "z" + workingVariableCounter;
+            workingVariableCounter++;
         } while (usedWorkingVariables.contains(variable));
         
         usedWorkingVariables.add(variable);
@@ -137,6 +138,7 @@ public class ExpansionContext {
                     int counter = Integer.parseInt(variable.substring(1));
                     maxCounter = Math.max(maxCounter, counter);
                 } catch (NumberFormatException e) {
+                    // Ignore invalid variable names
                 }
             }
         }

@@ -133,8 +133,12 @@ public class SProgramImpl implements SProgram {
         
         return labels.stream()
                 .sorted((a, b) -> {
-                    if (a.equals(SEmulatorConstants.EXIT_LABEL)) return 1;
-                    if (b.equals(SEmulatorConstants.EXIT_LABEL)) return -1;
+                    if (a.equals(SEmulatorConstants.EXIT_LABEL)) {
+                        return 1;
+                    }
+                    if (b.equals(SEmulatorConstants.EXIT_LABEL)) {
+                        return -1;
+                    }
                     
                     if (a.startsWith("L") && b.startsWith("L")) {
                         try {

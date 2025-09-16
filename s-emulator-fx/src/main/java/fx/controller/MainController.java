@@ -3,33 +3,25 @@ package fx.controller;
 import engine.api.SEmulatorEngine;
 import engine.api.SProgram;
 import engine.api.SInstruction;
-import engine.api.ExecutionResult;
 import engine.exception.SProgramException;
-import engine.exception.ExpansionException;
 import engine.model.InstructionType;
 import engine.model.SEmulatorEngineImpl;
 import fx.model.ExecutionHistoryRow;
 import fx.model.InstructionTableRow;
 import fx.model.VariableTableRow;
 import fx.service.FileService;
-import fx.util.ErrorDialogUtil;
 import fx.util.StyleManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.application.Platform;
-import javafx.scene.Node;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 public class MainController implements Initializable {
     
@@ -106,7 +98,6 @@ public class MainController implements Initializable {
     
 
     private SEmulatorEngine engine;
-    private FileService fileService;
     private FileController fileController;
     private ExecutionController executionController;
     private InputController inputController;
@@ -119,7 +110,7 @@ public class MainController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         try {
             this.engine = new SEmulatorEngineImpl();
-            this.fileService = new FileService(engine);
+            FileService fileService = new FileService(engine);
             
 
             this.fileController = new FileController(engine, fileService);
@@ -165,7 +156,7 @@ public class MainController implements Initializable {
         
 
         variablesTable.setRowFactory(tv -> {
-            TableRow<VariableTableRow> row = new TableRow<VariableTableRow>() {
+            TableRow<VariableTableRow> row = new TableRow<>() {
                 @Override
                 protected void updateItem(VariableTableRow item, boolean empty) {
                     super.updateItem(item, empty);
@@ -383,7 +374,6 @@ public class MainController implements Initializable {
         updateStatusLabel("S-Emulator v1.0 - A JavaFX implementation of the S programming language emulator");
     }
     
-
     @FXML
     private void handleCollapse() {
         if (currentExpansionLevel > 0) {
@@ -401,6 +391,11 @@ public class MainController implements Initializable {
             updateProgramDisplay();
         }
     }
+    
+    
+    
+
+    
     
 
     @FXML

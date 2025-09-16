@@ -23,8 +23,6 @@ public class HighlightController {
 
     private Consumer<String> statusUpdater;
     
-    public HighlightController() {
-    }
     
     public void setHighlightSelectionCombo(ComboBox<String> highlightSelectionCombo) {
         this.highlightSelectionCombo = highlightSelectionCombo;
@@ -77,7 +75,7 @@ public class HighlightController {
                 } else {
                     setText(item);
 
-                    setDisable(item.startsWith("---"));
+                    setDisable("---".equals(item.substring(0, Math.min(3, item.length()))));
 
                     if (item.startsWith("---")) {
                         setStyle("-fx-font-weight: bold; -fx-text-fill: gray;");

@@ -43,7 +43,7 @@ public class XMLValidator {
             throw new XMLValidationException("Path does not point to a file: " + filePath);
         }
 
-        if (!filePath.toLowerCase().endsWith(".xml")) {
+        if (!filePath.toLowerCase(java.util.Locale.ENGLISH).endsWith(".xml")) {
             throw new XMLValidationException("File must have .xml extension: " + filePath);
         }
 

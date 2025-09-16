@@ -8,6 +8,10 @@ import javafx.stage.Stage;
 
 public class ErrorDialogUtil {
     
+    private ErrorDialogUtil() {
+        // Utility class - prevent instantiation
+    }
+    
     public static void showError(String title, String message) {
         showError(null, title, message);
     }

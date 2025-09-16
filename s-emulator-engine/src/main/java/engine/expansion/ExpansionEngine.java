@@ -47,7 +47,7 @@ public class ExpansionEngine {
             List<SInstruction> nextInstructions = new ArrayList<>();
             boolean hasExpansion = false;
             
-            updateContextWithCurrentInstructions(context, currentInstructions);
+            updateContextWithCurrentInstructions(currentInstructions);
             
             for (int instIndex = 0; instIndex < currentInstructions.size(); instIndex++) {
                 SInstruction instruction = currentInstructions.get(instIndex);
@@ -106,7 +106,7 @@ public class ExpansionEngine {
         return new ExpansionContext(existingLabels, existingVariables);
     }
     
-    private void updateContextWithCurrentInstructions(ExpansionContext context, List<SInstruction> currentInstructions) {
+    private void updateContextWithCurrentInstructions(List<SInstruction> currentInstructions) {
         for (SInstruction instruction : currentInstructions) {
             if (instruction.getLabel() != null && !instruction.getLabel().trim().isEmpty()) {
             }

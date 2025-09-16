@@ -8,6 +8,10 @@ import javafx.scene.control.TableView;
 
 public class StyleManager {
     
+    private StyleManager() {
+        // Utility class - prevent instantiation
+    }
+    
     private static final String STYLESHEET_PATH = "/fx/styles/semulator.css";
     
 

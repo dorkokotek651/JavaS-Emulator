@@ -22,7 +22,6 @@
 
     <modules>
         <module>s-emulator-engine</module>
-        <module>s-emulator-ui</module>
         <module>s-emulator-fx</module>
     </modules>
 

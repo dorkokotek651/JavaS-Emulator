@@ -20,8 +20,6 @@ public class InputController {
 
     private Consumer<String> statusUpdater;
     
-    public InputController() {
-    }
     
     public void setInputsContainer(VBox inputsContainer) {
         this.inputsContainer = inputsContainer;
@@ -161,7 +159,7 @@ public class InputController {
                     inputs.add(value);
                 } catch (NumberFormatException e) {
                     StyleManager.applyInputFieldErrorStyle(inputField);
-                    throw new IllegalArgumentException("Invalid input in field " + (inputFields.indexOf(inputField) + 1) + ": " + text);
+                    throw new IllegalArgumentException("Invalid input in field " + (inputFields.indexOf(inputField) + 1) + ": " + text, e);
                 }
             }
         }

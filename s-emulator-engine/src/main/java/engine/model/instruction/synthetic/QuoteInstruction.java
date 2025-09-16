@@ -201,10 +201,8 @@ public class QuoteInstruction extends BaseInstruction {
             Map<String, String> newArguments = substituteArguments(instruction.getArguments(), 
                                                                   variableMapping, labelMapping, endLabel);
             
-            SInstruction newInstruction = InstructionFactory.createInstruction(
+            return InstructionFactory.createInstruction(
                 instruction.getName(), newVariable, newLabel, newArguments);
-            
-            return newInstruction;
                 
         } catch (Exception e) {
             throw new IllegalArgumentException("Failed to substitute instruction: " + 
@@ -213,12 +211,16 @@ public class QuoteInstruction extends BaseInstruction {
     }
     
     private String substituteVariable(String variable, Map<String, String> variableMapping) {
-        if (variable == null) return null;
+        if (variable == null) {
+            return null;
+        }
         return variableMapping.getOrDefault(variable, variable);
     }
     
     private String substituteLabel(String label, Map<String, String> labelMapping) {
-        if (label == null) return null;
+        if (label == null) {
+            return null;
+        }
         return labelMapping.getOrDefault(label, label);
     }
     
@@ -368,7 +370,7 @@ public class QuoteInstruction extends BaseInstruction {
             if (functionCalls.size() == 1) {
                 CompositionParser.FunctionCall functionCall = functionCalls.get(0);
                 
-                String resultVar = generateUniqueVariable(context);
+                String resultVar = generateUniqueVariable();
                 
                 List<String> processedArgs = new ArrayList<>();
                 for (String arg : functionCall.getArguments()) {
@@ -390,7 +392,7 @@ public class QuoteInstruction extends BaseInstruction {
             for (int i = 0; i < functionCalls.size(); i++) {
                 CompositionParser.FunctionCall functionCall = functionCalls.get(i);
                 
-                String resultVar = generateUniqueVariable(context);
+                String resultVar = generateUniqueVariable();
                 
                 List<String> processedArgs = new ArrayList<>();
                 for (String arg : functionCall.getArguments()) {
@@ -420,8 +422,6 @@ public class QuoteInstruction extends BaseInstruction {
             
             return currentResultVar;
             
-        } catch (UnsupportedOperationException e) {
-            throw new UnsupportedOperationException("Failed to execute function composition virtually: " + composition, e);
         } catch (Exception e) {
             throw new UnsupportedOperationException("Failed to execute function composition virtually: " + composition, e);
         }
@@ -453,7 +453,7 @@ public class QuoteInstruction extends BaseInstruction {
         executeFunctionCallVirtual(functionProgram, args, resultVar, context);
     }
     
-    private String generateUniqueVariable(engine.execution.ExecutionContext context) {
+    private String generateUniqueVariable() {
         long timestamp = System.currentTimeMillis();
         int random = (int) (Math.random() * 10000);
         return "z_temp_" + timestamp + "_" + random;

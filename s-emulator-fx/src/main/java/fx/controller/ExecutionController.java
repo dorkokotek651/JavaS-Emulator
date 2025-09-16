@@ -2,7 +2,6 @@ package fx.controller;
 
 import engine.api.SEmulatorEngine;
 import engine.api.ExecutionResult;
-import engine.exception.SProgramException;
 import engine.execution.ExecutionContext;
 import engine.execution.VariableManager;
 import fx.model.ExecutionHistoryRow;
@@ -39,7 +38,6 @@ public class ExecutionController {
     
     private boolean debugSessionActive = false;
     private List<Integer> debugOriginalInputs = null;
-    private TableView<?> instructionsTable;
     private Consumer<Integer> onCurrentInstructionChanged;
     private Consumer<Map<String, Integer>> onVariablesChanged;
     private Runnable onDebugSessionStarted;
@@ -86,7 +84,6 @@ public class ExecutionController {
     }
     
     public void setInstructionsTable(TableView<?> instructionsTable) {
-        this.instructionsTable = instructionsTable;
     }
     
     public void setOnCurrentInstructionChanged(Consumer<Integer> onCurrentInstructionChanged) {
@@ -383,7 +380,7 @@ public class ExecutionController {
                 } catch (NumberFormatException e) {
 
                     StyleManager.applyInputFieldErrorStyle(inputField);
-                    throw new IllegalArgumentException("Invalid input in field " + (inputFields.indexOf(inputField) + 1) + ": " + text);
+                    throw new IllegalArgumentException("Invalid input in field " + (inputFields.indexOf(inputField) + 1) + ": " + text, e);
                 }
             }
         }
@@ -396,11 +393,9 @@ public class ExecutionController {
         List<Integer> displayInputs = new ArrayList<>();
         
 
-        int nonEmptyFields = 0;
         for (int i = 0; i < inputFields.size(); i++) {
             TextField field = inputFields.get(i);
             if (!field.getText().trim().isEmpty()) {
-                nonEmptyFields++;
                 if (i < userInputs.size()) {
                     displayInputs.add(userInputs.get(i));
                 } else {
@@ -443,13 +438,6 @@ public class ExecutionController {
         return allValid;
     }
     
-    private void updateExecutionResults(ExecutionResult result) {
-        updateExecutionResults(result, null);
-    }
-    
-    private void updateExecutionResults(ExecutionResult result, List<Integer> displayInputs) {
-        updateExecutionResults(result, displayInputs, result.getRunNumber());
-    }
     
     private void updateExecutionResults(ExecutionResult result, List<Integer> displayInputs, int runNumber) {
 
@@ -490,12 +478,20 @@ public class ExecutionController {
             String name2 = v2.getVariableName();
             
 
-            if ("y".equals(name1)) return 1;
-            if ("y".equals(name2)) return -1;
+            if ("y".equals(name1)) {
+                return 1;
+            }
+            if ("y".equals(name2)) {
+                return -1;
+            }
             
 
-            if (name1.startsWith("x") && name2.startsWith("z")) return -1;
-            if (name1.startsWith("z") && name2.startsWith("x")) return 1;
+            if (name1.startsWith("x") && name2.startsWith("z")) {
+                return -1;
+            }
+            if (name1.startsWith("z") && name2.startsWith("x")) {
+                return 1;
+            }
             
 
             return name1.compareTo(name2);
@@ -508,13 +504,7 @@ public class ExecutionController {
         cyclesLabel.setText("Total Cycles: " + totalCycles);
     }
     
-    private void addToExecutionHistory(ExecutionResult result) {
-        addToExecutionHistory(result, null);
-    }
     
-    private void addToExecutionHistory(ExecutionResult result, List<Integer> displayInputs) {
-        addToExecutionHistory(result, displayInputs, result.getRunNumber());
-    }
     
     private void addToExecutionHistory(ExecutionResult result, List<Integer> displayInputs, int runNumber) {
 
@@ -580,10 +570,18 @@ public class ExecutionController {
             String name1 = v1.getVariableName();
             String name2 = v2.getVariableName();
             
-            if (name1.equals("y")) return 1;
-            if (name2.equals("y")) return -1;
-            if (name1.startsWith("x") && name2.startsWith("z")) return -1;
-            if (name1.startsWith("z") && name2.startsWith("x")) return 1;
+            if ("y".equals(name1)) {
+                return 1;
+            }
+            if ("y".equals(name2)) {
+                return -1;
+            }
+            if (name1.startsWith("x") && name2.startsWith("z")) {
+                return -1;
+            }
+            if (name1.startsWith("z") && name2.startsWith("x")) {
+                return 1;
+            }
             
             return name1.compareTo(name2);
         });

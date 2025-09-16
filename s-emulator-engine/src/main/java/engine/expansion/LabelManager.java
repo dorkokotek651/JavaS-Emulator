@@ -21,7 +21,8 @@ public class LabelManager {
     public String generateUniqueLabel() {
         String label;
         do {
-            label = "L" + labelCounter++;
+            label = "L" + labelCounter;
+            labelCounter++;
         } while (usedLabels.contains(label));
         
         usedLabels.add(label);
@@ -41,7 +42,7 @@ public class LabelManager {
                         labelCounter = labelNum + 1;
                     }
                 } catch (NumberFormatException e) {
-                    throw new RuntimeException("Invalid label format: " + trimmedLabel);
+                    throw new RuntimeException("Invalid label format: " + trimmedLabel, e);
                 }
             }
         }
@@ -79,7 +80,7 @@ public class LabelManager {
                     int counter = Integer.parseInt(label.substring(1));
                     maxCounter = Math.max(maxCounter, counter);
                 } catch (NumberFormatException e) {
-                    throw new RuntimeException("Invalid label format: " + label);
+                    throw new RuntimeException("Invalid label format: " + label, e);
                 }
             }
         }

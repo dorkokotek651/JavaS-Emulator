@@ -17,7 +17,7 @@ import engine.model.instruction.synthetic.JumpEqualFunctionInstruction;
 import engine.model.SEmulatorConstants;
 import java.util.Map;
 
-public class InstructionFactory {
+public final class InstructionFactory {
     
     private InstructionFactory() {
     }
@@ -31,7 +31,7 @@ public class InstructionFactory {
             throw new IllegalArgumentException("Variable cannot be null or empty");
         }
 
-        String instructionName = name.trim().toUpperCase();
+        String instructionName = name.trim().toUpperCase(java.util.Locale.ENGLISH);
         
         return switch (instructionName) {
             case SEmulatorConstants.INCREASE_NAME -> new IncreaseInstruction(variable, label, arguments);

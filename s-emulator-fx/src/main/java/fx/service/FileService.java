@@ -2,7 +2,6 @@ package fx.service;
 
 import engine.api.SEmulatorEngine;
 import engine.exception.SProgramException;
-import fx.util.FileValidator;
 import fx.util.ProgressDialog;
 import javafx.concurrent.Task;
 import javafx.stage.FileChooser;
@@ -13,14 +12,12 @@ import java.util.function.Consumer;
 public class FileService {
     
     private final SEmulatorEngine engine;
-    private final FileValidator validator;
     
     public FileService(SEmulatorEngine engine) {
         if (engine == null) {
             throw new IllegalArgumentException("Engine cannot be null");
         }
         this.engine = engine;
-        this.validator = new FileValidator(engine);
     }
     
     public void loadProgramFileWithProgress(File file, Stage parentStage, 
@@ -169,7 +166,7 @@ public class FileService {
         }
         
 
-        String fileName = file.getName().toLowerCase();
+        String fileName = file.getName().toLowerCase(java.util.Locale.ENGLISH);
         if (!fileName.endsWith(".xml")) {
             throw new IllegalArgumentException("File must be an XML file: " + file.getName());
         }

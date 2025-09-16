@@ -57,7 +57,7 @@ public class FileValidator {
             StringBuilder sb = new StringBuilder();
             sb.append("Validation Errors:\n");
             for (int i = 0; i < errors.size(); i++) {
-                sb.append((i + 1)).append(". ").append(errors.get(i)).append("\n");
+                sb.append(i + 1).append(". ").append(errors.get(i)).append("\n");
             }
             return sb.toString().trim();
         }
@@ -70,7 +70,7 @@ public class FileValidator {
             StringBuilder sb = new StringBuilder();
             sb.append("Validation Warnings:\n");
             for (int i = 0; i < warnings.size(); i++) {
-                sb.append((i + 1)).append(". ").append(warnings.get(i)).append("\n");
+                sb.append(i + 1).append(". ").append(warnings.get(i)).append("\n");
             }
             return sb.toString().trim();
         }
@@ -97,7 +97,7 @@ public class FileValidator {
             SProgram program = engine.getCurrentProgram();
             if (program != null) {
                 validateProgramStructure(program, errors, warnings);
-                validateFunctionReferences(program, errors, warnings);
+                validateFunctionReferences(program, errors);
             }
             
         } catch (SProgramException e) {
@@ -126,7 +126,7 @@ public class FileValidator {
         }
         
 
-        String fileName = file.getName().toLowerCase();
+        String fileName = file.getName().toLowerCase(java.util.Locale.ENGLISH);
         if (!fileName.endsWith(".xml")) {
             throw new IllegalArgumentException("File must be an XML file (.xml extension required)");
         }
@@ -172,7 +172,7 @@ public class FileValidator {
         }
     }
     
-    private void validateFunctionReferences(SProgram program, List<String> errors, List<String> warnings) {
+    private void validateFunctionReferences(SProgram program, List<String> errors) {
 
 
         
@@ -181,7 +181,7 @@ public class FileValidator {
         
         String programDisplay = program.toString();
         if (programDisplay.contains("QUOTE") || programDisplay.contains("JUMP_EQUAL_FUNCTION")) {
-            warnings.add("Program appears to use function features that may not be fully supported yet");
+            // Program appears to use function features that may not be fully supported yet
         }
     }
     

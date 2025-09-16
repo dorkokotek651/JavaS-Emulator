@@ -119,7 +119,8 @@ public class ProgramRunner {
         int executionSteps = 0;
         
         while (!context.isProgramTerminated() && context.getCurrentInstructionIndex() < instructions.size()) {
-            if (executionSteps++ > MAX_EXECUTION_STEPS) {
+            executionSteps++;
+            if (executionSteps > MAX_EXECUTION_STEPS) {
                 throw new ExecutionException("Program execution exceeded maximum steps (" + MAX_EXECUTION_STEPS + "). Possible infinite loop detected.");
             }
 

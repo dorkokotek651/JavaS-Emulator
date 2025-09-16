@@ -31,5 +31,5 @@ public interface SInstruction {
     
     String toStringWithHistory(int currentLineNumber);
     
-    String toStringWithMultiLevelHistory(java.util.List<engine.expansion.MultiLevelExpansion.InstructionAncestor> ancestry);
+    String toStringWithMultiLevelHistory(List<engine.expansion.MultiLevelExpansion.InstructionAncestor> ancestry);
 }

@@ -207,6 +207,8 @@ public class SProgramParser {
                     throw new XMLValidationException(SEmulatorConstants.JUMP_NOT_ZERO_NAME + " instruction requires '" + SEmulatorConstants.JNZ_LABEL_ARG + "' argument");
                 }
                 break;
+            default:
+                break;
             case SEmulatorConstants.ASSIGNMENT_NAME:
                 if (!arguments.containsKey(SEmulatorConstants.ASSIGNED_VARIABLE_ARG)) {
                     throw new XMLValidationException(SEmulatorConstants.ASSIGNMENT_NAME + " instruction requires '" + SEmulatorConstants.ASSIGNED_VARIABLE_ARG + "' argument");
