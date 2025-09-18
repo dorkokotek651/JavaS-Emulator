@@ -272,7 +272,7 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
             }
             
             ExecutionResult result;
-            if (expansionLevel == 0) {
+            if (expansionLevel == 0 || hasUnexpandedQuoteInstructions(programToRun)) {
                 result = runner.executeProgramWithVirtualExecution(programToRun, inputs, nextRunNumber, expansionLevel, currentProgram.getFunctionRegistry());
             } else {
                 result = runner.executeProgram(programToRun, inputs, nextRunNumber, expansionLevel);
@@ -306,6 +306,11 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
 
     public int getExecutionCount() {
         return executionHistory.size();
+    }
+    
+    private boolean hasUnexpandedQuoteInstructions(SProgram program) {
+        return program.getInstructions().stream()
+            .anyMatch(instruction -> SEmulatorConstants.QUOTE_NAME.equals(instruction.getName()));
     }
     
     @Override

@@ -506,8 +506,6 @@ public class MainController implements Initializable {
             String cycles = String.valueOf(instruction.getCycles());
             String instructionText = formatInstructionDisplay(instruction);
             
-            System.out.println("Instruction " + commandNumber + ": " + instructionText);
-            
             instructionData.add(new InstructionTableRow(commandNumber, commandType, label, cycles, instructionText));
         }
         
