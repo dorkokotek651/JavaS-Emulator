@@ -90,9 +90,24 @@
             <!-- Top: Debug/Execution Controls (Yellow section) -->
             <VBox fx:id="debugControlsSection" spacing="5" style="-fx-background-color: #FFEB3B; -fx-padding: 10; -fx-background-radius: 5;">
                <Label style="-fx-font-weight: bold;" text="Debug/Execution Controls" />
+               
+               <!-- New Run Workflow - All in One Row -->
+               <HBox alignment="CENTER_LEFT" spacing="15">
+                  <Button fx:id="newRunButton" onAction="#handleNewRun" 
+                          style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14;"
+                          text="New Run" prefWidth="120.0" prefHeight="35.0" />
+                  
+                  <ComboBox fx:id="executionModeCombo" prefWidth="100.0" prefHeight="30.0"
+                            style="-fx-background-color: #2196F3; -fx-text-fill: white;"
+                            promptText="Select Mode" />
+                  
+                  <Button fx:id="finalStartButton" onAction="#handleFinalStart" 
+                          style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14;"
+                          text="Start Run" prefWidth="120.0" prefHeight="35.0" />
+               </HBox>
+               
+               <!-- Debug Controls -->
                <HBox spacing="10">
-                  <Button fx:id="startRunButton" onAction="#handleStartRun" text="Start Run" />
-                  <Button fx:id="startDebugButton" onAction="#handleStartDebug" text="Start Debug" />
                   <Button fx:id="stepOverButton" onAction="#handleStepOver" text="Step Over" />
                   <Button fx:id="stopButton" onAction="#handleStop" text="Stop" />
                   <Button fx:id="resumeButton" onAction="#handleResume" text="Resume" />

@@ -29,6 +29,7 @@ public class InputController {
     
 
     private Consumer<String> statusUpdater;
+    private Runnable onInputsReady;
     
     
     public void setInputsContainer(VBox inputsContainer) {
@@ -41,6 +42,10 @@ public class InputController {
     
     public void setStatusUpdater(Consumer<String> statusUpdater) {
         this.statusUpdater = statusUpdater;
+    }
+    
+    public void setOnInputsReady(Runnable onInputsReady) {
+        this.onInputsReady = onInputsReady;
     }
     
     /**
@@ -81,6 +86,11 @@ public class InputController {
         }
         
         updateStatus("Generated " + requiredVariables.size() + " input fields for variables: " + requiredVariables);
+        
+        // Notify that inputs are ready
+        if (onInputsReady != null) {
+            onInputsReady.run();
+        }
     }
     
     public List<TextField> getInputFields() {
@@ -278,13 +288,25 @@ public class InputController {
             return;
         }
         
-        clearAllInputs();
+        // Clear UI elements but preserve requiredVariables for the current program context
+        clearInputFieldsOnly();
         
-        for (Integer inputValue : historicalInputs) {
-            addInputField();
-            if (!inputFields.isEmpty()) {
-                TextField lastField = inputFields.get(inputFields.size() - 1);
-                lastField.setText(String.valueOf(inputValue));
+        // Create input fields for each historical input value
+        for (int i = 0; i < historicalInputs.size(); i++) {
+            Integer inputValue = historicalInputs.get(i);
+            
+            // Create input field for the corresponding variable
+            if (i < requiredVariables.size()) {
+                String variableName = requiredVariables.get(i);
+                TextField field = createInputFieldForVariable(variableName);
+                field.setText(String.valueOf(inputValue));
+            } else {
+                // Fallback: create generic input field if we don't have enough requiredVariables
+                addInputField();
+                if (!inputFields.isEmpty()) {
+                    TextField lastField = inputFields.get(inputFields.size() - 1);
+                    lastField.setText(String.valueOf(inputValue));
+                }
             }
         }
         
@@ -294,7 +316,7 @@ public class InputController {
     /**
      * Creates an input field for a specific variable with proper labeling.
      */
-    private void createInputFieldForVariable(String variableName) {
+    private TextField createInputFieldForVariable(String variableName) {
         // Create horizontal container for label and input field
         HBox inputRow = new HBox(5);
         
@@ -340,6 +362,8 @@ public class InputController {
         // Store references
         inputFields.add(inputField);
         variableToFieldMap.put(variableName, inputField);
+        
+        return inputField;
     }
     
     /**
@@ -381,7 +405,7 @@ public class InputController {
         return sortedVariables;
     }
     
-    private void clearInputFieldsOnly() {
+    public void clearInputFieldsOnly() {
         if (inputsContainer != null) {
             inputsContainer.getChildren().clear();
         }
@@ -390,12 +414,18 @@ public class InputController {
         // Don't clear requiredVariables - we need to keep them for field creation
     }
     
-    private void clearAllInputs() {
+    public void clearAllInputs() {
         if (inputsContainer != null) {
             inputsContainer.getChildren().clear();
         }
         inputFields.clear();
         variableToFieldMap.clear();
         requiredVariables.clear();
+    }
+    
+    public void setInputFieldsEnabled(boolean enabled) {
+        for (TextField field : inputFields) {
+            field.setDisable(!enabled);
+        }
     }
 }

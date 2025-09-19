@@ -31,6 +31,15 @@ import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
     
+    // Workflow state management
+    public enum WorkflowState {
+        IDLE,           // No active workflow
+        INPUT_COLLECTION, // Collecting inputs for new run
+        READY_TO_RUN,   // Inputs collected, ready to execute
+        RUNNING         // Currently executing
+    }
+    
+    private WorkflowState currentWorkflowState = WorkflowState.IDLE;
 
     @FXML private MenuItem loadFileMenuItem;
     @FXML private MenuItem exitMenuItem;
@@ -57,8 +66,9 @@ public class MainController implements Initializable {
     
 
     @FXML private VBox debugControlsSection;
-    @FXML private Button startRunButton;
-    @FXML private Button startDebugButton;
+    @FXML private Button newRunButton;
+    @FXML private ComboBox<String> executionModeCombo;
+    @FXML private Button finalStartButton;
     @FXML private Button stepOverButton;
     @FXML private Button stopButton;
     @FXML private Button resumeButton;
@@ -126,6 +136,9 @@ public class MainController implements Initializable {
 
             this.inputController = new InputController();
             setupInputControllerCallbacks();
+            
+            // Setup workflow callbacks after all controllers are initialized
+            setupWorkflowCallbacks();
             
 
             this.highlightController = new HighlightController();
@@ -212,8 +225,6 @@ public class MainController implements Initializable {
         levelSelector.setDisable(true);
         programFunctionSelector.setDisable(true);
         highlightController.disableHighlightSelection();
-        startRunButton.setDisable(true);
-        startDebugButton.setDisable(true);
         
 
         stepOverButton.setDisable(true);
@@ -256,8 +267,6 @@ public class MainController implements Initializable {
             stepOverButton.setDisable(false);
             stopButton.setDisable(false);
             resumeButton.setDisable(false);
-            startDebugButton.setDisable(true);
-            startRunButton.setDisable(true);
             
 
             levelSelector.setDisable(true);
@@ -272,8 +281,6 @@ public class MainController implements Initializable {
             stepOverButton.setDisable(true);
             stopButton.setDisable(true);
             resumeButton.setDisable(true);
-            startDebugButton.setDisable(false);
-            startRunButton.setDisable(false);
             
 
             updateControlStates();
@@ -287,11 +294,25 @@ public class MainController implements Initializable {
         executionController.setOnInputsPopulated(this::populateInputsFromHistory);
         executionController.setOnExpansionLevelSet(this::setExpansionLevelFromHistory);
         executionController.setGetCurrentContextProgram(this::getContextProgram);
+        executionController.setOnExecutionStarted(this::onExecutionStarted);
+        executionController.setOnExecutionCompleted(this::onExecutionCompleted);
+    }
+    
+    private void setupWorkflowCallbacks() {
+        // Initialize mode dropdown
+        if (executionModeCombo != null) {
+            executionModeCombo.getItems().addAll("Normal", "Debug");
+            executionModeCombo.setValue("Normal"); // Set default to Normal
+            executionModeCombo.setOnAction(e -> updateUIForWorkflowState());
+        }
+        
+        // Initialize workflow state
+        updateUIForWorkflowState();
     }
     
     private void setupInputControllerCallbacks() {
         inputController.setStatusUpdater(this::updateStatusLabel);
-        
+        inputController.setOnInputsReady(this::onInputsReady);
 
         inputController.setInputsContainer(inputsContainer);
         inputController.setRemoveInputButton(removeInputButton);
@@ -333,6 +354,10 @@ public class MainController implements Initializable {
             currentExpansionLevel = 0;
             currentContextProgram = "Main Program";
             executionController.setCurrentContext("Main Program");
+            
+            // Clear execution history when loading a new program
+            executionController.clearExecutionHistory();
+            
             updateProgramFunctionSelector();
             updateProgramDisplay();
             updateLevelSelector();
@@ -340,6 +365,9 @@ public class MainController implements Initializable {
             
             // Update input fields based on the main program's requirements
             inputController.updateInputFieldsForProgram(program);
+            
+            // Reset workflow state to IDLE when program loads
+            setWorkflowState(WorkflowState.IDLE);
         }
     }
     
@@ -462,14 +490,19 @@ public class MainController implements Initializable {
     
 
     @FXML
-    private void handleStartRun() {
-        executionController.handleStartRun();
+    private void handleFinalStart() {
+        if (currentWorkflowState == WorkflowState.READY_TO_RUN && executionModeCombo != null) {
+            String selectedMode = executionModeCombo.getValue();
+            onExecutionStarted();
+            
+            if ("Debug".equals(selectedMode)) {
+                executionController.handleStartDebug();
+            } else {
+                executionController.handleStartRun();
+            }
+        }
     }
     
-    @FXML
-    private void handleStartDebug() {
-        executionController.handleStartDebug();
-    }
     
     @FXML
     private void handleStepOver() {
@@ -787,14 +820,15 @@ public class MainController implements Initializable {
 
         inputController.clearInputFieldStyling();
         
+        // Reset workflow state to IDLE when clearing program state
+        setWorkflowState(WorkflowState.IDLE);
+        
         updateStatusLabel("Clearing previous program state...");
     }
     
     private void enableProgramControls() {
         programFunctionSelector.setDisable(false);
         highlightController.enableHighlightSelection();
-        startRunButton.setDisable(false);
-        startDebugButton.setDisable(false);
     }
     
     private void updateControlStates() {
@@ -1047,6 +1081,10 @@ public class MainController implements Initializable {
     private void populateInputsFromHistory(List<Integer> historicalInputs) {
         if (inputController != null && historicalInputs != null) {
             inputController.populateInputsFromHistory(historicalInputs);
+            
+            // Set workflow state to READY_TO_RUN for re-run scenario
+            setWorkflowState(WorkflowState.READY_TO_RUN);
+            updateStatusLabel("Ready to re-run with historical inputs. Select mode and click Start Run.");
         }
     }
     
@@ -1068,5 +1106,139 @@ public class MainController implements Initializable {
         if (levelDisplayLabel != null && engine.isProgramLoaded()) {
             levelDisplayLabel.setText(currentExpansionLevel + "/" + engine.getMaxExpansionLevel());
         }
+    }
+    
+    // ===== NEW RUN WORKFLOW IMPLEMENTATION =====
+    
+    @FXML
+    private void handleNewRun() {
+        startNewRunWorkflow();
+    }
+    
+    private void startNewRunWorkflow() {
+        // Step 1: Clear previous run data
+        clearPreviousRunData();
+        
+        // Step 2: Show required input fields for current context program
+        showRequiredInputFields();
+        
+        // Step 3: Set workflow state to INPUT_COLLECTION
+        setWorkflowState(WorkflowState.INPUT_COLLECTION);
+        
+        updateStatusLabel("New run workflow started. Please provide inputs and select mode.");
+        
+        // Step 4: Automatically transition to READY_TO_RUN since inputs are now available
+        // The user can immediately select mode and start execution
+        setWorkflowState(WorkflowState.READY_TO_RUN);
+        updateStatusLabel("Inputs ready. Select execution mode and click Start Run.");
+    }
+    
+    private void clearPreviousRunData() {
+        // Clear all input field values but preserve requiredVariables
+        if (inputController != null) {
+            inputController.clearInputFieldsOnly();
+        }
+        
+        // Clear variable display
+        clearVariablesTable();
+        
+        // Clear instruction highlighting
+        if (highlightController != null) {
+            highlightController.clearHighlighting();
+        }
+        
+        // Reset cycle count display
+        if (executionController != null) {
+            executionController.resetExecutionState();
+        }
+        
+        updateStatusLabel("Previous run data cleared");
+    }
+    
+    private void showRequiredInputFields() {
+        // Update input fields for current context program
+        SProgram contextProgram = getContextProgram();
+        if (contextProgram != null && inputController != null) {
+            inputController.updateInputFieldsForProgram(contextProgram);
+        }
+    }
+    
+    private void setWorkflowState(WorkflowState newState) {
+        currentWorkflowState = newState;
+        updateUIForWorkflowState();
+    }
+    
+    private void updateUIForWorkflowState() {
+        switch (currentWorkflowState) {
+            case IDLE:
+                // Enable New Run button only if program is loaded, disable execution controls
+                if (newRunButton != null) newRunButton.setDisable(!engine.isProgramLoaded());
+                if (finalStartButton != null) finalStartButton.setDisable(true);
+                if (executionModeCombo != null) executionModeCombo.setDisable(true);
+                // Disable input fields when no workflow is active
+                setInputFieldsEnabled(false);
+                break;
+                
+            case INPUT_COLLECTION:
+                // Disable New Run button, enable mode selection
+                if (newRunButton != null) newRunButton.setDisable(true);
+                if (finalStartButton != null) finalStartButton.setDisable(true);
+                if (executionModeCombo != null) executionModeCombo.setDisable(false);
+                // Enable input fields for input collection
+                setInputFieldsEnabled(true);
+                break;
+                
+            case READY_TO_RUN:
+                // Enable final start button and mode selection
+                if (newRunButton != null) newRunButton.setDisable(true);
+                if (finalStartButton != null) finalStartButton.setDisable(false);
+                if (executionModeCombo != null) executionModeCombo.setDisable(false);
+                // Enable input fields for ready to run
+                setInputFieldsEnabled(true);
+                
+                // Update final start button text based on selected mode
+                if (finalStartButton != null && executionModeCombo != null) {
+                    String selectedMode = executionModeCombo.getValue();
+                    if ("Debug".equals(selectedMode)) {
+                        finalStartButton.setText("Start Debug");
+                    } else {
+                        finalStartButton.setText("Start Run");
+                    }
+                }
+                break;
+                
+            case RUNNING:
+                // Disable all controls except stop (New Run disabled during run)
+                if (newRunButton != null) newRunButton.setDisable(true);
+                if (finalStartButton != null) finalStartButton.setDisable(true);
+                if (executionModeCombo != null) executionModeCombo.setDisable(true);
+                // Disable input fields during execution
+                setInputFieldsEnabled(false);
+                break;
+        }
+    }
+    
+    private void setInputFieldsEnabled(boolean enabled) {
+        if (inputController != null) {
+            inputController.setInputFieldsEnabled(enabled);
+        }
+    }
+    
+    // Method to be called when inputs are ready
+    public void onInputsReady() {
+        if (currentWorkflowState == WorkflowState.INPUT_COLLECTION) {
+            setWorkflowState(WorkflowState.READY_TO_RUN);
+            updateStatusLabel("Inputs ready. Select execution mode and click Start Run or Start Debug.");
+        }
+    }
+    
+    // Method to be called when execution starts
+    public void onExecutionStarted() {
+        setWorkflowState(WorkflowState.RUNNING);
+    }
+    
+    // Method to be called when execution completes
+    public void onExecutionCompleted() {
+        setWorkflowState(WorkflowState.IDLE);
     }
 }
