@@ -62,6 +62,8 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
             throw new SProgramException("XML file path cannot be null or empty");
         }
 
+        stopDebugSession();
+        
         try {
             SProgram program = parser.parseXMLFile(xmlFilePath.trim());
             this.currentProgram = program;

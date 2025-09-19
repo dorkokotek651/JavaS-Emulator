@@ -592,6 +592,7 @@ public class MainController implements Initializable {
         
 
         currentExpansionLevel = 0;
+        executionController.setCurrentExpansionLevel(currentExpansionLevel);
         levelDisplayLabel.setText("0/0");
         
 
