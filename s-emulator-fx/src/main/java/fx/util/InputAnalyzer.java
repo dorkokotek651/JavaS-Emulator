@@ -2,7 +2,6 @@ package fx.util;
 
 import engine.api.SProgram;
 import engine.api.SInstruction;
-import engine.model.SEmulatorConstants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;

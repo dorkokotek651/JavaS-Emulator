@@ -160,18 +160,6 @@ public class InputController {
         updateStatus("Added input field " + inputFields.size());
     }
     
-    private void removeInputField() {
-        if (inputFields.size() > 1) {
-            TextField lastField = inputFields.remove(inputFields.size() - 1);
-            inputsContainer.getChildren().remove(lastField);
-            
-            updateRemoveButtonState();
-            updateStatus("Removed input field. " + inputFields.size() + " input(s) remaining");
-        } else {
-            updateStatus("Cannot remove the last input field");
-        }
-    }
-    
     private void updateRemoveButtonState() {
         if (removeInputButton != null) {
             removeInputButton.setDisable(inputFields.size() <= 1);

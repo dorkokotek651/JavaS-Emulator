@@ -47,7 +47,6 @@ public class ExecutionController {
     private Consumer<List<Integer>> onInputsPopulated;
     private Consumer<Integer> onExpansionLevelSet;
     private java.util.function.Supplier<engine.api.SProgram> getCurrentContextProgram;
-    private Runnable onExecutionStarted;
     private Runnable onExecutionCompleted;
     
     public ExecutionController(SEmulatorEngine engine) {
@@ -719,10 +718,6 @@ public class ExecutionController {
     
     public void setGetCurrentContextProgram(java.util.function.Supplier<engine.api.SProgram> getCurrentContextProgram) {
         this.getCurrentContextProgram = getCurrentContextProgram;
-    }
-    
-    public void setOnExecutionStarted(Runnable onExecutionStarted) {
-        this.onExecutionStarted = onExecutionStarted;
     }
     
     public void setOnExecutionCompleted(Runnable onExecutionCompleted) {

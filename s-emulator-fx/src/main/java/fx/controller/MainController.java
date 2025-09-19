@@ -294,7 +294,6 @@ public class MainController implements Initializable {
         executionController.setOnInputsPopulated(this::populateInputsFromHistory);
         executionController.setOnExpansionLevelSet(this::setExpansionLevelFromHistory);
         executionController.setGetCurrentContextProgram(this::getContextProgram);
-        executionController.setOnExecutionStarted(this::onExecutionStarted);
         executionController.setOnExecutionCompleted(this::onExecutionCompleted);
     }
     
