@@ -351,11 +351,22 @@ public class MainController implements Initializable {
             SProgram program = engine.getCurrentProgram();
             currentFilePathLabel.setText(program.getName());
             currentExpansionLevel = 0;
+            System.out.println("onProgramLoaded: Reset currentExpansionLevel to 0");
             currentContextProgram = "Main Program";
             executionController.setCurrentContext("Main Program");
             
             // Clear execution history when loading a new program
             executionController.clearExecutionHistory();
+            
+            // Update level display to show 0
+            updateLevelDisplay();
+            System.out.println("onProgramLoaded: After updateLevelDisplay, currentExpansionLevel = " + currentExpansionLevel);
+            
+            // Reset the level selector dropdown to 0
+            if (levelSelector != null) {
+                levelSelector.setValue("0");
+                System.out.println("onProgramLoaded: Reset levelSelector to 0");
+            }
             
             updateProgramFunctionSelector();
             updateProgramDisplay();
@@ -903,6 +914,16 @@ public class MainController implements Initializable {
         
         currentContextProgram = programName;
         
+        // Reset expansion level to 0 when switching contexts
+        currentExpansionLevel = 0;
+        updateLevelDisplay();
+        
+        // Reset the level selector dropdown to 0
+        if (levelSelector != null) {
+            levelSelector.setValue("0");
+            System.out.println("setContextProgram: Reset levelSelector to 0 for " + programName);
+        }
+        
         // Update execution history context
         executionController.setCurrentContext(programName);
         
@@ -1103,7 +1124,11 @@ public class MainController implements Initializable {
     
     private void updateLevelDisplay() {
         if (levelDisplayLabel != null && engine.isProgramLoaded()) {
-            levelDisplayLabel.setText(currentExpansionLevel + "/" + engine.getMaxExpansionLevel());
+            SProgram contextProgram = getContextProgram();
+            int maxLevel = contextProgram != null ? contextProgram.getMaxExpansionLevel() : 0;
+            String displayText = currentExpansionLevel + "/" + maxLevel;
+            levelDisplayLabel.setText(displayText);
+            System.out.println("updateLevelDisplay: Set level display to '" + displayText + "' (currentExpansionLevel=" + currentExpansionLevel + ", maxLevel=" + maxLevel + ")");
         }
     }
     
