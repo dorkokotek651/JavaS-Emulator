@@ -8,6 +8,8 @@ import fx.model.ExecutionHistoryRow;
 import fx.model.VariableTableRow;
 import fx.util.ErrorDialogUtil;
 import fx.util.StyleManager;
+import fx.util.StateInspectionDialog;
+import fx.util.ExecutionHistoryManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
@@ -25,13 +27,12 @@ public class ExecutionController {
     private final SEmulatorEngine engine;
     private Stage primaryStage;
     private int currentExpansionLevel = 0;
-    private int nextLocalRunNumber = 1;
     
     private List<TextField> inputFields;
     private TableView<VariableTableRow> variablesTable;
     private Label cyclesLabel;
     private TableView<ExecutionHistoryRow> statisticsTable;
-    private ObservableList<ExecutionHistoryRow> executionHistory;
+    private ExecutionHistoryManager historyManager;
     
     private Consumer<String> statusUpdater;
     private Runnable onHighlightingCleared;
@@ -42,9 +43,13 @@ public class ExecutionController {
     private Consumer<Map<String, Integer>> onVariablesChanged;
     private Runnable onDebugSessionStarted;
     private Runnable onDebugSessionEnded;
+    private Consumer<List<Integer>> onInputsPopulated;
+    private Consumer<Integer> onExpansionLevelSet;
+    private java.util.function.Supplier<engine.api.SProgram> getCurrentContextProgram;
     
     public ExecutionController(SEmulatorEngine engine) {
         this.engine = engine;
+        this.historyManager = new ExecutionHistoryManager();
     }
     
     public void setPrimaryStage(Stage primaryStage) {
@@ -69,10 +74,6 @@ public class ExecutionController {
     
     public void setStatisticsTable(TableView<ExecutionHistoryRow> statisticsTable) {
         this.statisticsTable = statisticsTable;
-    }
-    
-    public void setExecutionHistory(ObservableList<ExecutionHistoryRow> executionHistory) {
-        this.executionHistory = executionHistory;
     }
     
     public void setStatusUpdater(Consumer<String> statusUpdater) {
@@ -103,7 +104,6 @@ public class ExecutionController {
     }
     
     public void resetExecutionState() {
-        nextLocalRunNumber = 1;
         debugSessionActive = false;
         debugOriginalInputs = null;
     }
@@ -126,11 +126,16 @@ public class ExecutionController {
             int executionLevel = determineExecutionLevel();
             updateStatus("Running program with inputs: " + displayInputs + " at expansion level " + executionLevel);
             
-            ExecutionResult result = engine.runProgram(executionLevel, inputs);
+            // Get the next run number for the current context before execution
+            int currentRunNumber = historyManager.getNextRunNumber();
             
-            int currentRunNumber = nextLocalRunNumber;
-            
-            nextLocalRunNumber = Math.max(nextLocalRunNumber + 1, result.getRunNumber() + 1);
+            engine.api.SProgram contextProgram = getCurrentContextProgram != null ? getCurrentContextProgram.get() : null;
+            ExecutionResult result;
+            if (contextProgram != null) {
+                result = engine.runSpecificProgram(contextProgram, executionLevel, inputs, currentRunNumber);
+            } else {
+                result = engine.runProgram(executionLevel, inputs);
+            }
             
             updateExecutionResults(result, displayInputs, currentRunNumber);
             
@@ -175,7 +180,12 @@ public class ExecutionController {
             
             debugOriginalInputs = new ArrayList<>(inputs);
             
-            engine.startDebugSession(executionLevel, inputs);
+            engine.api.SProgram contextProgram = getCurrentContextProgram != null ? getCurrentContextProgram.get() : null;
+            if (contextProgram != null) {
+                engine.startDebugSessionForProgram(contextProgram, executionLevel, inputs);
+            } else {
+                engine.startDebugSession(executionLevel, inputs);
+            }
             debugSessionActive = true;
             
             engine.getCurrentExecutionState().enableVirtualExecutionMode();
@@ -323,10 +333,8 @@ public class ExecutionController {
             debugOriginalInputs = null;
             
 
-            int currentRunNumber = nextLocalRunNumber;
-            
-
-            nextLocalRunNumber = Math.max(nextLocalRunNumber + 1, result.getRunNumber() + 1);
+            // Get the next run number for the current context
+            int currentRunNumber = historyManager.getNextRunNumber();
             
 
             if (onDebugSessionEnded != null) {
@@ -518,19 +526,26 @@ public class ExecutionController {
 
         String actions = "show | re-run";
         
-        ExecutionHistoryRow historyRow = new ExecutionHistoryRow(
-            String.valueOf(runNumber),
-            String.valueOf(result.getExpansionLevel()),
+        // Add to context-aware history manager (with full execution result)
+        historyManager.addExecutionResultToCurrentContext(
+            result,
+            runNumber,
+            result.getExpansionLevel(),
             inputsString,
-            String.valueOf(result.getYValue()),
-            String.valueOf(result.getTotalCycles()),
+            result.getYValue(),
+            result.getTotalCycles(),
             actions
         );
         
-        executionHistory.add(historyRow);
+        // Update the statistics table to show current context history
+        updateStatisticsTable();
         
-
-        statisticsTable.scrollTo(historyRow);
+        // Scroll to the newly added row
+        if (statisticsTable != null && !historyManager.getCurrentContextHistory().isEmpty()) {
+            ExecutionHistoryRow lastRow = historyManager.getCurrentContextHistory().get(
+                historyManager.getCurrentContextHistory().size() - 1);
+            statisticsTable.scrollTo(lastRow);
+        }
     }
     
     private void updateStatus(String message) {
@@ -656,19 +671,22 @@ public class ExecutionController {
                 .collect(java.util.stream.Collectors.joining(", "));
             
 
-            int runNumber = nextLocalRunNumber;
-            nextLocalRunNumber++;
+            // Get the next run number for the current context
+            int runNumber = historyManager.getNextRunNumber();
             
-            ExecutionHistoryRow historyRow = new ExecutionHistoryRow(
-                String.valueOf(runNumber),
-                String.valueOf(currentExpansionLevel),
+            // For debug sessions, we don't have a full ExecutionResult, so we create a minimal one
+            // or we can use the existing method without the full result
+            historyManager.addExecutionToCurrentContext(
+                runNumber,
+                currentExpansionLevel,
                 inputsString,
-                String.valueOf(variableManager.getYValue()),
-                String.valueOf(context.getTotalCycles()),
+                variableManager.getYValue(),
+                context.getTotalCycles(),
                 "show | re-run"
             );
             
-            executionHistory.add(historyRow);
+            // Update the statistics table to show current context history
+            updateStatisticsTable();
             
         } catch (Exception e) {
             updateStatus("Warning: Could not add debug session to history: " + e.getMessage());
@@ -683,6 +701,137 @@ public class ExecutionController {
 
 
         return currentExpansionLevel;
+    }
+    
+    public void setOnInputsPopulated(Consumer<List<Integer>> onInputsPopulated) {
+        this.onInputsPopulated = onInputsPopulated;
+    }
+    
+    public void setOnExpansionLevelSet(Consumer<Integer> onExpansionLevelSet) {
+        this.onExpansionLevelSet = onExpansionLevelSet;
+    }
+    
+    public void setGetCurrentContextProgram(java.util.function.Supplier<engine.api.SProgram> getCurrentContextProgram) {
+        this.getCurrentContextProgram = getCurrentContextProgram;
+    }
+    
+    /**
+     * Sets the current context program/function for execution history management.
+     * @param contextName The name of the context (e.g., "Main Program", "Minus", "Const7")
+     */
+    public void setCurrentContext(String contextName) {
+        historyManager.setCurrentContext(contextName);
+        updateStatisticsTable();
+    }
+    
+    /**
+     * Updates the statistics table to show the current context's execution history.
+     */
+    private void updateStatisticsTable() {
+        if (statisticsTable != null) {
+            statisticsTable.setItems(historyManager.getCurrentContextHistory());
+        }
+    }
+    
+    public void handleShowHistoricalState(ExecutionHistoryRow historyRow) {
+        if (historyRow == null) {
+            updateStatus("Error: No historical run selected");
+            return;
+        }
+        
+        try {
+            int runNumber = Integer.parseInt(historyRow.getRunNumber());
+            int expansionLevel = Integer.parseInt(historyRow.getExpansionLevel());
+            
+            // Use context-aware execution results
+            List<ExecutionResult> contextExecutionResults = historyManager.getCurrentContextExecutionResults();
+            ExecutionResult targetResult = null;
+            
+            // Find the execution result by run number and expansion level
+            for (ExecutionResult result : contextExecutionResults) {
+                if (result.getRunNumber() == runNumber && result.getExpansionLevel() == expansionLevel) {
+                    targetResult = result;
+                    break;
+                }
+            }
+            
+            if (targetResult == null) {
+                updateStatus("Error: Could not find historical execution result for run #" + runNumber + " in context: " + historyManager.getCurrentContext());
+                ErrorDialogUtil.showError(primaryStage, "Historical State Error", 
+                    "Could not find execution result for run #" + runNumber + " in context: " + historyManager.getCurrentContext());
+                return;
+            }
+            
+            StateInspectionDialog.showHistoricalState(primaryStage, targetResult, runNumber);
+            updateStatus("Displayed historical state for run #" + runNumber);
+            
+        } catch (NumberFormatException e) {
+            updateStatus("Error: Invalid run number format");
+            ErrorDialogUtil.showError(primaryStage, "Invalid Data", 
+                "Invalid run number format: " + historyRow.getRunNumber());
+        } catch (Exception e) {
+            updateStatus("Error showing historical state: " + e.getMessage());
+            ErrorDialogUtil.showError(primaryStage, "Historical State Error", 
+                "Failed to show historical state: " + e.getMessage());
+        }
+    }
+    
+    public void handleRerunHistoricalExecution(ExecutionHistoryRow historyRow) {
+        if (historyRow == null) {
+            updateStatus("Error: No historical run selected");
+            return;
+        }
+        
+        // Clear variables table when re-running
+        if (variablesTable != null) {
+            variablesTable.setItems(FXCollections.observableArrayList());
+        }
+        
+        try {
+            int runNumber = Integer.parseInt(historyRow.getRunNumber());
+            int expansionLevel = Integer.parseInt(historyRow.getExpansionLevel());
+            
+            // Parse the inputs from the history row (context-aware)
+            String inputsString = historyRow.getInputs();
+            List<Integer> historicalInputs = new ArrayList<>();
+            
+            if (inputsString != null && !inputsString.trim().isEmpty()) {
+                String[] inputParts = inputsString.split(",");
+                for (String part : inputParts) {
+                    try {
+                        historicalInputs.add(Integer.parseInt(part.trim()));
+                    } catch (NumberFormatException e) {
+                        updateStatus("Warning: Could not parse input value: " + part.trim());
+                    }
+                }
+            }
+            
+            if (historicalInputs.isEmpty()) {
+                updateStatus("Error: No valid inputs found in historical run #" + runNumber);
+                ErrorDialogUtil.showError(primaryStage, "Re-run Error", 
+                    "No valid inputs found in historical run #" + runNumber);
+                return;
+            }
+            
+            if (onInputsPopulated != null) {
+                onInputsPopulated.accept(historicalInputs);
+            }
+            
+            if (onExpansionLevelSet != null) {
+                onExpansionLevelSet.accept(expansionLevel);
+            }
+            
+            updateStatus("Populated inputs from run #" + runNumber + ". Ready to re-run with inputs: " + historicalInputs);
+            
+        } catch (NumberFormatException e) {
+            updateStatus("Error: Invalid run number format");
+            ErrorDialogUtil.showError(primaryStage, "Invalid Data", 
+                "Invalid run number format: " + historyRow.getRunNumber());
+        } catch (Exception e) {
+            updateStatus("Error preparing re-run: " + e.getMessage());
+            ErrorDialogUtil.showError(primaryStage, "Re-run Error", 
+                "Failed to prepare re-run: " + e.getMessage());
+        }
     }
     
 }

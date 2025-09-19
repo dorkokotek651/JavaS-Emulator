@@ -23,10 +23,10 @@ Implemented the System State Save and Load bonus task.
    - Implemented both single-level (`ExpansionEngine`) and multi-level (`MultiLevelExpansionEngine`) expansion capabilities
    - Maintains detailed ancestry tracking for expanded instructions, allowing users to see the complete expansion history
 
-4. **Comprehensive State Management with Serialization**
-   - Built a robust state management system using the State pattern with `SystemState` interface
-   - Implemented JSON-based serialization for persisting and restoring complete system state
-   - Designed to handle complex object graphs including programs, execution history, and internal counters
+4. **Advanced Debug and Execution Management**
+   - Implemented comprehensive debug session management with step-by-step execution
+   - Built robust execution history tracking with detailed variable state management
+   - Designed to handle complex execution flows with proper state preservation
 
 ### User Manual
 
@@ -82,8 +82,6 @@ classDiagram
         +getCurrentProgram()
         +expandProgram(int)
         +runProgram(int, List)
-        +saveState(String)
-        +loadState(String)
     }
     
     class SEmulatorEngineImpl {
@@ -158,19 +156,6 @@ classDiagram
         +generateExpansionHistory(List): String
     }
     
-    %% State Management
-    class SystemState {
-        <<interface>>
-        +getCurrentProgram(): SProgram
-        +getExecutionHistory(): List
-        +getNextRunNumber(): int
-    }
-    
-    class SystemStateSerializer {
-        -objectMapper: ObjectMapper
-        +saveToFile(SystemState, String)
-        +loadFromFile(String): SystemState
-    }
     
     %% UI Module
     class SEmulatorApplication {
@@ -239,7 +224,6 @@ classDiagram
     SEmulatorEngineImpl --> ProgramRunner
     SEmulatorEngineImpl --> ExpansionEngine
     SEmulatorEngineImpl --> MultiLevelExpansionEngine
-    SEmulatorEngineImpl --> SystemStateSerializer
     
     SProgramImpl --> SInstruction
     ProgramRunner --> ExecutionContext
@@ -263,7 +247,6 @@ classDiagram
 - **`SProgramImpl`** - Implementation of S-language program with instruction management
 - **`SInstruction`** - Interface for individual S-language instructions
 - **`ExecutionResult`** - Contains results of program execution including variables and statistics
-- **`SystemState`** - Interface for system state management and persistence
 
 #### Instruction Processing
 - **`BaseInstruction`** - Abstract base class for all instruction types
@@ -284,17 +267,12 @@ classDiagram
 - **`SProgramParser`** - Parses XML files into S-language program objects
 - **`XMLValidator`** - Validates XML files against the S-Emulator schema
 
-#### State Persistence
-- **`SystemStateSerializer`** - Handles serialization and deserialization of system state
-- **`SystemStateImpl`** - Concrete implementation of system state
-- **`SystemStateData`** - Data transfer object for JSON serialization
 
 #### Exception Handling
 - **`SProgramException`** - Base exception for all S-language related errors
 - **`XMLValidationException`** - Specific exception for XML validation errors
 - **`ExecutionException`** - Exception for program execution errors
 - **`ExpansionException`** - Exception for instruction expansion errors
-- **`StateSerializationException`** - Exception for state persistence errors
 
 ### UI Module (`s-emulator-ui`)
 

@@ -11,15 +11,22 @@ public class ExecutionHistoryRow {
     private final StringProperty yValue;
     private final StringProperty totalCycles;
     private final StringProperty actions;
+    private final StringProperty context;
     
     public ExecutionHistoryRow(String runNumber, String expansionLevel, String inputs, 
                               String yValue, String totalCycles, String actions) {
+        this(runNumber, expansionLevel, inputs, yValue, totalCycles, actions, "Main Program");
+    }
+    
+    public ExecutionHistoryRow(String runNumber, String expansionLevel, String inputs, 
+                              String yValue, String totalCycles, String actions, String context) {
         this.runNumber = new SimpleStringProperty(runNumber);
         this.expansionLevel = new SimpleStringProperty(expansionLevel);
         this.inputs = new SimpleStringProperty(inputs);
         this.yValue = new SimpleStringProperty(yValue);
         this.totalCycles = new SimpleStringProperty(totalCycles);
         this.actions = new SimpleStringProperty(actions);
+        this.context = new SimpleStringProperty(context);
     }
     
 
@@ -100,6 +107,18 @@ public class ExecutionHistoryRow {
         this.actions.set(actions);
     }
     
+    public StringProperty contextProperty() {
+        return context;
+    }
+    
+    public String getContext() {
+        return context.get();
+    }
+    
+    public void setContext(String context) {
+        this.context.set(context);
+    }
+    
     @Override
     public String toString() {
         return "ExecutionHistoryRow{" +
@@ -109,6 +128,7 @@ public class ExecutionHistoryRow {
                 ", yValue=" + getYValue() +
                 ", totalCycles=" + getTotalCycles() +
                 ", actions=" + getActions() +
+                ", context=" + getContext() +
                 '}';
     }
 }

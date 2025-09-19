@@ -5,12 +5,18 @@ import engine.api.SProgram;
 import engine.api.SInstruction;
 import engine.exception.SProgramException;
 import engine.model.InstructionType;
+import engine.model.FunctionRegistry;
+import engine.model.SProgramImpl;
+import engine.model.instruction.InstructionFactory;
+import engine.model.SEmulatorConstants;
+import engine.expansion.ExpansionEngine;
 import engine.model.SEmulatorEngineImpl;
 import fx.model.ExecutionHistoryRow;
 import fx.model.InstructionTableRow;
 import fx.model.VariableTableRow;
 import fx.service.FileService;
 import fx.util.StyleManager;
+import fx.util.ActionButtonCellFactory;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -27,8 +33,6 @@ public class MainController implements Initializable {
     
 
     @FXML private MenuItem loadFileMenuItem;
-    @FXML private MenuItem saveStateMenuItem;
-    @FXML private MenuItem loadStateMenuItem;
     @FXML private MenuItem exitMenuItem;
     @FXML private MenuItem aboutMenuItem;
     
@@ -37,9 +41,8 @@ public class MainController implements Initializable {
     @FXML private Button loadFileButton;
     @FXML private Label currentFilePathLabel;
     @FXML private ComboBox<String> programFunctionSelector;
-    @FXML private Button collapseButton;
+    @FXML private ComboBox<String> levelSelector;
     @FXML private Label levelDisplayLabel;
-    @FXML private Button expandButton;
     @FXML private ComboBox<String> highlightSelectionCombo;
     
 
@@ -104,7 +107,7 @@ public class MainController implements Initializable {
     private HighlightController highlightController;
     private Stage primaryStage;
     private int currentExpansionLevel = 0;
-    private ObservableList<ExecutionHistoryRow> executionHistory = FXCollections.observableArrayList();
+    private String currentContextProgram = "Main Program";
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -132,7 +135,6 @@ public class MainController implements Initializable {
             initializeControlStates();
             initializeExecutionHistory();
             initializeTableStyling();
-            inputController.addDefaultInput();
             updateStatusLabel("S-Emulator initialized successfully");
         } catch (SProgramException e) {
             updateStatusLabel("Error: Failed to initialize S-Emulator engine - " + e.getMessage());
@@ -202,13 +204,12 @@ public class MainController implements Initializable {
         inputsColumn.setCellValueFactory(cellData -> cellData.getValue().inputsProperty());
         yValueColumn.setCellValueFactory(cellData -> cellData.getValue().yValueProperty());
         totalCyclesColumn.setCellValueFactory(cellData -> cellData.getValue().totalCyclesProperty());
-        actionsColumn.setCellValueFactory(cellData -> cellData.getValue().actionsProperty());
+        actionsColumn.setCellFactory(new ActionButtonCellFactory(executionController));
     }
     
     private void initializeControlStates() {
 
-        collapseButton.setDisable(true);
-        expandButton.setDisable(true);
+        levelSelector.setDisable(true);
         programFunctionSelector.setDisable(true);
         highlightController.disableHighlightSelection();
         startRunButton.setDisable(true);
@@ -220,15 +221,14 @@ public class MainController implements Initializable {
         resumeButton.setDisable(true);
         
 
-        programFunctionSelector.setItems(FXCollections.observableArrayList("Main Program"));
-        programFunctionSelector.setValue("Main Program");
+        updateProgramFunctionSelector();
         
 
         programFunctionSelector.setOnAction(e -> handleProgramFunctionSelection());
     }
     
     private void initializeExecutionHistory() {
-        statisticsTable.setItems(executionHistory);
+        // Statistics table is now managed by ExecutionController's context-aware history manager
     }
     
     private void setupFileControllerCallbacks() {
@@ -245,7 +245,6 @@ public class MainController implements Initializable {
         executionController.setVariablesTable(variablesTable);
         executionController.setCyclesLabel(cyclesLabel);
         executionController.setStatisticsTable(statisticsTable);
-        executionController.setExecutionHistory(executionHistory);
         
 
         executionController.setInstructionsTable(instructionsTable);
@@ -261,8 +260,7 @@ public class MainController implements Initializable {
             startRunButton.setDisable(true);
             
 
-            collapseButton.setDisable(true);
-            expandButton.setDisable(true);
+            levelSelector.setDisable(true);
             
 
             addInputButton.setDisable(true);
@@ -285,6 +283,10 @@ public class MainController implements Initializable {
             removeInputButton.setDisable(false);
             executionInputsSection.setDisable(false);
         });
+        
+        executionController.setOnInputsPopulated(this::populateInputsFromHistory);
+        executionController.setOnExpansionLevelSet(this::setExpansionLevelFromHistory);
+        executionController.setGetCurrentContextProgram(this::getContextProgram);
     }
     
     private void setupInputControllerCallbacks() {
@@ -329,8 +331,15 @@ public class MainController implements Initializable {
             SProgram program = engine.getCurrentProgram();
             currentFilePathLabel.setText(program.getName());
             currentExpansionLevel = 0;
+            currentContextProgram = "Main Program";
+            executionController.setCurrentContext("Main Program");
+            updateProgramFunctionSelector();
             updateProgramDisplay();
+            updateLevelSelector();
             enableProgramControls();
+            
+            // Update input fields based on the main program's requirements
+            inputController.updateInputFieldsForProgram(program);
         }
     }
     
@@ -352,15 +361,6 @@ public class MainController implements Initializable {
     }
     
     
-    @FXML
-    private void handleSaveState() {
-        fileController.handleSaveState();
-    }
-    
-    @FXML
-    private void handleLoadState() {
-        fileController.handleLoadState();
-    }
     
     @FXML
     private void handleExit() {
@@ -375,21 +375,84 @@ public class MainController implements Initializable {
     }
     
     @FXML
-    private void handleCollapse() {
-        if (currentExpansionLevel > 0) {
-            currentExpansionLevel--;
-            executionController.setCurrentExpansionLevel(currentExpansionLevel);
-            updateProgramDisplay();
+    private void handleLevelSelection() {
+        String selectedLevel = levelSelector.getValue();
+        if (selectedLevel != null && !selectedLevel.trim().isEmpty()) {
+            try {
+                int level = Integer.parseInt(selectedLevel);
+                selectExpansionLevel(level);
+            } catch (NumberFormatException e) {
+                updateStatusLabel("Invalid level selection: " + selectedLevel);
+            }
         }
     }
     
-    @FXML
-    private void handleExpand() {
-        if (engine.isProgramLoaded() && currentExpansionLevel < engine.getMaxExpansionLevel()) {
-            currentExpansionLevel++;
+    /**
+     * Selects a specific expansion level directly.
+     */
+    private void selectExpansionLevel(int level) {
+        if (!engine.isProgramLoaded()) {
+            updateStatusLabel("No program loaded");
+            return;
+        }
+        
+        SProgram contextProgram = getContextProgram();
+        if (contextProgram == null) {
+            updateStatusLabel("No context program available");
+            return;
+        }
+        
+        int maxLevel = contextProgram.getMaxExpansionLevel();
+        
+        // Validate level selection
+        if (level < 0 || level > maxLevel) {
+            updateStatusLabel("Invalid level: " + level + ". Must be between 0 and " + maxLevel);
+            return;
+        }
+        
+        // Update expansion level
+        currentExpansionLevel = level;
             executionController.setCurrentExpansionLevel(currentExpansionLevel);
             updateProgramDisplay();
+        
+        updateStatusLabel("Selected expansion level: " + level + "/" + maxLevel);
+    }
+    
+    /**
+     * Updates the level selector dropdown with available levels for the current context program.
+     */
+    private void updateLevelSelector() {
+        if (levelSelector == null) {
+            return;
         }
+        
+        if (!engine.isProgramLoaded()) {
+            levelSelector.setItems(FXCollections.observableArrayList());
+            levelSelector.setValue(null);
+            return;
+        }
+        
+        SProgram contextProgram = getContextProgram();
+        if (contextProgram == null) {
+            levelSelector.setItems(FXCollections.observableArrayList());
+            levelSelector.setValue(null);
+            return;
+        }
+        
+        int maxLevel = contextProgram.getMaxExpansionLevel();
+        ObservableList<String> levelOptions = FXCollections.observableArrayList();
+        
+        // Add levels from 0 to maxLevel
+        for (int i = 0; i <= maxLevel; i++) {
+            levelOptions.add(String.valueOf(i));
+        }
+        
+        levelSelector.setItems(levelOptions);
+        
+        // Set current level as selected
+        levelSelector.setValue(String.valueOf(currentExpansionLevel));
+        
+        System.out.println("Updated level selector with levels 0-" + maxLevel + ", current: " + currentExpansionLevel);
     }
     
     
@@ -458,7 +521,12 @@ public class MainController implements Initializable {
         System.out.println("Updating display for program: " + program.getName());
         
 
-        levelDisplayLabel.setText(currentExpansionLevel + "/" + engine.getMaxExpansionLevel());
+        SProgram contextProgram = getContextProgram();
+        if (contextProgram != null) {
+            levelDisplayLabel.setText(currentExpansionLevel + "/" + contextProgram.getMaxExpansionLevel());
+        } else {
+            levelDisplayLabel.setText("0/0");
+        }
         
 
         populateInstructionsTable(program);
@@ -476,13 +544,119 @@ public class MainController implements Initializable {
     }
     
     private SProgram getCurrentDisplayProgram() {
+        if (!engine.isProgramLoaded()) {
+            return null;
+        }
+        
+        SProgram contextProgram = getContextProgram();
+        if (contextProgram == null) {
+            return null;
+        }
+        
         try {
-
-            return engine.getExpandedProgram(currentExpansionLevel);
-        } catch (SProgramException e) {
-
+            if (currentExpansionLevel == 0) {
+                System.out.println("getCurrentDisplayProgram: Returning context program at level 0: " + contextProgram.getName());
+                return contextProgram;
+            } else {
+                System.out.println("getCurrentDisplayProgram: Expanding " + contextProgram.getName() + " to level " + currentExpansionLevel);
+                
+                SProgram expandedProgram;
+                
+                // For both main program and function wrapper programs, use the engine's expansion methods
+                // because SProgramImpl.expandToLevel() is not implemented properly
+                System.out.println("getCurrentDisplayProgram: Using engine expansion for " + currentContextProgram);
+                
+                // Create a temporary engine instance to expand the context program
+                
+                // For function wrapper programs, we need to use the expansion engine directly
+                if ("Main Program".equals(currentContextProgram)) {
+                    expandedProgram = engine.getExpandedProgram(currentExpansionLevel);
+                } else {
+                    // For function wrapper programs, we need to use the expansion engine directly
+                    // since the wrapper program's expandToLevel() method doesn't work
+                    try {
+                        // Use the expansion engine to expand the wrapper program
+                        ExpansionEngine expansionEngine = new ExpansionEngine();
+                        expandedProgram = expansionEngine.expandProgram(contextProgram, currentExpansionLevel);
+                        
+                        // Ensure the expanded program has access to the function registry
+                        if (expandedProgram.getFunctionRegistry() == null && engine.getCurrentProgram().getFunctionRegistry() != null) {
+                            expandedProgram.setFunctionRegistry(engine.getCurrentProgram().getFunctionRegistry());
+                        }
+                    } catch (Exception e) {
+                        System.out.println("getCurrentDisplayProgram: Error expanding function wrapper: " + e.getMessage());
+                        throw e;
+                    }
+                }
+                
+                System.out.println("getCurrentDisplayProgram: Expanded program has " + expandedProgram.getInstructions().size() + " instructions");
+                return expandedProgram;
+            }
+        } catch (Exception e) {
+            System.out.println("getCurrentDisplayProgram: Error expanding: " + e.getMessage());
             updateStatusLabel("Warning: Could not expand to level " + currentExpansionLevel + ": " + e.getMessage());
+            return contextProgram;
+        }
+    }
+    
+    private SProgram getContextProgram() {
+        if ("Main Program".equals(currentContextProgram)) {
             return engine.getCurrentProgram();
+        } else {
+            FunctionRegistry registry = engine.getFunctionRegistry();
+            if (registry == null) {
+                return null;
+            }
+            
+            Map<String, String> functions = registry.getAllFunctions();
+            for (Map.Entry<String, String> entry : functions.entrySet()) {
+                if (currentContextProgram.equals(entry.getValue())) {
+                    // Create a wrapper program that contains a QUOTE instruction calling this function
+                    return createFunctionWrapperProgram(entry.getKey(), entry.getValue());
+                }
+            }
+            return null;
+        }
+    }
+    
+    private SProgram createFunctionWrapperProgram(String functionName, String userString) {
+        try {
+            // Get the actual function to determine its input variables
+            SProgram actualFunction = engine.getFunction(functionName);
+            if (actualFunction == null) {
+                System.out.println("Function not found: " + functionName);
+                return null;
+            }
+            
+            // Create a simple program that calls the function
+            SProgramImpl wrapperProgram = new SProgramImpl(userString);
+            
+            // Get the actual input variables for this function
+            List<String> inputVariables = actualFunction.getInputVariables();
+            String functionArguments = String.join(",", inputVariables);
+            
+            System.out.println("Function " + functionName + " has input variables: " + inputVariables);
+            
+            // Create a QUOTE instruction that calls the function with correct arguments
+            Map<String, String> quoteArgs = Map.of(
+                SEmulatorConstants.FUNCTION_NAME_ARG, functionName,
+                SEmulatorConstants.FUNCTION_ARGUMENTS_ARG, functionArguments
+            );
+            
+            SInstruction quoteInstruction = InstructionFactory.createInstruction(
+                SEmulatorConstants.QUOTE_NAME, "y", null, quoteArgs);
+            
+            // Add the instruction to the wrapper program
+            wrapperProgram.addInstruction(quoteInstruction);
+            
+            // Set the function registry so expansion works
+            wrapperProgram.setFunctionRegistry(engine.getCurrentProgram().getFunctionRegistry());
+            
+            return wrapperProgram;
+        } catch (Exception e) {
+            System.out.println("Error creating function wrapper: " + e.getMessage());
+            // Fallback to returning the actual function program
+            return engine.getFunction(functionName);
         }
     }
     
@@ -548,13 +722,17 @@ public class MainController implements Initializable {
             .count();
         long syntheticCount = instructions.size() - basicCount;
         
+        // Get the max expansion level for the current context program
+        SProgram contextProgram = getContextProgram();
+        int maxLevel = contextProgram != null ? contextProgram.getMaxExpansionLevel() : 0;
+        
         String summary = String.format("Program: %s | Total: %d instructions | Basic: %d | Synthetic: %d | Level: %d/%d",
             program.getName(),
             instructions.size(),
             basicCount,
             syntheticCount,
             currentExpansionLevel,
-            engine.getMaxExpansionLevel()
+            maxLevel
         );
         
         summaryLabel.setText(summary);
@@ -581,7 +759,7 @@ public class MainController implements Initializable {
         cyclesLabel.setText("Total Cycles: 0");
         
 
-        executionHistory.clear();
+        // Execution history is now managed by ExecutionController's context-aware history manager
         
 
         executionController.resetExecutionState();
@@ -592,6 +770,8 @@ public class MainController implements Initializable {
         
 
         currentExpansionLevel = 0;
+        currentContextProgram = "Main Program";
+        executionController.setCurrentContext("Main Program");
         executionController.setCurrentExpansionLevel(currentExpansionLevel);
         levelDisplayLabel.setText("0/0");
         
@@ -602,8 +782,7 @@ public class MainController implements Initializable {
         currentFilePathLabel.setText("No file loaded");
         
 
-        programFunctionSelector.setItems(FXCollections.observableArrayList("Main Program"));
-        programFunctionSelector.setValue("Main Program");
+        updateProgramFunctionSelector();
         
 
         inputController.clearInputFieldStyling();
@@ -620,8 +799,11 @@ public class MainController implements Initializable {
     
     private void updateControlStates() {
         if (engine.isProgramLoaded()) {
-            collapseButton.setDisable(currentExpansionLevel == 0);
-            expandButton.setDisable(currentExpansionLevel >= engine.getMaxExpansionLevel());
+            SProgram contextProgram = getContextProgram();
+            if (contextProgram != null) {
+                // Level selector is always enabled when program is loaded
+                levelSelector.setDisable(false);
+            }
         }
     }
     
@@ -634,6 +816,15 @@ public class MainController implements Initializable {
         System.out.println("Status: " + message);
     }
     
+    /**
+     * Clears the variables table.
+     */
+    private void clearVariablesTable() {
+        if (variablesTable != null) {
+            variablesTable.setItems(FXCollections.observableArrayList());
+        }
+    }
+    
     private void highlightInstructionsWithCurrentProgram(String item) {
         if (engine.isProgramLoaded()) {
             SProgram program = getCurrentDisplayProgram();
@@ -644,20 +835,103 @@ public class MainController implements Initializable {
     }
     
     
+    private void updateProgramFunctionSelector() {
+        ObservableList<String> items = FXCollections.observableArrayList();
+        items.add("Main Program");
+        
+        if (engine.isProgramLoaded()) {
+            FunctionRegistry registry = engine.getFunctionRegistry();
+            if (registry != null && !registry.isEmpty()) {
+                Map<String, String> functions = registry.getAllFunctions();
+                for (Map.Entry<String, String> entry : functions.entrySet()) {
+                    String userString = entry.getValue();
+                    items.add(userString);
+                }
+            }
+        }
+        
+        programFunctionSelector.setItems(items);
+        programFunctionSelector.setValue(currentContextProgram);
+    }
+    
     private void handleProgramFunctionSelection() {
         String selectedItem = programFunctionSelector.getValue();
         if (selectedItem == null) {
             return;
         }
         
-        if ("Main Program".equals(selectedItem)) {
-
-            updateProgramDisplay();
-            updateStatusLabel("Displaying main program");
-        } else {
-
-            updateStatusLabel("Function display will be implemented when function support is added");
+        setContextProgram(selectedItem);
+    }
+    
+    private void setContextProgram(String programName) {
+        if (programName == null || programName.trim().isEmpty()) {
+            return;
         }
+        
+        currentContextProgram = programName;
+        
+        // Update execution history context
+        executionController.setCurrentContext(programName);
+        
+        // Clear variables table when switching contexts
+        clearVariablesTable();
+        
+        if ("Main Program".equals(programName)) {
+            updateProgramDisplay();
+            updateLevelSelector();
+            updateStatusLabel("Displaying main program");
+            // Update input fields for main program
+            inputController.updateInputFieldsForProgram(engine.getCurrentProgram());
+        } else {
+            updateFunctionDisplay(programName);
+            updateLevelSelector();
+            updateStatusLabel("Displaying function: " + programName);
+            // Update input fields for the selected function
+            SProgram contextProgram = getContextProgram();
+            inputController.updateInputFieldsForProgram(contextProgram);
+        }
+    }
+    
+    private void updateFunctionDisplay(String functionUserString) {
+        if (!engine.isProgramLoaded()) {
+            return;
+        }
+        
+        FunctionRegistry registry = engine.getFunctionRegistry();
+        if (registry == null) {
+            updateStatusLabel("No functions available");
+            return;
+        }
+        
+        String functionName = null;
+        Map<String, String> functions = registry.getAllFunctions();
+        for (Map.Entry<String, String> entry : functions.entrySet()) {
+            if (functionUserString.equals(entry.getValue())) {
+                functionName = entry.getKey();
+                break;
+            }
+        }
+        
+        if (functionName == null) {
+            updateStatusLabel("Function not found: " + functionUserString);
+            return;
+        }
+        
+        SProgram functionProgram = engine.getFunction(functionName);
+        if (functionProgram == null) {
+            updateStatusLabel("Function program not found: " + functionName);
+            return;
+        }
+        
+        displayFunctionProgram(functionProgram);
+    }
+    
+    private void displayFunctionProgram(SProgram functionProgram) {
+        currentExpansionLevel = 0;
+        executionController.setCurrentExpansionLevel(currentExpansionLevel);
+        
+        // Use updateProgramDisplay to ensure proper expansion handling
+        updateProgramDisplay();
     }
     
     private void updateHistoryChain(InstructionTableRow selectedRow, SProgram program) {
@@ -768,5 +1042,31 @@ public class MainController implements Initializable {
         
 
         variablesTable.refresh();
+    }
+    
+    private void populateInputsFromHistory(List<Integer> historicalInputs) {
+        if (inputController != null && historicalInputs != null) {
+            inputController.populateInputsFromHistory(historicalInputs);
+        }
+    }
+    
+    private void setExpansionLevelFromHistory(int expansionLevel) {
+        if (expansionLevel >= 0 && expansionLevel <= engine.getMaxExpansionLevel()) {
+            currentExpansionLevel = expansionLevel;
+            executionController.setCurrentExpansionLevel(currentExpansionLevel);
+            updateLevelDisplay();
+            updateProgramDisplay();
+            
+            // Update the dropdown selector to match the historical expansion level
+            if (levelSelector != null) {
+                levelSelector.setValue(String.valueOf(currentExpansionLevel));
+            }
+        }
+    }
+    
+    private void updateLevelDisplay() {
+        if (levelDisplayLabel != null && engine.isProgramLoaded()) {
+            levelDisplayLabel.setText(currentExpansionLevel + "/" + engine.getMaxExpansionLevel());
+        }
     }
 }

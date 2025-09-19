@@ -1,8 +1,8 @@
 package engine.api;
 
 import engine.exception.SProgramException;
-import engine.exception.StateSerializationException;
 import engine.execution.ExecutionContext;
+import engine.model.FunctionRegistry;
 import java.util.List;
 import java.util.Map;
 
@@ -23,19 +23,16 @@ public interface SEmulatorEngine {
     
     ExecutionResult runProgram(int expansionLevel, List<Integer> inputs);
     
+    ExecutionResult runSpecificProgram(SProgram program, int expansionLevel, List<Integer> inputs);
+    ExecutionResult runSpecificProgram(SProgram program, int expansionLevel, List<Integer> inputs, int runNumber);
+    
     List<ExecutionResult> getExecutionHistory();
     
     int getMaxExpansionLevel();
     
-    void saveState(String filePath) throws StateSerializationException;
-    
-    void loadState(String filePath) throws StateSerializationException;
-    
-    SystemState getCurrentState();
-    
-    void restoreState(SystemState state) throws SProgramException;
-    
     void startDebugSession(int expansionLevel, List<Integer> inputs) throws SProgramException;
+    
+    void startDebugSessionForProgram(SProgram program, int expansionLevel, List<Integer> inputs) throws SProgramException;
     
     boolean stepForward() throws SProgramException;
     
@@ -48,4 +45,8 @@ public interface SEmulatorEngine {
     ExecutionContext getCurrentExecutionState();
     
     Map<String, Integer> getChangedVariables();
+    
+    FunctionRegistry getFunctionRegistry();
+    
+    SProgram getFunction(String functionName);
 }

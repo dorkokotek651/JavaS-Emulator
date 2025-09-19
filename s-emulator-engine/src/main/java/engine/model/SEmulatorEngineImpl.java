@@ -3,17 +3,13 @@ package engine.model;
 import engine.api.ExecutionResult;
 import engine.api.SEmulatorEngine;
 import engine.api.SProgram;
-import engine.api.SystemState;
 import engine.exception.SProgramException;
-import engine.exception.StateSerializationException;
 import engine.exception.XMLValidationException;
 import engine.exception.ExecutionException;
 import engine.exception.ExpansionException;
 import engine.execution.ExecutionContext;
 import engine.execution.ProgramRunner;
 import engine.expansion.ExpansionEngine;
-import engine.model.serialization.SystemStateImpl;
-import engine.model.serialization.SystemStateSerializer;
 import engine.xml.SProgramParser;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,7 +23,6 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
     private final ProgramRunner runner;
     private final ExpansionEngine expansionEngine;
     private final engine.expansion.MultiLevelExpansionEngine multiLevelExpansionEngine;
-    private final SystemStateSerializer stateSerializer;
     private int nextRunNumber;
     
     private boolean debugSessionActive;
@@ -50,7 +45,6 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
             this.runner = new ProgramRunner();
             this.expansionEngine = new ExpansionEngine();
             this.multiLevelExpansionEngine = new engine.expansion.MultiLevelExpansionEngine();
-            this.stateSerializer = new SystemStateSerializer();
         } catch (XMLValidationException e) {
             throw new SProgramException("Failed to initialize S-Emulator engine", e);
         }
@@ -233,21 +227,26 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
         if (!isProgramLoaded()) {
             throw new RuntimeException("No program loaded");
         }
-
+        return runSpecificProgram(currentProgram, expansionLevel, inputs);
+    }
+    
+    @Override
+    public ExecutionResult runSpecificProgram(SProgram program, int expansionLevel, List<Integer> inputs) {
+        if (program == null) {
+            throw new IllegalArgumentException("Program cannot be null");
+        }
         if (inputs == null) {
             throw new IllegalArgumentException("Inputs cannot be null");
         }
-
         if (expansionLevel < 0) {
             throw new IllegalArgumentException("Expansion level cannot be negative: " + expansionLevel);
         }
-
-        if (expansionLevel > currentProgram.getMaxExpansionLevel()) {
+        if (expansionLevel > program.getMaxExpansionLevel()) {
             throw new IllegalArgumentException("Expansion level " + expansionLevel + 
-                " exceeds maximum level " + currentProgram.getMaxExpansionLevel());
+                " exceeds maximum level " + program.getMaxExpansionLevel());
         }
 
-        List<String> requiredInputs = currentProgram.getInputVariables();
+        List<String> requiredInputs = program.getInputVariables();
         
         if (inputs.size() > requiredInputs.size()) {
             inputs = inputs.subList(0, requiredInputs.size());
@@ -268,9 +267,13 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
         try {
             SProgram programToRun;
             if (expansionLevel == 0) {
-                programToRun = currentProgram;
+                programToRun = program;
             } else {
-                programToRun = expansionEngine.expandProgram(currentProgram, expansionLevel);
+                programToRun = expansionEngine.expandProgram(program, expansionLevel);
+                // Ensure the expanded program has access to the function registry
+                if (programToRun.getFunctionRegistry() == null && currentProgram.getFunctionRegistry() != null) {
+                    programToRun.setFunctionRegistry(currentProgram.getFunctionRegistry());
+                }
             }
             
             ExecutionResult result;
@@ -282,6 +285,69 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
             
             executionHistory.add(result);
             nextRunNumber++;
+            return result;
+        } catch (ExecutionException | ExpansionException e) {
+            throw new RuntimeException("Program execution failed: " + e.getMessage(), e);
+        }
+    }
+    
+    @Override
+    public ExecutionResult runSpecificProgram(SProgram program, int expansionLevel, List<Integer> inputs, int runNumber) {
+        if (program == null) {
+            throw new IllegalArgumentException("Program cannot be null");
+        }
+        if (inputs == null) {
+            throw new IllegalArgumentException("Inputs cannot be null");
+        }
+        if (expansionLevel < 0) {
+            throw new IllegalArgumentException("Expansion level cannot be negative: " + expansionLevel);
+        }
+        if (expansionLevel > program.getMaxExpansionLevel()) {
+            throw new IllegalArgumentException("Expansion level " + expansionLevel + 
+                " exceeds maximum level " + program.getMaxExpansionLevel());
+        }
+        if (runNumber <= 0) {
+            throw new IllegalArgumentException("Run number must be positive: " + runNumber);
+        }
+
+        List<String> requiredInputs = program.getInputVariables();
+        
+        if (inputs.size() > requiredInputs.size()) {
+            inputs = inputs.subList(0, requiredInputs.size());
+        } else if (inputs.size() < requiredInputs.size()) {
+            List<Integer> paddedInputs = new ArrayList<>(inputs);
+            while (paddedInputs.size() < requiredInputs.size()) {
+                paddedInputs.add(0);
+            }
+            inputs = paddedInputs;
+        }
+
+        for (int input : inputs) {
+            if (input < 0) {
+                throw new IllegalArgumentException("Input values cannot be negative: " + input);
+            }
+        }
+
+        try {
+            SProgram programToRun;
+            if (expansionLevel == 0) {
+                programToRun = program;
+            } else {
+                programToRun = expansionEngine.expandProgram(program, expansionLevel);
+                // Ensure the expanded program has access to the function registry
+                if (programToRun.getFunctionRegistry() == null && currentProgram.getFunctionRegistry() != null) {
+                    programToRun.setFunctionRegistry(currentProgram.getFunctionRegistry());
+                }
+            }
+            
+            ExecutionResult result;
+            if (expansionLevel == 0 || hasUnexpandedQuoteInstructions(programToRun)) {
+                result = runner.executeProgramWithVirtualExecution(programToRun, inputs, runNumber, expansionLevel, currentProgram.getFunctionRegistry());
+            } else {
+                result = runner.executeProgram(programToRun, inputs, runNumber, expansionLevel);
+            }
+            
+            executionHistory.add(result);
             return result;
         } catch (ExecutionException | ExpansionException e) {
             throw new RuntimeException("Program execution failed: " + e.getMessage(), e);
@@ -316,54 +382,19 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
                                    SEmulatorConstants.JUMP_EQUAL_FUNCTION_NAME.equals(instruction.getName()));
     }
     
-    @Override
-    public void saveState(String filePath) throws StateSerializationException {
-        if (filePath == null || filePath.trim().isEmpty()) {
-            throw new StateSerializationException("File path cannot be null or empty");
-        }
-        
-        SystemState currentState = getCurrentState();
-        stateSerializer.saveToFile(currentState, filePath.trim());
-    }
-    
-    @Override
-    public void loadState(String filePath) throws StateSerializationException {
-        if (filePath == null || filePath.trim().isEmpty()) {
-            throw new StateSerializationException("File path cannot be null or empty");
-        }
-        
-        SystemState loadedState = stateSerializer.loadFromFile(filePath.trim());
-        
-        try {
-            restoreState(loadedState);
-        } catch (SProgramException e) {
-            throw new StateSerializationException("Failed to restore loaded state", e);
-        }
-    }
-    
-    @Override
-    public SystemState getCurrentState() {
-        return new SystemStateImpl(currentProgram, executionHistory, nextRunNumber);
-    }
-    
-    @Override
-    public void restoreState(SystemState state) throws SProgramException {
-        if (state == null) {
-            throw new SProgramException("System state cannot be null");
-        }
-        
-        this.currentProgram = state.getCurrentProgram();
-        
-        this.executionHistory.clear();
-        this.executionHistory.addAll(state.getExecutionHistory());
-        
-        this.nextRunNumber = state.getNextRunNumber();
-    }
     
     @Override
     public void startDebugSession(int expansionLevel, List<Integer> inputs) throws SProgramException {
         if (!isProgramLoaded()) {
             throw new SProgramException("No program loaded");
+        }
+        startDebugSessionForProgram(currentProgram, expansionLevel, inputs);
+    }
+    
+    @Override
+    public void startDebugSessionForProgram(SProgram program, int expansionLevel, List<Integer> inputs) throws SProgramException {
+        if (program == null) {
+            throw new SProgramException("Program cannot be null");
         }
         
         if (inputs == null) {
@@ -374,18 +405,22 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
             throw new SProgramException("Expansion level cannot be negative: " + expansionLevel);
         }
         
-        if (expansionLevel > currentProgram.getMaxExpansionLevel()) {
+        if (expansionLevel > program.getMaxExpansionLevel()) {
             throw new SProgramException("Expansion level " + expansionLevel + 
-                " exceeds maximum level " + currentProgram.getMaxExpansionLevel());
+                " exceeds maximum level " + program.getMaxExpansionLevel());
         }
         
         stopDebugSession();
         
         try {
             if (expansionLevel == 0) {
-                this.debugProgram = currentProgram;
+                this.debugProgram = program;
             } else {
-                this.debugProgram = expansionEngine.expandProgram(currentProgram, expansionLevel);
+                this.debugProgram = expansionEngine.expandProgram(program, expansionLevel);
+                // Ensure the expanded program has access to the function registry
+                if (this.debugProgram.getFunctionRegistry() == null && currentProgram.getFunctionRegistry() != null) {
+                    this.debugProgram.setFunctionRegistry(currentProgram.getFunctionRegistry());
+                }
             }
             
             this.debugExecutionContext = runner.createDebugExecutionContext(debugProgram, inputs);
@@ -471,5 +506,27 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
         }
         
         return debugExecutionContext.getChangedVariables();
+    }
+    
+    @Override
+    public FunctionRegistry getFunctionRegistry() {
+        if (currentProgram == null) {
+            return null;
+        }
+        return currentProgram.getFunctionRegistry();
+    }
+    
+    @Override
+    public SProgram getFunction(String functionName) {
+        if (currentProgram == null || functionName == null || functionName.trim().isEmpty()) {
+            return null;
+        }
+        
+        FunctionRegistry registry = currentProgram.getFunctionRegistry();
+        if (registry == null) {
+            return null;
+        }
+        
+        return registry.getFunction(functionName.trim());
     }
 }

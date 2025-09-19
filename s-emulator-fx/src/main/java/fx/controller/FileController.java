@@ -127,17 +127,6 @@ public class FileController {
         );
     }
     
-    public void handleSaveState() {
-        updateStatus("Save state functionality will be implemented in Phase 6");
-    }
-    
-    public void handleLoadState() {
-
-
-
-
-        updateStatus("Load state functionality will be implemented in Phase 6");
-    }
     
     private void updateStatus(String message) {
         if (statusUpdater != null) {

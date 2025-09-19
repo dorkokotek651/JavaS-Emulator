@@ -12,9 +12,6 @@
             <Menu text="File">
                <MenuItem fx:id="loadFileMenuItem" onAction="#handleLoadFile" text="Load Program File..." />
                <SeparatorMenuItem />
-               <MenuItem fx:id="saveStateMenuItem" onAction="#handleSaveState" text="Save State..." />
-               <MenuItem fx:id="loadStateMenuItem" onAction="#handleLoadState" text="Load State..." />
-               <SeparatorMenuItem />
                <MenuItem fx:id="exitMenuItem" onAction="#handleExit" text="Exit" />
             </Menu>
             <Menu text="Help">
@@ -45,17 +42,14 @@
                          style="-fx-background-color: #4CAF50;" 
                          promptText="Main Program" />
                
-               <!-- Collapse Button -->
-               <Button fx:id="collapseButton" onAction="#handleCollapse" prefHeight="30.0" 
-                       text="Collapse" />
+               <!-- Level Selector Dropdown -->
+               <ComboBox fx:id="levelSelector" prefWidth="100.0" prefHeight="30.0"
+                         style="-fx-background-color: #2196F3; -fx-text-fill: white;"
+                         promptText="Level" onAction="#handleLevelSelection" />
                
                <!-- Current/Maximum Degree Display -->
                <Label fx:id="levelDisplayLabel" prefHeight="30.0" style="-fx-font-weight: bold; -fx-alignment: CENTER;" 
                       text="0/0" />
-               
-               <!-- Expand Button -->
-               <Button fx:id="expandButton" onAction="#handleExpand" prefHeight="30.0" 
-                       text="Expand" />
                
                <!-- Highlight Selection Dropdown -->
                <ComboBox fx:id="highlightSelectionCombo" prefWidth="150.0" prefHeight="30.0"
@@ -137,7 +131,7 @@
                   <ScrollPane VBox.vgrow="ALWAYS">
                      <VBox fx:id="inputsContainer" spacing="5" />
                   </ScrollPane>
-                  <HBox spacing="5">
+                  <HBox spacing="5" visible="false">
                      <Button fx:id="addInputButton" onAction="#handleAddInput" text="Add Input" />
                      <Button fx:id="removeInputButton" onAction="#handleRemoveInput" text="Remove Input" />
                   </HBox>
@@ -182,7 +176,7 @@
                      <TableColumn fx:id="inputsColumn" prefWidth="100.0" text="Inputs" />
                      <TableColumn fx:id="yValueColumn" prefWidth="60.0" text="Y Value" />
                      <TableColumn fx:id="totalCyclesColumn" prefWidth="70.0" text="Cycles" />
-                     <TableColumn fx:id="actionsColumn" prefWidth="100.0" text="Actions" />
+                     <TableColumn fx:id="actionsColumn" prefWidth="120.0" text="Actions" />
                   </columns>
                   <columnResizePolicy>
                      <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
