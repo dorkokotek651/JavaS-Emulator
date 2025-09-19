@@ -174,7 +174,7 @@ public class SProgramImpl implements SProgram {
             String functionArguments = instruction.getArguments().get(SEmulatorConstants.FUNCTION_ARGUMENTS_ARG);
             
             if (functionArguments != null && hasNestedFunctionComposition(functionArguments)) {
-                baseLevel = Math.max(baseLevel, 6);
+                baseLevel = Math.max(baseLevel, 7);
             }
         }
         

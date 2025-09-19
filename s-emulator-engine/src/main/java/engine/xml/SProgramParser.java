@@ -189,8 +189,14 @@ public class SProgramParser {
                 if (arg.getName() == null || arg.getName().trim().isEmpty()) {
                     throw new XMLValidationException("Argument name cannot be null or empty in instruction: " + instructionName);
                 }
-                if (arg.getValue() == null || arg.getValue().trim().isEmpty()) {
-                    throw new XMLValidationException("Argument value cannot be null or empty for argument '" + 
+                if (arg.getValue() == null) {
+                    throw new XMLValidationException("Argument value cannot be null for argument '" + 
+                        arg.getName() + "' in instruction: " + instructionName);
+                }
+                
+                // Allow empty values for functionArguments (means function takes no arguments)
+                if (arg.getValue().trim().isEmpty() && !arg.getName().equals(SEmulatorConstants.FUNCTION_ARGUMENTS_ARG)) {
+                    throw new XMLValidationException("Argument value cannot be empty for argument '" + 
                         arg.getName() + "' in instruction: " + instructionName);
                 }
                 arguments.put(arg.getName().trim(), arg.getValue().trim());

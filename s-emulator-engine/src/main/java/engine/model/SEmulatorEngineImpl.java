@@ -68,7 +68,7 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
             this.executionHistory.clear();
             this.nextRunNumber = 1;
         } catch (XMLValidationException e) {
-            throw new SProgramException("Failed to load program from '" + xmlFilePath + "'", e);
+            throw new SProgramException("Failed to load program from '" + xmlFilePath + "': " + e.getMessage(), e);
         }
     }
 
@@ -310,7 +310,8 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
     
     private boolean hasUnexpandedQuoteInstructions(SProgram program) {
         return program.getInstructions().stream()
-            .anyMatch(instruction -> SEmulatorConstants.QUOTE_NAME.equals(instruction.getName()));
+            .anyMatch(instruction -> SEmulatorConstants.QUOTE_NAME.equals(instruction.getName()) ||
+                                   SEmulatorConstants.JUMP_EQUAL_FUNCTION_NAME.equals(instruction.getName()));
     }
     
     @Override
