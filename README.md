@@ -4,7 +4,7 @@ A modern JavaFX application for executing and debugging S-language programs with
 
 ## Quick Start
 
-1. **Run the Application**: Execute `./run_app.sh` (Linux/macOS) or `run_app.sh` (Windows with Git Bash)
+1. **Run the Application**: Execute run.bat
 2. **Load a Program**: Use File → Load Program File to select an XML file from the `EX 1` or `EX 2` folders
 3. **Run the Program**: Click "New Run" and provide input values, then click "Start"
 4. **Debug**: Use step-by-step execution to trace program behavior
@@ -21,7 +21,7 @@ A modern JavaFX application for executing and debugging S-language programs with
 
 **Launching the Application:**
 ```bash
-./run_app.sh
+./run.bat
 ```
 
 The application will open in a modern JavaFX window with the following interface:
@@ -56,7 +56,6 @@ The application will open in a modern JavaFX window with the following interface
 
 **Loading Programs:**
 1. Click "Load File" or use File → Load Program File
-2. Select an XML file from the `EX 1` or `EX 2` folders
 3. The program will be parsed and displayed in the instructions table
 
 **Running Programs:**
@@ -76,23 +75,11 @@ The application will open in a modern JavaFX window with the following interface
 - Higher levels show more detailed instruction breakdown
 - Use the level selector to explore different expansion depths
 
-### Input Format
-
-- **XML Files**: Must follow S-Emulator schema (see `S-Emulator-v1.xsd` and `S-Emulator-v2.xsd`)
-- **Program Input**: Space-separated numbers (e.g., `5 10 3` assigns x1=5, x2=10, x3=3)
-
 ### Variable Types
 
 - **Input Variables** (x1, x2, x3, ...): Hold input values
 - **Work Variables** (z1, z2, z3, ...): Temporary variables used during execution
 - **Output Variable** (y): Contains the final result
-
-### Troubleshooting
-
-- Ensure Java 21+ is installed and accessible
-- Use the provided `run_app.sh` script for proper setup
-- Check that XML files are valid against the provided schemas
-- Use the application's error messages to diagnose issues
 
 ## Classes Overview
 
@@ -280,18 +267,6 @@ classDiagram
 - **Factory Pattern** - Centralized instruction creation using Java 21 switch expressions
 - **Multi-Level Expansion** - Sophisticated expansion system handling nested synthetic instructions
 - **Service Layer** - Dedicated services for file operations and validation with progress feedback
-
-## Team Information
-
-**Student 1:**
-- Name: Dor Kokotek
-- ID: *******
-- Email: dorko@mta.ac.il
-
-**Student 2:**
-- Name: Gilad Yavne 
-- ID: *******
-- Email: giladya2@mta.ac.il
 
 ## Repository
 
