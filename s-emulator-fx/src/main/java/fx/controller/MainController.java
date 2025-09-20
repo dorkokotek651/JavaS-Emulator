@@ -347,7 +347,9 @@ public class MainController implements Initializable {
     }
     
     private void onProgramLoaded() {
+        System.out.println("MainController: onProgramLoaded called");
         if (engine.isProgramLoaded()) {
+            System.out.println("MainController: Engine has program loaded, updating UI");
             SProgram program = engine.getCurrentProgram();
             currentFilePathLabel.setText(program.getName());
             currentExpansionLevel = 0;
@@ -378,6 +380,9 @@ public class MainController implements Initializable {
             
             // Reset workflow state to IDLE when program loads
             setWorkflowState(WorkflowState.IDLE);
+            System.out.println("MainController: onProgramLoaded completed successfully");
+        } else {
+            System.out.println("MainController: Engine does not have program loaded");
         }
     }
     

@@ -50,7 +50,7 @@ public class FileController {
         File selectedFile = fileService.showLoadFileDialog(primaryStage);
         if (selectedFile != null) {
             updateStatus("Selected file: " + selectedFile.getName());
-            loadProgramFileDirectly(selectedFile);
+            loadProgramFileWithProgress(selectedFile);
         }
     }
     
@@ -115,7 +115,11 @@ public class FileController {
                 
 
                 if (onProgramLoaded != null) {
+                    System.out.println("FileController: Calling onProgramLoaded callback");
                     onProgramLoaded.run();
+                    System.out.println("FileController: onProgramLoaded callback completed");
+                } else {
+                    System.out.println("FileController: onProgramLoaded callback is null!");
                 }
             },
             (errorMessage) -> {
