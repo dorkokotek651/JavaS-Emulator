@@ -45,6 +45,11 @@ public class MainController implements Initializable {
     @FXML private MenuItem exitMenuItem;
     @FXML private MenuItem aboutMenuItem;
     
+    // Theme menu items
+    @FXML private MenuItem lightThemeMenuItem;
+    @FXML private MenuItem darkThemeMenuItem;
+    @FXML private MenuItem highContrastThemeMenuItem;
+    
 
     @FXML private VBox topControlsSection;
     @FXML private Button loadFileButton;
@@ -415,6 +420,30 @@ public class MainController implements Initializable {
     @FXML
     private void handleAbout() {
         updateStatusLabel("S-Emulator v1.0 - A JavaFX implementation of the S programming language emulator");
+    }
+    
+    @FXML
+    private void handleLightTheme() {
+        if (primaryStage != null) {
+            StyleManager.setTheme(StyleManager.Theme.LIGHT, primaryStage.getScene());
+            updateStatusLabel("Theme changed to Light");
+        }
+    }
+    
+    @FXML
+    private void handleDarkTheme() {
+        if (primaryStage != null) {
+            StyleManager.setTheme(StyleManager.Theme.DARK, primaryStage.getScene());
+            updateStatusLabel("Theme changed to Dark");
+        }
+    }
+    
+    @FXML
+    private void handleHighContrastTheme() {
+        if (primaryStage != null) {
+            StyleManager.setTheme(StyleManager.Theme.HIGH_CONTRAST, primaryStage.getScene());
+            updateStatusLabel("Theme changed to High Contrast");
+        }
     }
     
     @FXML

@@ -666,8 +666,38 @@ public class ExecutionController {
 
                 updateDebugVariableDisplay();
                 
-                // Don't add incomplete debug sessions to history when manually stopped
-                System.out.println("Debug session manually stopped - not adding to history");
+                // Check if this is a completed debug session (not manually stopped)
+                if (debugRunNumber > 0 && debugOriginalInputs != null) {
+                    // This is a completed debug session - record it in history
+                    System.out.println("Debug session completed naturally - adding to history with run number: " + debugRunNumber);
+                    
+                    // Create ExecutionResult for the completed debug session
+                    VariableManager variableManager = context.getVariableManager();
+                    ExecutionResult result = new ExecutionResult(
+                        debugRunNumber,
+                        currentExpansionLevel,
+                        debugOriginalInputs,
+                        variableManager.getYValue(),
+                        variableManager.getSortedInputVariablesMap(),
+                        variableManager.getSortedWorkingVariablesMap(),
+                        context.getTotalCycles(),
+                        context.getExecutedInstructions()
+                    );
+                    
+                    // Format inputs for display
+                    List<Integer> displayInputs = formatInputsForDisplay(debugOriginalInputs);
+                    
+                    // Add to history
+                    updateExecutionResults(result, displayInputs, debugRunNumber);
+                    
+                    // Call execution completed callback to reset workflow state
+                    if (onExecutionCompleted != null) {
+                        onExecutionCompleted.run();
+                    }
+                } else {
+                    // This is a manually stopped debug session - don't add to history
+                    System.out.println("Debug session manually stopped - not adding to history");
+                }
             }
             
 

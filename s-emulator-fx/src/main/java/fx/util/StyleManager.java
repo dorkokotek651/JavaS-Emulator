@@ -5,6 +5,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
+import java.util.prefs.Preferences;
 
 public class StyleManager {
     
@@ -12,7 +13,30 @@ public class StyleManager {
         // Utility class - prevent instantiation
     }
     
-    private static final String STYLESHEET_PATH = "/fx/styles/semulator.css";
+    public enum Theme {
+        LIGHT("Light", "/fx/styles/semulator.css"),
+        DARK("Dark", "/fx/styles/dark-theme.css"),
+        HIGH_CONTRAST("High Contrast", "/fx/styles/high-contrast.css");
+        
+        private final String displayName;
+        private final String stylesheetPath;
+        
+        Theme(String displayName, String stylesheetPath) {
+            this.displayName = displayName;
+            this.stylesheetPath = stylesheetPath;
+        }
+        
+        public String getDisplayName() {
+            return displayName;
+        }
+        
+        public String getStylesheetPath() {
+            return stylesheetPath;
+        }
+    }
+    
+    private static final String PREF_THEME = "theme";
+    private static Theme currentTheme = Theme.LIGHT;
     
 
     public static final String INPUT_FIELD = "input-field";
@@ -36,8 +60,54 @@ public class StyleManager {
     public static final String CYCLES_SECTION = "cycles-section";
     
     public static void applyStylesheet(Scene scene) {
-        String stylesheetUrl = StyleManager.class.getResource(STYLESHEET_PATH).toExternalForm();
+        loadThemeFromPreferences();
+        String stylesheetUrl = StyleManager.class.getResource(currentTheme.getStylesheetPath()).toExternalForm();
         scene.getStylesheets().add(stylesheetUrl);
+    }
+    
+    public static void setTheme(Theme theme, Scene scene) {
+        if (theme == null) {
+            theme = Theme.LIGHT;
+        }
+        
+        // Remove current theme stylesheet
+        String currentStylesheetUrl = StyleManager.class.getResource(currentTheme.getStylesheetPath()).toExternalForm();
+        scene.getStylesheets().remove(currentStylesheetUrl);
+        
+        // Apply new theme
+        currentTheme = theme;
+        String newStylesheetUrl = StyleManager.class.getResource(theme.getStylesheetPath()).toExternalForm();
+        scene.getStylesheets().add(newStylesheetUrl);
+        
+        // Save theme preference
+        saveThemeToPreferences(theme);
+    }
+    
+    public static Theme getCurrentTheme() {
+        return currentTheme;
+    }
+    
+    public static Theme[] getAvailableThemes() {
+        return Theme.values();
+    }
+    
+    private static void loadThemeFromPreferences() {
+        try {
+            Preferences prefs = Preferences.userNodeForPackage(StyleManager.class);
+            String themeName = prefs.get(PREF_THEME, Theme.LIGHT.name());
+            currentTheme = Theme.valueOf(themeName);
+        } catch (Exception e) {
+            currentTheme = Theme.LIGHT;
+        }
+    }
+    
+    private static void saveThemeToPreferences(Theme theme) {
+        try {
+            Preferences prefs = Preferences.userNodeForPackage(StyleManager.class);
+            prefs.put(PREF_THEME, theme.name());
+        } catch (Exception e) {
+            // Ignore preferences save errors
+        }
     }
     
     public static void applyInputFieldStyle(TextField field) {

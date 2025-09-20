@@ -1,0 +1,484 @@
+/* S-Emulator High Contrast Theme */
+
+/* Root styling for high contrast theme */
+.root {
+    -fx-base: #000000;
+    -fx-background: #ffffff;
+    -fx-control-inner-background: #ffffff;
+    -fx-control-inner-background-alt: #f0f0f0;
+    -fx-accent: #0000ff;
+    -fx-focus-color: #0000ff;
+    -fx-faint-focus-color: #0000ff22;
+    -fx-selection-bar: #0000ff;
+    -fx-selection-bar-non-focused: #c0c0c0;
+}
+
+/* Input Field Styles */
+.input-field {
+    -fx-font-size: 14px;
+    -fx-padding: 5px;
+    -fx-background-radius: 3px;
+    -fx-border-radius: 3px;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #000000;
+}
+
+.input-field:focused {
+    -fx-border-color: #0000ff;
+    -fx-border-width: 3px;
+}
+
+.input-field-error {
+    -fx-border-color: #ff0000;
+    -fx-border-width: 3px;
+    -fx-background-color: #ffe6e6;
+}
+
+/* Section Styles */
+.section-header {
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+}
+
+.debug-section {
+    -fx-background-color: #ffff00;
+    -fx-padding: 10;
+    -fx-background-radius: 5;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.variables-section {
+    -fx-background-color: #ff00ff;
+    -fx-padding: 10;
+    -fx-background-radius: 5;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.inputs-section {
+    -fx-background-color: #0000ff;
+    -fx-padding: 10;
+    -fx-background-radius: 5;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.cycles-section {
+    -fx-background-color: #ff00ff;
+    -fx-padding: 10;
+    -fx-background-radius: 5;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+/* Button Styles */
+.primary-button {
+    -fx-background-color: #00ff00;
+    -fx-text-fill: #000000;
+    -fx-font-weight: bold;
+    -fx-background-radius: 3px;
+    -fx-cursor: hand;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.primary-button:hover {
+    -fx-background-color: #00cc00;
+}
+
+.secondary-button {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #000000;
+    -fx-background-radius: 3px;
+    -fx-cursor: hand;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.secondary-button:hover {
+    -fx-background-color: #f0f0f0;
+}
+
+.debug-button {
+    -fx-background-color: #ff8000;
+    -fx-text-fill: #000000;
+    -fx-font-weight: bold;
+    -fx-background-radius: 3px;
+    -fx-cursor: hand;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.debug-button:hover {
+    -fx-background-color: #e67300;
+}
+
+/* Table Styles */
+.instruction-table {
+    -fx-selection-bar: #0000ff;
+    -fx-selection-bar-non-focused: #c0c0c0;
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #000000;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.variable-table {
+    -fx-selection-bar: #ff00ff;
+    -fx-selection-bar-non-focused: #c0c0c0;
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #000000;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.history-table {
+    -fx-selection-bar: #00ff00;
+    -fx-selection-bar-non-focused: #c0c0c0;
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #000000;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+/* Table Cell Styling */
+.table-cell {
+    -fx-text-fill: #000000;
+    -fx-border-color: #000000;
+    -fx-border-width: 1px;
+}
+
+.table-row-cell {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #000000;
+    -fx-border-color: #000000;
+    -fx-border-width: 1px;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #f0f0f0;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #0000ff;
+    -fx-text-fill: #ffffff;
+}
+
+/* Highlighting */
+.highlighted-row {
+    -fx-background-color: #ffff00;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+/* Debug Mode Highlighting */
+.debug-current-instruction {
+    -fx-background-color: #ffff00 !important;
+    -fx-border-color: #ff8000 !important;
+    -fx-border-width: 3px !important;
+    -fx-effect: dropshadow(gaussian, rgba(255, 128, 0, 0.5), 4, 0, 0, 0);
+}
+
+.debug-current-instruction .table-cell {
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+}
+
+.variable-changed {
+    -fx-font-weight: bold;
+    -fx-text-fill: #ff0000;
+    -fx-background-color: #ffe6e6;
+    -fx-border-color: #ff0000;
+    -fx-border-width: 2px;
+}
+
+.variable-changed .table-cell {
+    -fx-effect: dropshadow(gaussian, rgba(255, 0, 0, 0.3), 2, 0, 0, 0);
+}
+
+/* Status and Labels */
+.status-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #000000;
+    -fx-font-weight: bold;
+}
+
+.section-title {
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+    -fx-font-size: 14px;
+}
+
+.file-path-label {
+    -fx-background-color: #000000;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 5px;
+    -fx-background-radius: 3px;
+    -fx-font-family: monospace;
+    -fx-border-color: #ffffff;
+    -fx-border-width: 2px;
+}
+
+.summary-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #000000;
+    -fx-padding: 5px;
+    -fx-font-weight: bold;
+}
+
+.level-label {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-text-fill: #000000;
+}
+
+/* Dropdown Styles */
+.highlight-dropdown .list-cell:disabled {
+    -fx-opacity: 0.6;
+    -fx-text-fill: #666666;
+}
+
+/* Error Dialog Styles */
+.error-dialog .dialog-pane {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #000000;
+    -fx-border-width: 3px;
+}
+
+.error-dialog .dialog-pane .header-panel {
+    -fx-background-color: #ff0000;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.error-dialog .dialog-pane .header-panel .label {
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+}
+
+/* Tooltip Styles */
+.tooltip {
+    -fx-background-color: #ffff00;
+    -fx-text-fill: #000000;
+    -fx-background-radius: 4px;
+    -fx-font-size: 12px;
+    -fx-padding: 5px;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+    -fx-font-weight: bold;
+}
+
+/* Menu and MenuBar */
+.menu-bar {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #000000;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.menu {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #000000;
+    -fx-border-color: #000000;
+    -fx-border-width: 1px;
+}
+
+.menu-item {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #000000;
+    -fx-border-color: #000000;
+    -fx-border-width: 1px;
+}
+
+.menu-item:hover {
+    -fx-background-color: #0000ff;
+    -fx-text-fill: #ffffff;
+}
+
+/* SplitPane */
+.split-pane {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.split-pane-divider {
+    -fx-background-color: #000000;
+}
+
+/* ScrollPane */
+.scroll-pane {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.scroll-bar {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #000000;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #0000ff;
+}
+
+/* Additional CSS classes for FXML inline styles */
+.top-controls-section {
+    -fx-padding: 10;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.load-file-button {
+    -fx-background-color: #00ff00;
+    -fx-text-fill: #000000;
+    -fx-font-weight: bold;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.current-file-path-label {
+    -fx-background-color: #000000;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 5;
+    -fx-background-radius: 3;
+    -fx-alignment: CENTER_LEFT;
+    -fx-border-color: #ffffff;
+    -fx-border-width: 2px;
+}
+
+.program-function-selector {
+    -fx-background-color: #00ff00;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.level-selector {
+    -fx-background-color: #0000ff;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.level-display-label {
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
+    -fx-text-fill: #000000;
+}
+
+.summary-label-container {
+    -fx-padding: 5;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.debug-controls-section {
+    -fx-background-color: #ffff00;
+    -fx-padding: 10;
+    -fx-background-radius: 5;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.debug-section-title {
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+}
+
+.new-run-button {
+    -fx-background-color: #00ff00;
+    -fx-text-fill: #000000;
+    -fx-font-weight: bold;
+    -fx-font-size: 14;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.execution-mode-combo {
+    -fx-background-color: #0000ff;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.final-start-button {
+    -fx-background-color: #00ff00;
+    -fx-text-fill: #000000;
+    -fx-font-weight: bold;
+    -fx-font-size: 14;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.variables-section-container {
+    -fx-background-color: #ff00ff;
+    -fx-padding: 10;
+    -fx-background-radius: 5;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.variables-section-title {
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+}
+
+.cycles-section-container {
+    -fx-background-color: #ff00ff;
+    -fx-padding: 10;
+    -fx-background-radius: 5;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.cycles-section-title {
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+}
+
+.cycles-label {
+    -fx-text-fill: #000000;
+    -fx-font-size: 16;
+}
+
+.execution-inputs-section {
+    -fx-background-color: #0000ff;
+    -fx-padding: 10;
+    -fx-background-radius: 5;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.execution-inputs-title {
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff;
+}
+
+.status-label-container {
+    -fx-padding: 5;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px 0 0 0;
+}
+
+.history-section-title {
+    -fx-font-weight: bold;
+    -fx-padding: 5;
+    -fx-text-fill: #000000;
+}
+
+.statistics-section-title {
+    -fx-font-weight: bold;
+    -fx-padding: 5;
+    -fx-text-fill: #000000;
+}

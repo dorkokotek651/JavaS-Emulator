@@ -14,24 +14,29 @@
                <SeparatorMenuItem />
                <MenuItem fx:id="exitMenuItem" onAction="#handleExit" text="Exit" />
             </Menu>
+            <Menu text="Theme">
+               <MenuItem fx:id="lightThemeMenuItem" onAction="#handleLightTheme" text="Light" />
+               <MenuItem fx:id="darkThemeMenuItem" onAction="#handleDarkTheme" text="Dark" />
+               <MenuItem fx:id="highContrastThemeMenuItem" onAction="#handleHighContrastTheme" text="High Contrast" />
+            </Menu>
             <Menu text="Help">
                <MenuItem fx:id="aboutMenuItem" onAction="#handleAbout" text="About" />
             </Menu>
          </MenuBar>
          
          <!-- Top Section: Two-row Controls Layout -->
-         <VBox fx:id="topControlsSection" spacing="5" style="-fx-padding: 10; -fx-background-color: #f0f0f0;">
+         <VBox fx:id="topControlsSection" spacing="5" styleClass="top-controls-section">
             
             <!-- First Row: Load File + Currently Loaded File Path -->
             <HBox alignment="CENTER_LEFT" spacing="10">
                <!-- Load File Button (green) -->
                <Button fx:id="loadFileButton" onAction="#handleLoadFile" prefHeight="30.0" 
-                       style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;" 
+                       styleClass="load-file-button" 
                        text="Load File" />
                
                <!-- Currently Loaded File Path (dark background) -->
                <Label fx:id="currentFilePathLabel" prefWidth="300.0" prefHeight="30.0"
-                      style="-fx-background-color: #333333; -fx-text-fill: white; -fx-padding: 5; -fx-background-radius: 3; -fx-alignment: CENTER_LEFT;" 
+                      styleClass="current-file-path-label" 
                       text="No file loaded" HBox.hgrow="ALWAYS" />
             </HBox>
             
@@ -39,16 +44,16 @@
             <HBox alignment="CENTER_LEFT" spacing="10">
                <!-- Program/Function Selector (green dropdown) -->
                <ComboBox fx:id="programFunctionSelector" prefWidth="150.0" prefHeight="30.0"
-                         style="-fx-background-color: #4CAF50;" 
+                         styleClass="program-function-selector" 
                          promptText="Main Program" />
                
                <!-- Level Selector Dropdown -->
                <ComboBox fx:id="levelSelector" prefWidth="100.0" prefHeight="30.0"
-                         style="-fx-background-color: #2196F3; -fx-text-fill: white;"
+                         styleClass="level-selector"
                          promptText="Level" onAction="#handleLevelSelection" />
                
                <!-- Current/Maximum Degree Display -->
-               <Label fx:id="levelDisplayLabel" prefHeight="30.0" style="-fx-font-weight: bold; -fx-alignment: CENTER;" 
+               <Label fx:id="levelDisplayLabel" prefHeight="30.0" styleClass="level-display-label" 
                       text="0/0" />
                
                <!-- Highlight Selection Dropdown -->
@@ -80,7 +85,7 @@
             </TableView>
             
             <!-- Summary Line -->
-            <Label fx:id="summaryLabel" style="-fx-padding: 5; -fx-background-color: #f5f5f5;" 
+            <Label fx:id="summaryLabel" styleClass="summary-label-container" 
                    text="No program loaded" />
          </VBox>
          
@@ -88,21 +93,21 @@
          <VBox spacing="5" style="-fx-padding: 5;">
             
             <!-- Top: Debug/Execution Controls (Yellow section) -->
-            <VBox fx:id="debugControlsSection" spacing="5" style="-fx-background-color: #FFEB3B; -fx-padding: 10; -fx-background-radius: 5;">
-               <Label style="-fx-font-weight: bold;" text="Debug/Execution Controls" />
+            <VBox fx:id="debugControlsSection" spacing="5" styleClass="debug-controls-section">
+               <Label styleClass="debug-section-title" text="Debug/Execution Controls" />
                
                <!-- New Run Workflow - All in One Row -->
                <HBox alignment="CENTER_LEFT" spacing="15">
                   <Button fx:id="newRunButton" onAction="#handleNewRun" 
-                          style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14;"
+                          styleClass="new-run-button"
                           text="New Run" prefWidth="120.0" prefHeight="35.0" />
                   
                   <ComboBox fx:id="executionModeCombo" prefWidth="100.0" prefHeight="30.0"
-                            style="-fx-background-color: #2196F3; -fx-text-fill: white;"
+                            styleClass="execution-mode-combo"
                             promptText="Select Mode" />
                   
                   <Button fx:id="finalStartButton" onAction="#handleFinalStart" 
-                          style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14;"
+                          styleClass="final-start-button"
                           text="Start Run" prefWidth="120.0" prefHeight="35.0" />
                </HBox>
                
@@ -120,8 +125,8 @@
                <!-- Left Column: Variables and Cycles (Pink sections) -->
                <VBox spacing="5" HBox.hgrow="ALWAYS">
                   <!-- Variables Display (Pink section) -->
-                  <VBox fx:id="variablesSection" spacing="5" style="-fx-background-color: #E91E63; -fx-padding: 10; -fx-background-radius: 5;" VBox.vgrow="ALWAYS">
-                     <Label style="-fx-font-weight: bold; -fx-text-fill: white;" text="Variables" />
+                  <VBox fx:id="variablesSection" spacing="5" styleClass="variables-section-container" VBox.vgrow="ALWAYS">
+                     <Label styleClass="variables-section-title" text="Variables" />
                      <TableView fx:id="variablesTable" VBox.vgrow="ALWAYS">
                         <columns>
                            <TableColumn fx:id="variableNameColumn" prefWidth="80.0" text="Name" />
@@ -134,15 +139,15 @@
                   </VBox>
                   
                   <!-- Cycles Display (Pink section) -->
-                  <VBox fx:id="cyclesSection" spacing="5" style="-fx-background-color: #E91E63; -fx-padding: 10; -fx-background-radius: 5;">
-                     <Label style="-fx-font-weight: bold; -fx-text-fill: white;" text="Cycles" />
-                     <Label fx:id="cyclesLabel" style="-fx-text-fill: white; -fx-font-size: 16;" text="Total Cycles: 0" />
+                  <VBox fx:id="cyclesSection" spacing="5" styleClass="cycles-section-container">
+                     <Label styleClass="cycles-section-title" text="Cycles" />
+                     <Label fx:id="cyclesLabel" styleClass="cycles-label" text="Total Cycles: 0" />
                   </VBox>
                </VBox>
                
                <!-- Right Column: Execution Inputs (Blue section) -->
-               <VBox fx:id="executionInputsSection" spacing="5" style="-fx-background-color: #2196F3; -fx-padding: 10; -fx-background-radius: 5;" HBox.hgrow="ALWAYS">
-                  <Label style="-fx-font-weight: bold; -fx-text-fill: white;" text="Execution Inputs" />
+               <VBox fx:id="executionInputsSection" spacing="5" styleClass="execution-inputs-section" HBox.hgrow="ALWAYS">
+                  <Label styleClass="execution-inputs-title" text="Execution Inputs" />
                   <ScrollPane VBox.vgrow="ALWAYS">
                      <VBox fx:id="inputsContainer" spacing="5" />
                   </ScrollPane>
@@ -159,14 +164,14 @@
    <bottom>
       <VBox>
          <!-- Status Bar -->
-         <Label fx:id="statusLabel" style="-fx-padding: 5; -fx-background-color: #f0f0f0; -fx-border-color: #cccccc; -fx-border-width: 1 0 0 0;" text="Ready" />
+         <Label fx:id="statusLabel" styleClass="status-label-container" text="Ready" />
          
          <!-- Bottom Section: Split Pane (History Chain | Statistics Table) -->
          <SplitPane fx:id="bottomSplitPane" dividerPositions="0.5" orientation="HORIZONTAL" prefHeight="200.0">
             
             <!-- Left Side: Selected Instruction History Chain -->
             <VBox>
-               <Label style="-fx-font-weight: bold; -fx-padding: 5;" text="Selected Instruction History Chain" />
+               <Label styleClass="history-section-title" text="Selected Instruction History Chain" />
                <TableView fx:id="historyChainTable" VBox.vgrow="ALWAYS">
                   <columns>
                      <TableColumn fx:id="historyCommandNumberColumn" prefWidth="50.0" text="#" />
@@ -183,7 +188,7 @@
             
             <!-- Right Side: History/Statistics Table -->
             <VBox>
-               <Label style="-fx-font-weight: bold; -fx-padding: 5;" text="History/Statistics Table" />
+               <Label styleClass="statistics-section-title" text="History/Statistics Table" />
                <TableView fx:id="statisticsTable" VBox.vgrow="ALWAYS">
                   <columns>
                      <TableColumn fx:id="runNumberColumn" prefWidth="60.0" text="Run #" />
