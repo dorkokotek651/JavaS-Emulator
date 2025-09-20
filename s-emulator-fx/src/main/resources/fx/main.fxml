@@ -19,6 +19,9 @@
                <MenuItem fx:id="darkThemeMenuItem" onAction="#handleDarkTheme" text="Dark" />
                <MenuItem fx:id="highContrastThemeMenuItem" onAction="#handleHighContrastTheme" text="High Contrast" />
             </Menu>
+            <Menu text="View">
+               <MenuItem fx:id="toggleAnimationsMenuItem" onAction="#handleToggleAnimations" text="Enable Animations" />
+            </Menu>
             <Menu text="Help">
                <MenuItem fx:id="aboutMenuItem" onAction="#handleAbout" text="About" />
             </Menu>

@@ -187,6 +187,37 @@
     -fx-text-fill: #000000;
 }
 
+/* Debug Animation Classes */
+.debug-current-instruction-animated {
+    -fx-background-color: #ffff00 !important;
+    -fx-border-color: #ff8000 !important;
+    -fx-border-width: 3px !important;
+    -fx-effect: dropshadow(gaussian, rgba(255, 128, 0, 0.7), 6, 0, 0, 0);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+.debug-current-instruction-animated .table-cell {
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 2, 0, 0, 0);
+}
+
+.debug-pulse-effect {
+    -fx-background-color: #ffff80 !important;
+    -fx-border-color: #ff6600 !important;
+    -fx-border-width: 4px !important;
+    -fx-effect: dropshadow(gaussian, rgba(255, 102, 0, 0.8), 8, 0, 0, 0);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.debug-pulse-effect .table-cell {
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 3, 0, 0, 0);
+}
+
 .variable-changed {
     -fx-font-weight: bold;
     -fx-text-fill: #ff0000;
@@ -418,6 +449,31 @@
     -fx-font-size: 14;
     -fx-border-color: #000000;
     -fx-border-width: 2px;
+}
+
+/* Button State Animation Classes */
+.button-running {
+    -fx-background-color: #ff8000 !important;
+    -fx-text-fill: #000000 !important;
+    -fx-font-weight: bold !important;
+    -fx-font-size: 14 !important;
+    -fx-border-color: #000000 !important;
+    -fx-border-width: 2px !important;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+    -fx-effect: dropshadow(gaussian, rgba(255, 128, 0, 0.6), 8, 0, 0, 0);
+}
+
+.button-running-pulse {
+    -fx-background-color: #ff6600 !important;
+    -fx-text-fill: #000000 !important;
+    -fx-font-weight: bold !important;
+    -fx-font-size: 14 !important;
+    -fx-border-color: #000000 !important;
+    -fx-border-width: 2px !important;
+    -fx-scale-x: 1.08;
+    -fx-scale-y: 1.08;
+    -fx-effect: dropshadow(gaussian, rgba(255, 102, 0, 0.8), 10, 0, 0, 0);
 }
 
 .variables-section-container {

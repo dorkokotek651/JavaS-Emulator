@@ -36,7 +36,9 @@ public class StyleManager {
     }
     
     private static final String PREF_THEME = "theme";
+    private static final String PREF_ANIMATIONS_ENABLED = "animations_enabled";
     private static Theme currentTheme = Theme.LIGHT;
+    private static boolean animationsEnabled = false; // Default: animations disabled
     
 
     public static final String INPUT_FIELD = "input-field";
@@ -61,6 +63,7 @@ public class StyleManager {
     
     public static void applyStylesheet(Scene scene) {
         loadThemeFromPreferences();
+        loadAnimationPreference();
         String stylesheetUrl = StyleManager.class.getResource(currentTheme.getStylesheetPath()).toExternalForm();
         scene.getStylesheets().add(stylesheetUrl);
     }
@@ -91,6 +94,15 @@ public class StyleManager {
         return Theme.values();
     }
     
+    public static boolean areAnimationsEnabled() {
+        return animationsEnabled;
+    }
+    
+    public static void setAnimationsEnabled(boolean enabled) {
+        animationsEnabled = enabled;
+        saveAnimationPreference(enabled);
+    }
+    
     private static void loadThemeFromPreferences() {
         try {
             Preferences prefs = Preferences.userNodeForPackage(StyleManager.class);
@@ -105,6 +117,24 @@ public class StyleManager {
         try {
             Preferences prefs = Preferences.userNodeForPackage(StyleManager.class);
             prefs.put(PREF_THEME, theme.name());
+        } catch (Exception e) {
+            // Ignore preferences save errors
+        }
+    }
+    
+    private static void loadAnimationPreference() {
+        try {
+            Preferences prefs = Preferences.userNodeForPackage(StyleManager.class);
+            animationsEnabled = prefs.getBoolean(PREF_ANIMATIONS_ENABLED, false);
+        } catch (Exception e) {
+            animationsEnabled = false;
+        }
+    }
+    
+    private static void saveAnimationPreference(boolean enabled) {
+        try {
+            Preferences prefs = Preferences.userNodeForPackage(StyleManager.class);
+            prefs.putBoolean(PREF_ANIMATIONS_ENABLED, enabled);
         } catch (Exception e) {
             // Ignore preferences save errors
         }

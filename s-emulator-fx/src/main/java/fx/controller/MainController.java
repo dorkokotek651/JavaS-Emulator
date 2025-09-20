@@ -17,6 +17,8 @@ import fx.model.VariableTableRow;
 import fx.service.FileService;
 import fx.util.StyleManager;
 import fx.util.ActionButtonCellFactory;
+import fx.util.DebugAnimationController;
+import fx.util.ButtonAnimationController;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -49,6 +51,9 @@ public class MainController implements Initializable {
     @FXML private MenuItem lightThemeMenuItem;
     @FXML private MenuItem darkThemeMenuItem;
     @FXML private MenuItem highContrastThemeMenuItem;
+    
+    // View menu items
+    @FXML private MenuItem toggleAnimationsMenuItem;
     
 
     @FXML private VBox topControlsSection;
@@ -120,6 +125,8 @@ public class MainController implements Initializable {
     private ExecutionController executionController;
     private InputController inputController;
     private HighlightController highlightController;
+    private DebugAnimationController debugAnimationController;
+    private ButtonAnimationController buttonAnimationController;
     private Stage primaryStage;
     private int currentExpansionLevel = 0;
     private String currentContextProgram = "Main Program";
@@ -148,6 +155,9 @@ public class MainController implements Initializable {
 
             this.highlightController = new HighlightController();
             setupHighlightControllerCallbacks();
+            
+            this.debugAnimationController = new DebugAnimationController();
+            this.buttonAnimationController = new ButtonAnimationController();
             
             initializeTableColumns();
             initializeControlStates();
@@ -255,7 +265,13 @@ public class MainController implements Initializable {
     
     private void setupExecutionControllerCallbacks() {
         executionController.setStatusUpdater(this::updateStatusLabel);
-        executionController.setOnHighlightingCleared(() -> highlightController.clearHighlighting());
+        executionController.setOnHighlightingCleared(() -> {
+            highlightController.clearHighlighting();
+            // Also clear debug highlighting
+            if (debugAnimationController != null) {
+                debugAnimationController.clearDebugHighlighting(instructionsTable);
+            }
+        });
         
 
         executionController.setVariablesTable(variablesTable);
@@ -294,6 +310,11 @@ public class MainController implements Initializable {
             addInputButton.setDisable(false);
             removeInputButton.setDisable(false);
             executionInputsSection.setDisable(false);
+            
+            // Clear debug highlighting when session ends
+            if (debugAnimationController != null) {
+                debugAnimationController.clearDebugHighlighting(instructionsTable);
+            }
         });
         
         executionController.setOnInputsPopulated(this::populateInputsFromHistory);
@@ -308,6 +329,12 @@ public class MainController implements Initializable {
             executionModeCombo.getItems().addAll("Normal", "Debug");
             executionModeCombo.setValue("Normal"); // Set default to Normal
             executionModeCombo.setOnAction(e -> updateUIForWorkflowState());
+        }
+        
+        // Initialize animation toggle menu item
+        if (toggleAnimationsMenuItem != null) {
+            boolean animationsEnabled = StyleManager.areAnimationsEnabled();
+            toggleAnimationsMenuItem.setText(animationsEnabled ? "Disable Animations" : "Enable Animations");
         }
         
         // Initialize workflow state
@@ -447,6 +474,21 @@ public class MainController implements Initializable {
     }
     
     @FXML
+    private void handleToggleAnimations() {
+        boolean currentState = StyleManager.areAnimationsEnabled();
+        boolean newState = !currentState;
+        
+        StyleManager.setAnimationsEnabled(newState);
+        
+        // Update menu item text
+        if (toggleAnimationsMenuItem != null) {
+            toggleAnimationsMenuItem.setText(newState ? "Disable Animations" : "Enable Animations");
+        }
+        
+        updateStatusLabel("Animations " + (newState ? "enabled" : "disabled"));
+    }
+    
+    @FXML
     private void handleLevelSelection() {
         String selectedLevel = levelSelector.getValue();
         if (selectedLevel != null && !selectedLevel.trim().isEmpty()) {
@@ -542,7 +584,20 @@ public class MainController implements Initializable {
             if ("Debug".equals(selectedMode)) {
                 executionController.handleStartDebug();
             } else {
-                executionController.handleStartRun();
+                // Normal mode - animate the button before starting execution
+                if (buttonAnimationController != null && finalStartButton != null) {
+                    buttonAnimationController.animateButtonToRunningState(finalStartButton);
+                    
+                    // Start the actual execution after a short delay to show the animation
+                    javafx.animation.Timeline delayTimeline = new javafx.animation.Timeline(
+                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(200), 
+                            event -> executionController.handleStartRun())
+                    );
+                    delayTimeline.play();
+                } else {
+                    // Fallback if animation controller is not available
+                    executionController.handleStartRun();
+                }
             }
         }
     }
@@ -1096,16 +1151,23 @@ public class MainController implements Initializable {
             return;
         }
         
-
+        // Clear any existing debug highlighting
+        if (debugAnimationController != null) {
+            debugAnimationController.clearDebugHighlighting(instructionsTable);
+        }
+        
         instructionsTable.getSelectionModel().clearSelection();
         
         if (instructionIndex != null && instructionIndex >= 0 && instructionIndex < instructionsTable.getItems().size()) {
-
+            // Select the instruction
             instructionsTable.getSelectionModel().select(instructionIndex);
             instructionsTable.scrollTo(instructionIndex);
-            
-
             instructionsTable.requestFocus();
+            
+            // Animate the instruction highlight
+            if (debugAnimationController != null) {
+                debugAnimationController.animateInstructionHighlight(instructionsTable, instructionIndex);
+            }
         }
     }
     
@@ -1235,6 +1297,11 @@ public class MainController implements Initializable {
                 if (executionModeCombo != null) executionModeCombo.setDisable(true);
                 // Disable input fields when no workflow is active
                 setInputFieldsEnabled(false);
+                
+                // Reset button animation when returning to IDLE state
+                if (buttonAnimationController != null) {
+                    buttonAnimationController.resetButtonToOriginalState();
+                }
                 break;
                 
             case INPUT_COLLECTION:
@@ -1298,5 +1365,10 @@ public class MainController implements Initializable {
     // Method to be called when execution completes
     public void onExecutionCompleted() {
         setWorkflowState(WorkflowState.IDLE);
+        
+        // Reset button animation when execution completes
+        if (buttonAnimationController != null) {
+            buttonAnimationController.resetButtonToOriginalState();
+        }
     }
 }

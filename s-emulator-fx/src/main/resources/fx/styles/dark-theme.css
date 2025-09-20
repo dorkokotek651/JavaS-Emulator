@@ -164,6 +164,37 @@
     -fx-text-fill: #ffb74d;
 }
 
+/* Debug Animation Classes */
+.debug-current-instruction-animated {
+    -fx-background-color: #5d4e1a !important;
+    -fx-border-color: #ffa000 !important;
+    -fx-border-width: 2px !important;
+    -fx-effect: dropshadow(gaussian, rgba(255, 160, 0, 0.5), 6, 0, 0, 0);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+.debug-current-instruction-animated .table-cell {
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffb74d;
+    -fx-effect: dropshadow(gaussian, rgba(255, 183, 77, 0.3), 2, 0, 0, 0);
+}
+
+.debug-pulse-effect {
+    -fx-background-color: #6d5e2a !important;
+    -fx-border-color: #ff9800 !important;
+    -fx-border-width: 3px !important;
+    -fx-effect: dropshadow(gaussian, rgba(255, 152, 0, 0.7), 8, 0, 0, 0);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.debug-pulse-effect .table-cell {
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffb74d;
+    -fx-effect: dropshadow(gaussian, rgba(255, 183, 77, 0.5), 3, 0, 0, 0);
+}
+
 .variable-changed {
     -fx-font-weight: bold;
     -fx-text-fill: #ff6b6b;
@@ -349,6 +380,27 @@
     -fx-text-fill: white;
     -fx-font-weight: bold;
     -fx-font-size: 14;
+}
+
+/* Button State Animation Classes */
+.button-running {
+    -fx-background-color: #ff9800 !important;
+    -fx-text-fill: white !important;
+    -fx-font-weight: bold !important;
+    -fx-font-size: 14 !important;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+    -fx-effect: dropshadow(gaussian, rgba(255, 152, 0, 0.4), 6, 0, 0, 0);
+}
+
+.button-running-pulse {
+    -fx-background-color: #f57c00 !important;
+    -fx-text-fill: white !important;
+    -fx-font-weight: bold !important;
+    -fx-font-size: 14 !important;
+    -fx-scale-x: 1.08;
+    -fx-scale-y: 1.08;
+    -fx-effect: dropshadow(gaussian, rgba(245, 124, 0, 0.6), 8, 0, 0, 0);
 }
 
 .variables-section-container {
