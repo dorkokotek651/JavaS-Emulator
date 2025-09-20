@@ -1,73 +1,98 @@
 # S-Emulator Project
 
-## Bonus
+A modern JavaFX application for executing and debugging S-language programs with advanced expansion capabilities and visual debugging tools.
 
-Implemented the System State Save and Load bonus task.
+## Quick Start
 
-## Decisions & Additional Info
+1. **Run the Application**: Execute `./run_app.sh` (Linux/macOS) or `run_app.sh` (Windows with Git Bash)
+2. **Load a Program**: Use File → Load Program File to select an XML file from the `EX 1` or `EX 2` folders
+3. **Run the Program**: Click "New Run" and provide input values, then click "Start"
+4. **Debug**: Use step-by-step execution to trace program behavior
 
-### Decisions
+## System Requirements
 
-1. **Factory Pattern with Switch Expression for Instruction Creation**
-   - Implemented a centralized `InstructionFactory` using modern Java 21 switch expressions for instruction instantiation
-   - This design eliminates complex if-else chains and provides a clean, maintainable way to create different instruction types
-   - The factory encapsulates the creation logic and makes it easy to add new instruction types without modifying existing code
-
-2. **Command Pattern for UI Operations**
-   - Implemented a command pattern for all user interactions (`Command` interface with concrete implementations)
-   - Each menu option corresponds to a specific command (`LoadFileCommand`, `RunProgramCommand`, etc.)
-   - This design makes it easy to add new functionality and provides consistent error handling across all operations
-
-3. **Multi-Level Expansion Engine Architecture**
-   - Designed a sophisticated expansion system that can handle nested synthetic instructions
-   - Implemented both single-level (`ExpansionEngine`) and multi-level (`MultiLevelExpansionEngine`) expansion capabilities
-   - Maintains detailed ancestry tracking for expanded instructions, allowing users to see the complete expansion history
-
-4. **Advanced Debug and Execution Management**
-   - Implemented comprehensive debug session management with step-by-step execution
-   - Built robust execution history tracking with detailed variable state management
-   - Designed to handle complex execution flows with proper state preservation
-
-### User Manual
-
-#### Quick Start
-1. **Run the Application**: Double-click `run_s_emulator.bat` or run it from command line
-2. **Load a Program**: Choose option 1 to load an S-language program from an XML file
-3. **Run the Program**: Choose option 4 to execute the program with input values
-4. **View Results**: The system displays execution results and maintains history
-
-#### System Requirements
-- **Java**: Java 21 or higher must be installed and accessible from PATH
+- **Java**: Java 21 or higher
 - **Operating System**: Windows, macOS, or Linux
+- **Maven**: For building the project
 
-#### How to Use the Application
+## User Manual
 
-**Starting the Application**
-Run the provided script: `run_s_emulator.bat`
+### Getting Started
 
-**Main Menu Options:**
-1. **Load XML File** - Load an S-language program from XML (example files in `EX 1` folder)
-2. **View Current Program** - Display details about the loaded program
-3. **Expand Program** - Convert synthetic instructions to basic instructions
-4. **Run Program** - Execute the program with input values (space-separated numbers)
-5. **View Execution History** - Show all previous program executions
-6. **Save System State** - Save current state to JSON file
-7. **Load System State** - Restore previously saved state
-8. **Exit** - Close the application
+**Launching the Application:**
+```bash
+./run_app.sh
+```
 
-**Input Format:**
-- **XML Files**: Must follow S-Emulator schema (see `S-Emulator-v1.xsd`)
+The application will open in a modern JavaFX window with the following interface:
+
+### Main Interface
+
+**Menu Bar:**
+- **File**: Load program files and exit the application
+- **Theme**: Switch between Light, Dark, and High Contrast themes
+- **View**: Toggle animations and visual effects
+- **Help**: Access application information
+
+**Top Controls:**
+- **Load File Button**: Quick access to load XML program files
+- **Current File Path**: Shows the currently loaded program
+- **Program Function Selector**: Choose between different program functions
+- **Level Selector**: Set expansion level for synthetic instructions
+- **Highlight Selection**: Choose which instructions to highlight
+
+**Main Content Area:**
+- **Instructions Table**: Displays all program instructions with details
+- **Variables Section**: Shows current variable values during execution
+- **Execution History**: Lists all previous program runs and results
+
+**Debug Controls:**
+- **New Run**: Start a new program execution
+- **Execution Mode**: Choose between normal and step-by-step execution
+- **Start/Stop/Resume**: Control program execution
+- **Step Over**: Execute one instruction at a time
+
+### Working with Programs
+
+**Loading Programs:**
+1. Click "Load File" or use File → Load Program File
+2. Select an XML file from the `EX 1` or `EX 2` folders
+3. The program will be parsed and displayed in the instructions table
+
+**Running Programs:**
+1. Click "New Run" to start a new execution
+2. Enter input values in the input fields (space-separated numbers)
+3. Choose execution mode (Normal or Step-by-step)
+4. Click "Start" to begin execution
+
+**Debugging:**
+- Use step-by-step mode to trace execution
+- Watch variable values change in real-time
+- View execution history for previous runs
+- Use highlighting to focus on specific instructions
+
+**Expansion Levels:**
+- Set expansion level to convert synthetic instructions to basic ones
+- Higher levels show more detailed instruction breakdown
+- Use the level selector to explore different expansion depths
+
+### Input Format
+
+- **XML Files**: Must follow S-Emulator schema (see `S-Emulator-v1.xsd` and `S-Emulator-v2.xsd`)
 - **Program Input**: Space-separated numbers (e.g., `5 10 3` assigns x1=5, x2=10, x3=3)
 
-**Variable Types:**
-- **Input Variables** (x1, x2, x3, ...): Hold input values
-- **Work Variables** (z1, z2, z3, ...): Temporary variables
-- **Output Variable** (y): Contains final result
+### Variable Types
 
-**Troubleshooting:**
-- Ensure Java 21+ is installed and in PATH
-- Use full file paths or enclose paths with spaces in quotes
-- Validate XML files against the provided schema
+- **Input Variables** (x1, x2, x3, ...): Hold input values
+- **Work Variables** (z1, z2, z3, ...): Temporary variables used during execution
+- **Output Variable** (y): Contains the final result
+
+### Troubleshooting
+
+- Ensure Java 21+ is installed and accessible
+- Use the provided `run_app.sh` script for proper setup
+- Check that XML files are valid against the provided schemas
+- Use the application's error messages to diagnose issues
 
 ## Classes Overview
 
@@ -75,6 +100,47 @@ Run the provided script: `run_s_emulator.bat`
 
 ```mermaid
 classDiagram
+    %% JavaFX Application
+    class SEmulatorFXApplication {
+        +main(String[])
+        +start(Stage)
+    }
+    
+    class MainController {
+        -engine: SEmulatorEngine
+        -fileController: FileController
+        -executionController: ExecutionController
+        -inputController: InputController
+        -highlightController: HighlightController
+        +initialize()
+        +handleLoadFile()
+        +handleNewRun()
+    }
+    
+    class FileController {
+        -fileService: FileService
+        +loadProgram()
+        +validateFile()
+    }
+    
+    class ExecutionController {
+        -engine: SEmulatorEngine
+        +startExecution()
+        +stepExecution()
+        +stopExecution()
+    }
+    
+    class InputController {
+        +collectInputs()
+        +validateInputs()
+    }
+    
+    class FileService {
+        -engine: SEmulatorEngine
+        +loadProgramFromFile()
+        +showProgressDialog()
+    }
+    
     %% Engine Module - Core API
     class SEmulatorEngine {
         <<interface>>
@@ -101,27 +167,12 @@ classDiagram
         +expandToLevel(int): SProgram
     }
     
-    class SProgramImpl {
-        -name: String
-        -instructions: List
-        -inputVariables: List
-        +expandToLevel(int): SProgram
-    }
-    
     class SInstruction {
         <<interface>>
         +getName(): String
         +getType(): InstructionType
         +execute(ExecutionContext)
         +expand(ExpansionContext): List
-    }
-    
-    class BaseInstruction {
-        <<abstract>>
-        -name: String
-        -type: InstructionType
-        +execute(ExecutionContext)*
-        +expand(ExpansionContext)*
     }
     
     %% Execution Components
@@ -156,50 +207,6 @@ classDiagram
         +generateExpansionHistory(List): String
     }
     
-    
-    %% UI Module
-    class SEmulatorApplication {
-        +main(String[])
-        +run()
-    }
-    
-    class MenuManager {
-        -allCommands: List
-        -ui: ConsoleInterface
-        +runMainLoop(SEmulatorEngine)
-        +displayMenu(SEmulatorEngine)
-    }
-    
-    class ConsoleInterface {
-        -scanner: Scanner
-        -running: boolean
-        +displayMenu(String, List)
-        +getUserChoice(int, int): int
-        +getFilePath(): String
-    }
-    
-    class Command {
-        <<interface>>
-        +execute(ConsoleInterface, SEmulatorEngine)
-        +getDescription(): String
-        +isAvailable(SEmulatorEngine): boolean
-    }
-    
-    class LoadFileCommand {
-        +execute(ConsoleInterface, SEmulatorEngine)
-        +getDescription(): String
-    }
-    
-    class RunProgramCommand {
-        +execute(ConsoleInterface, SEmulatorEngine)
-        +getDescription(): String
-    }
-    
-    class SaveStateCommand {
-        +execute(ConsoleInterface, SEmulatorEngine)
-        +getDescription(): String
-    }
-    
     %% XML Processing
     class SProgramParser {
         -xmlValidator: XMLValidator
@@ -213,88 +220,66 @@ classDiagram
     }
     
     %% Relationships
+    SEmulatorFXApplication --> MainController
+    MainController --> FileController
+    MainController --> ExecutionController
+    MainController --> InputController
+    MainController --> SEmulatorEngine
+    
+    FileController --> FileService
+    FileService --> SEmulatorEngine
+    
     SEmulatorEngine <|-- SEmulatorEngineImpl
-    SProgram <|-- SProgramImpl
-    SInstruction <|-- BaseInstruction
-    Command <|-- LoadFileCommand
-    Command <|-- RunProgramCommand
-    Command <|-- SaveStateCommand
+    SProgram <|-- SInstruction
     
     SEmulatorEngineImpl --> SProgramParser
     SEmulatorEngineImpl --> ProgramRunner
     SEmulatorEngineImpl --> ExpansionEngine
     SEmulatorEngineImpl --> MultiLevelExpansionEngine
     
-    SProgramImpl --> SInstruction
     ProgramRunner --> ExecutionContext
     ExecutionContext --> VariableManager
     
-    SEmulatorApplication --> MenuManager
-    SEmulatorApplication --> SEmulatorEngineImpl
-    MenuManager --> ConsoleInterface
-    MenuManager --> Command
-    
     SProgramParser --> XMLValidator
-    SProgramParser --> SProgramImpl
 ```
 
-### Engine Module (`s-emulator-engine`)
+## Technical Architecture
 
-#### Core API Classes
-- **`SEmulatorEngine`** - Main engine interface providing all emulator functionality
-- **`SEmulatorEngineImpl`** - Concrete implementation of the engine interface
-- **`SProgram`** - Interface representing an S-language program
-- **`SProgramImpl`** - Implementation of S-language program with instruction management
-- **`SInstruction`** - Interface for individual S-language instructions
-- **`ExecutionResult`** - Contains results of program execution including variables and statistics
+### Core Components
 
-#### Instruction Processing
-- **`BaseInstruction`** - Abstract base class for all instruction types
-- **`InstructionFactory`** - Factory class for creating instruction instances
-- **`InstructionType`** - Enum defining all supported instruction types
+**Engine Module (`s-emulator-engine`):**
+- **`SEmulatorEngine`** - Main engine interface with program loading, execution, and expansion capabilities
+- **`SProgram`** - Represents S-language programs with instruction management
+- **`SInstruction`** - Interface for individual instructions with execution and expansion methods
+- **`ProgramRunner`** - Handles program execution with step-by-step debugging support
+- **`ExpansionEngine`** - Converts synthetic instructions to basic instructions at multiple levels
+- **`SProgramParser`** - Parses XML files into program objects with validation
 
-#### Execution Engine
-- **`ProgramRunner`** - Handles program execution logic and instruction processing
-- **`ExecutionContext`** - Manages execution state including variables and program counter
-- **`VariableManager`** - Manages program variables and their values during execution
+**JavaFX UI Module (`s-emulator-fx`):**
+- **`SEmulatorFXApplication`** - Main JavaFX application entry point
+- **`MainController`** - Central controller managing all UI interactions and workflow
+- **`FileController`** - Handles file loading operations with progress dialogs
+- **`ExecutionController`** - Manages program execution and debugging controls
+- **`InputController`** - Collects and validates user input for program execution
+- **`FileService`** - Service layer for file operations and validation
 
-#### Expansion Engine
-- **`ExpansionEngine`** - Handles single-level expansion of synthetic instructions
-- **`MultiLevelExpansionEngine`** - Manages complex multi-level instruction expansion
-- **`ExpansionContext`** - Provides context for instruction expansion operations
+### Key Features
 
-#### XML Processing
-- **`SProgramParser`** - Parses XML files into S-language program objects
-- **`XMLValidator`** - Validates XML files against the S-Emulator schema
+- **Modern JavaFX Interface** - Intuitive GUI with themes, animations, and responsive design
+- **Multi-Level Expansion** - Convert synthetic instructions to basic instructions at any depth
+- **Step-by-Step Debugging** - Execute programs instruction by instruction with variable tracking
+- **Real-Time Variable Monitoring** - Watch variable values change during execution
+- **Execution History** - Track and review all previous program runs
+- **XML Validation** - Automatic validation against S-Emulator schemas
+- **Theme Support** - Light, dark, and high-contrast themes for accessibility
 
+## Design Decisions
 
-#### Exception Handling
-- **`SProgramException`** - Base exception for all S-language related errors
-- **`XMLValidationException`** - Specific exception for XML validation errors
-- **`ExecutionException`** - Exception for program execution errors
-- **`ExpansionException`** - Exception for instruction expansion errors
-
-### UI Module (`s-emulator-ui`)
-
-#### Application Entry Point
-- **`SEmulatorApplication`** - Main class containing the application entry point
-
-#### Console Interface
-- **`ConsoleInterface`** - Handles all console input/output operations
-- **`MenuManager`** - Manages menu display and user interaction flow
-- **`OutputFormatter`** - Formats output text for consistent console presentation
-- **`InputValidator`** - Validates user input and provides error feedback
-
-#### Command Implementation
-- **`Command`** - Interface defining the command pattern structure
-- **`LoadFileCommand`** - Loads S-language programs from XML files
-- **`ViewProgramCommand`** - Displays current program details
-- **`ExpandProgramCommand`** - Expands synthetic instructions to specified levels
-- **`RunProgramCommand`** - Executes programs with user-provided inputs
-- **`ViewHistoryCommand`** - Shows execution history and results
-- **`SaveStateCommand`** - Saves current system state to file
-- **`LoadStateCommand`** - Loads previously saved system state
-- **`ExitCommand`** - Handles application termination
+- **JavaFX Architecture** - Modern GUI framework providing rich user experience with themes and animations
+- **MVC Pattern** - Clear separation between UI controllers, business logic, and data models
+- **Factory Pattern** - Centralized instruction creation using Java 21 switch expressions
+- **Multi-Level Expansion** - Sophisticated expansion system handling nested synthetic instructions
+- **Service Layer** - Dedicated services for file operations and validation with progress feedback
 
 ## Team Information
 
