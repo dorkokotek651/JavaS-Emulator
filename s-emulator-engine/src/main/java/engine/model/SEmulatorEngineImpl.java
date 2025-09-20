@@ -270,7 +270,6 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
                 programToRun = program;
             } else {
                 programToRun = expansionEngine.expandProgram(program, expansionLevel);
-                // Ensure the expanded program has access to the function registry
                 if (programToRun.getFunctionRegistry() == null && currentProgram.getFunctionRegistry() != null) {
                     programToRun.setFunctionRegistry(currentProgram.getFunctionRegistry());
                 }
@@ -334,7 +333,6 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
                 programToRun = program;
             } else {
                 programToRun = expansionEngine.expandProgram(program, expansionLevel);
-                // Ensure the expanded program has access to the function registry
                 if (programToRun.getFunctionRegistry() == null && currentProgram.getFunctionRegistry() != null) {
                     programToRun.setFunctionRegistry(currentProgram.getFunctionRegistry());
                 }
@@ -381,8 +379,7 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
             .anyMatch(instruction -> SEmulatorConstants.QUOTE_NAME.equals(instruction.getName()) ||
                                    SEmulatorConstants.JUMP_EQUAL_FUNCTION_NAME.equals(instruction.getName()));
     }
-    
-    
+
     @Override
     public void startDebugSession(int expansionLevel, List<Integer> inputs) throws SProgramException {
         if (!isProgramLoaded()) {
@@ -417,7 +414,6 @@ public class SEmulatorEngineImpl implements SEmulatorEngine {
                 this.debugProgram = program;
             } else {
                 this.debugProgram = expansionEngine.expandProgram(program, expansionLevel);
-                // Ensure the expanded program has access to the function registry
                 if (this.debugProgram.getFunctionRegistry() == null && currentProgram.getFunctionRegistry() != null) {
                     this.debugProgram.setFunctionRegistry(currentProgram.getFunctionRegistry());
                 }

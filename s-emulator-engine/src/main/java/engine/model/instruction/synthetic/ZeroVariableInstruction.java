@@ -56,6 +56,5 @@ public class ZeroVariableInstruction extends BaseInstruction {
         
         return expandedInstructions;
     }
-    
 
 }

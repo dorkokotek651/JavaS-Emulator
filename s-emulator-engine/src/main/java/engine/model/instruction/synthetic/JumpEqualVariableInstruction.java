@@ -117,6 +117,5 @@ public class JumpEqualVariableInstruction extends BaseInstruction {
     public String getComparedVariable() {
         return comparedVariable;
     }
-    
 
 }

@@ -22,24 +22,19 @@ public class SEmulatorFXApplication extends Application {
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fx/main.fxml"));
         Parent root = loader.load();
-        
 
         MainController controller = loader.getController();
         controller.setPrimaryStage(primaryStage);
-        
 
         Scene scene = new Scene(root, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
-        
 
         StyleManager.applyStylesheet(scene);
-        
 
         primaryStage.setTitle(APPLICATION_TITLE);
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(MIN_WINDOW_WIDTH);
         primaryStage.setMinHeight(MIN_WINDOW_HEIGHT);
         primaryStage.setResizable(true);
-        
 
         primaryStage.show();
     }

@@ -18,7 +18,6 @@ public class InstructionTableRow {
         this.cycles = new SimpleStringProperty(cycles);
         this.instruction = new SimpleStringProperty(instruction);
     }
-    
 
     public StringProperty commandNumberProperty() {
         return commandNumber;
@@ -31,7 +30,6 @@ public class InstructionTableRow {
     public void setCommandNumber(String commandNumber) {
         this.commandNumber.set(commandNumber);
     }
-    
 
     public StringProperty commandTypeProperty() {
         return commandType;
@@ -44,7 +42,6 @@ public class InstructionTableRow {
     public void setCommandType(String commandType) {
         this.commandType.set(commandType);
     }
-    
 
     public StringProperty labelProperty() {
         return label;
@@ -57,7 +54,6 @@ public class InstructionTableRow {
     public void setLabel(String label) {
         this.label.set(label);
     }
-    
 
     public StringProperty cyclesProperty() {
         return cycles;
@@ -70,7 +66,6 @@ public class InstructionTableRow {
     public void setCycles(String cycles) {
         this.cycles.set(cycles);
     }
-    
 
     public StringProperty instructionProperty() {
         return instruction;

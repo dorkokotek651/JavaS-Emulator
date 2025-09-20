@@ -10,7 +10,6 @@ import java.util.prefs.Preferences;
 public class StyleManager {
     
     private StyleManager() {
-        // Utility class - prevent instantiation
     }
     
     public enum Theme {
@@ -38,8 +37,7 @@ public class StyleManager {
     private static final String PREF_THEME = "theme";
     private static final String PREF_ANIMATIONS_ENABLED = "animations_enabled";
     private static Theme currentTheme = Theme.LIGHT;
-    private static boolean animationsEnabled = false; // Default: animations disabled
-    
+    private static boolean animationsEnabled = false;
 
     public static final String INPUT_FIELD = "input-field";
     public static final String INPUT_FIELD_ERROR = "input-field-error";
@@ -73,16 +71,13 @@ public class StyleManager {
             theme = Theme.LIGHT;
         }
         
-        // Remove current theme stylesheet
         String currentStylesheetUrl = StyleManager.class.getResource(currentTheme.getStylesheetPath()).toExternalForm();
         scene.getStylesheets().remove(currentStylesheetUrl);
         
-        // Apply new theme
         currentTheme = theme;
         String newStylesheetUrl = StyleManager.class.getResource(theme.getStylesheetPath()).toExternalForm();
         scene.getStylesheets().add(newStylesheetUrl);
         
-        // Save theme preference
         saveThemeToPreferences(theme);
     }
     
@@ -118,7 +113,6 @@ public class StyleManager {
             Preferences prefs = Preferences.userNodeForPackage(StyleManager.class);
             prefs.put(PREF_THEME, theme.name());
         } catch (Exception e) {
-            // Ignore preferences save errors
         }
     }
     
@@ -136,7 +130,6 @@ public class StyleManager {
             Preferences prefs = Preferences.userNodeForPackage(StyleManager.class);
             prefs.putBoolean(PREF_ANIMATIONS_ENABLED, enabled);
         } catch (Exception e) {
-            // Ignore preferences save errors
         }
     }
     

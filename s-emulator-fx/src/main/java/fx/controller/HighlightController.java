@@ -15,15 +15,12 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public class HighlightController {
-    
 
     private ComboBox<String> highlightSelectionCombo;
     private TableView<InstructionTableRow> instructionsTable;
-    
 
     private Consumer<String> statusUpdater;
-    
-    
+
     public void setHighlightSelectionCombo(ComboBox<String> highlightSelectionCombo) {
         this.highlightSelectionCombo = highlightSelectionCombo;
     }
@@ -39,21 +36,18 @@ public class HighlightController {
     public void updateHighlightDropdown(SProgram program) {
         ObservableList<String> highlightItems = FXCollections.observableArrayList();
         highlightItems.add("Clear Highlighting");
-        
 
         List<String> labels = program.getLabels();
         if (!labels.isEmpty()) {
             highlightItems.add("--- Labels ---");
             highlightItems.addAll(labels);
         }
-        
 
         List<String> inputVars = program.getInputVariables();
         if (!inputVars.isEmpty()) {
             highlightItems.add("--- Input Variables ---");
             highlightItems.addAll(inputVars);
         }
-        
 
         Set<String> workingVars = extractWorkingVariables(program);
         if (!workingVars.isEmpty()) {
@@ -63,7 +57,6 @@ public class HighlightController {
         
         highlightSelectionCombo.setItems(highlightItems);
         highlightSelectionCombo.setValue("Clear Highlighting");
-        
 
         highlightSelectionCombo.setCellFactory(listView -> new ListCell<String>() {
             @Override
@@ -85,7 +78,6 @@ public class HighlightController {
                 }
             }
         });
-        
 
         highlightSelectionCombo.setOnAction(e -> handleHighlightSelection());
     }
@@ -98,7 +90,6 @@ public class HighlightController {
             if (variable != null && variable.startsWith("z")) {
                 workingVars.add(variable);
             }
-            
 
             for (String arg : instruction.getArguments().values()) {
                 if (arg != null && arg.matches("[xyz]\\d+")) {
@@ -126,10 +117,8 @@ public class HighlightController {
         if (program == null) {
             return;
         }
-        
 
         clearHighlighting();
-        
 
         instructionsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         
@@ -148,7 +137,6 @@ public class HighlightController {
                 rowsToHighlight.add(i);
             }
         }
-        
 
         if (!rowsToHighlight.isEmpty()) {
             instructionsTable.getSelectionModel().selectIndices(
@@ -212,6 +200,5 @@ public class HighlightController {
             statusUpdater.accept(message);
         }
 
-        System.out.println("HighlightController Status: " + message);
     }
 }

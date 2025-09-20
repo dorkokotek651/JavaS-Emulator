@@ -74,6 +74,5 @@ public class ConstantAssignmentInstruction extends BaseInstruction {
     public int getConstantValue() {
         return constantValue;
     }
-    
 
 }

@@ -199,7 +199,6 @@ public class SProgramImpl implements SProgram {
         
         return maxDepth > 1;
     }
-    
 
     private int getInstructionExpansionLevel(String instructionName) {
         switch (instructionName) {

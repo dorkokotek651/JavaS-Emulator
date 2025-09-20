@@ -128,11 +128,8 @@ public class ExecutionController {
             int executionLevel = determineExecutionLevel();
             updateStatus("Running program with inputs: " + displayInputs + " at expansion level " + executionLevel);
             
-            // Get the next run number for the current context before execution
             int currentRunNumber = historyManager.getNextRunNumber();
-            
-            System.out.println("Normal run starting: assigning run number " + currentRunNumber + " in context: " + historyManager.getCurrentContext());
-            
+
             engine.api.SProgram contextProgram = getCurrentContextProgram != null ? getCurrentContextProgram.get() : null;
             ExecutionResult result;
             if (contextProgram != null) {
@@ -186,9 +183,7 @@ public class ExecutionController {
             updateStatus("Starting debug session with inputs: " + inputs + " at expansion level " + executionLevel + 
                        " (virtual execution mode enabled for QUOTE instructions)");
             
-            // Get the run number for the debug session when it starts
             debugRunNumber = historyManager.getNextRunNumber();
-            System.out.println("Debug session starting: assigning run number " + debugRunNumber + " in context: " + historyManager.getCurrentContext());
             
             debugOriginalInputs = new ArrayList<>(inputs);
             
@@ -201,7 +196,6 @@ public class ExecutionController {
             debugSessionActive = true;
             
             engine.getCurrentExecutionState().enableVirtualExecutionMode();
-            
 
             if (onDebugSessionStarted != null) {
                 onDebugSessionStarted.run();
@@ -210,10 +204,8 @@ public class ExecutionController {
             if (onHighlightingCleared != null) {
                 onHighlightingCleared.run();
             }
-            
 
             updateDebugVariableDisplay();
-            
 
             if (onCurrentInstructionChanged != null) {
                 onCurrentInstructionChanged.accept(0);
@@ -245,10 +237,8 @@ public class ExecutionController {
                 handleDebugSessionEnd();
                 return;
             }
-            
 
             boolean continueExecution = engine.stepForward();
-            
 
             if (!engine.canStepForward()) {
 
@@ -260,13 +250,11 @@ public class ExecutionController {
             if (continueExecution) {
 
                 updateDebugVariableDisplay();
-                
 
                 ExecutionContext context = engine.getCurrentExecutionState();
                 if (context != null && onCurrentInstructionChanged != null) {
                     onCurrentInstructionChanged.accept(context.getCurrentInstructionIndex());
                 }
-                
 
                 Map<String, Integer> changedVars = engine.getChangedVariables();
                 if (onVariablesChanged != null) {
@@ -300,17 +288,14 @@ public class ExecutionController {
             debugSessionActive = false;
             debugOriginalInputs = null;
             debugRunNumber = -1;
-            
 
             if (onDebugSessionEnded != null) {
                 onDebugSessionEnded.run();
             }
-            
 
             if (onCurrentInstructionChanged != null) {
                 onCurrentInstructionChanged.accept(-1);
             }
-            
 
             if (onVariablesChanged != null) {
                 onVariablesChanged.accept(new HashMap<>());
@@ -334,27 +319,19 @@ public class ExecutionController {
         
         try {
             updateStatus("Resuming execution to completion...");
-            
 
             ExecutionResult originalResult = engine.resumeExecution();
-            System.out.println("engine.resumeExecution() returned ExecutionResult with runNumber: " + originalResult.getRunNumber());
-            
 
             List<Integer> originalInputsForDisplay = debugOriginalInputs != null ? 
                 new ArrayList<>(debugOriginalInputs) : null;
             
             debugSessionActive = false;
             debugOriginalInputs = null;
-            
 
-            // Use the run number that was assigned when the debug session started
             int currentRunNumber = debugRunNumber;
-            
-            System.out.println("Debug session completing: using run number " + currentRunNumber + " in context: " + historyManager.getCurrentContext());
 
-            // Create a new ExecutionResult with the correct run number
             ExecutionResult result = new ExecutionResult(
-                currentRunNumber,  // Use the correct run number
+                currentRunNumber,
                 originalResult.getExpansionLevel(),
                 originalResult.getInputs(),
                 originalResult.getYValue(),
@@ -363,21 +340,16 @@ public class ExecutionController {
                 originalResult.getTotalCycles(),
                 originalResult.getExecutedInstructions()
             );
-            
-            System.out.println("Created new ExecutionResult with runNumber: " + result.getRunNumber());
 
             if (onDebugSessionEnded != null) {
                 onDebugSessionEnded.run();
             }
-            
 
             updateExecutionResults(result, originalInputsForDisplay, currentRunNumber);
-            
 
             if (onCurrentInstructionChanged != null) {
                 onCurrentInstructionChanged.accept(-1);
             }
-            
 
             if (onVariablesChanged != null) {
                 onVariablesChanged.accept(new HashMap<>());
@@ -432,7 +404,6 @@ public class ExecutionController {
     private List<Integer> formatInputsForDisplay(List<Integer> userInputs) {
 
         List<Integer> displayInputs = new ArrayList<>();
-        
 
         for (int i = 0; i < inputFields.size(); i++) {
             TextField field = inputFields.get(i);
@@ -444,7 +415,6 @@ public class ExecutionController {
                 }
             }
         }
-        
 
         if (displayInputs.isEmpty()) {
             displayInputs.add(0);
@@ -478,51 +448,34 @@ public class ExecutionController {
         
         return allValid;
     }
-    
-    
+
     private void updateExecutionResults(ExecutionResult result, List<Integer> displayInputs, int runNumber) {
-        System.out.println("updateExecutionResults called:");
-        System.out.println("  - result.getRunNumber(): " + result.getRunNumber());
-        System.out.println("  - passed runNumber parameter: " + runNumber);
-        System.out.println("  - result.getYValue(): " + result.getYValue());
-        System.out.println("  - result.getTotalCycles(): " + result.getTotalCycles());
 
         updateVariablesTable(result);
-        
 
         updateCyclesDisplay(result.getTotalCycles());
-        
 
         addToExecutionHistory(result, displayInputs, runNumber);
-        
-        System.out.println("Execution completed: Run " + result.getRunNumber() + 
-                          ", Y = " + result.getYValue() + 
-                          ", Cycles = " + result.getTotalCycles());
     }
     
     private void updateVariablesTable(ExecutionResult result) {
         ObservableList<VariableTableRow> variableData = FXCollections.observableArrayList();
-        
 
         Map<String, Integer> inputVars = result.getInputVariables();
         for (Map.Entry<String, Integer> entry : inputVars.entrySet()) {
             variableData.add(new VariableTableRow(entry.getKey(), String.valueOf(entry.getValue())));
         }
-        
 
         Map<String, Integer> workingVars = result.getWorkingVariables();
         for (Map.Entry<String, Integer> entry : workingVars.entrySet()) {
             variableData.add(new VariableTableRow(entry.getKey(), String.valueOf(entry.getValue())));
         }
-        
 
         variableData.add(new VariableTableRow("y", String.valueOf(result.getYValue())));
-        
 
         variableData.sort((v1, v2) -> {
             String name1 = v1.getVariableName();
             String name2 = v2.getVariableName();
-            
 
             if ("y".equals(name1)) {
                 return 1;
@@ -530,7 +483,6 @@ public class ExecutionController {
             if ("y".equals(name2)) {
                 return -1;
             }
-            
 
             if (name1.startsWith("x") && name2.startsWith("z")) {
                 return -1;
@@ -538,7 +490,6 @@ public class ExecutionController {
             if (name1.startsWith("z") && name2.startsWith("x")) {
                 return 1;
             }
-            
 
             return name1.compareTo(name2);
         });
@@ -549,32 +500,17 @@ public class ExecutionController {
     private void updateCyclesDisplay(int totalCycles) {
         cyclesLabel.setText("Total Cycles: " + totalCycles);
     }
-    
-    
-    
+
     private void addToExecutionHistory(ExecutionResult result, List<Integer> displayInputs, int runNumber) {
-        System.out.println("addToExecutionHistory called:");
-        System.out.println("  - result.getRunNumber(): " + result.getRunNumber());
-        System.out.println("  - passed runNumber parameter: " + runNumber);
-        System.out.println("  - result.getExpansionLevel(): " + result.getExpansionLevel());
-        System.out.println("  - result.getYValue(): " + result.getYValue());
-        System.out.println("  - result.getTotalCycles(): " + result.getTotalCycles());
 
         List<Integer> inputsToShow = (displayInputs != null) ? displayInputs : result.getInputs();
-        
 
         String inputsString = inputsToShow.stream()
             .map(String::valueOf)
             .collect(java.util.stream.Collectors.joining(", "));
-        
 
         String actions = "show | re-run";
-        
-        System.out.println("  - inputsString: " + inputsString);
-        System.out.println("  - actions: " + actions);
-        System.out.println("  - Calling historyManager.addExecutionResultToCurrentContext with runNumber: " + runNumber);
-        
-        // Add to context-aware history manager (with full execution result)
+
         historyManager.addExecutionResultToCurrentContext(
             result,
             runNumber,
@@ -585,10 +521,8 @@ public class ExecutionController {
             actions
         );
         
-        // Update the statistics table to show current context history
         updateStatisticsTable();
         
-        // Scroll to the newly added row
         if (statisticsTable != null && !historyManager.getCurrentContextHistory().isEmpty()) {
             ExecutionHistoryRow lastRow = historyManager.getCurrentContextHistory().get(
                 historyManager.getCurrentContextHistory().size() - 1);
@@ -601,7 +535,6 @@ public class ExecutionController {
             statusUpdater.accept(message);
         }
 
-        System.out.println("ExecutionController Status: " + message);
     }
     
     private void updateDebugVariableDisplay() {
@@ -612,22 +545,18 @@ public class ExecutionController {
         
         ObservableList<VariableTableRow> variableData = FXCollections.observableArrayList();
         VariableManager variableManager = context.getVariableManager();
-        
 
         Map<String, Integer> inputVars = variableManager.getSortedInputVariablesMap();
         for (Map.Entry<String, Integer> entry : inputVars.entrySet()) {
             variableData.add(new VariableTableRow(entry.getKey(), String.valueOf(entry.getValue())));
         }
-        
 
         Map<String, Integer> workingVars = variableManager.getSortedWorkingVariablesMap();
         for (Map.Entry<String, Integer> entry : workingVars.entrySet()) {
             variableData.add(new VariableTableRow(entry.getKey(), String.valueOf(entry.getValue())));
         }
-        
 
         variableData.add(new VariableTableRow("y", String.valueOf(variableManager.getYValue())));
-        
 
         variableData.sort((v1, v2) -> {
             String name1 = v1.getVariableName();
@@ -650,7 +579,6 @@ public class ExecutionController {
         });
         
         variablesTable.setItems(variableData);
-        
 
         if (cyclesLabel != null) {
             cyclesLabel.setText("Cycles: " + context.getTotalCycles());
@@ -666,12 +594,8 @@ public class ExecutionController {
 
                 updateDebugVariableDisplay();
                 
-                // Check if this is a completed debug session (not manually stopped)
                 if (debugRunNumber > 0 && debugOriginalInputs != null) {
-                    // This is a completed debug session - record it in history
-                    System.out.println("Debug session completed naturally - adding to history with run number: " + debugRunNumber);
                     
-                    // Create ExecutionResult for the completed debug session
                     VariableManager variableManager = context.getVariableManager();
                     ExecutionResult result = new ExecutionResult(
                         debugRunNumber,
@@ -684,38 +608,29 @@ public class ExecutionController {
                         context.getExecutedInstructions()
                     );
                     
-                    // Format inputs for display
                     List<Integer> displayInputs = formatInputsForDisplay(debugOriginalInputs);
                     
-                    // Add to history
                     updateExecutionResults(result, displayInputs, debugRunNumber);
                     
-                    // Call execution completed callback to reset workflow state
                     if (onExecutionCompleted != null) {
                         onExecutionCompleted.run();
                     }
                 } else {
-                    // This is a manually stopped debug session - don't add to history
-                    System.out.println("Debug session manually stopped - not adding to history");
                 }
             }
-            
 
             engine.stopDebugSession();
             debugSessionActive = false;
             debugOriginalInputs = null;
             debugRunNumber = -1;
-            
 
             if (onDebugSessionEnded != null) {
                 onDebugSessionEnded.run();
             }
-            
 
             if (onCurrentInstructionChanged != null) {
                 onCurrentInstructionChanged.accept(-1);
             }
-            
 
             if (onVariablesChanged != null) {
                 onVariablesChanged.accept(new HashMap<>());
@@ -726,14 +641,11 @@ public class ExecutionController {
             updateStatus("Error ending debug session: " + e.getMessage());
         }
     }
-    
-    
+
     private int determineExecutionLevel() {
         if (!engine.isProgramLoaded()) {
             return currentExpansionLevel;
         }
-        
-
 
         return currentExpansionLevel;
     }
@@ -753,19 +665,12 @@ public class ExecutionController {
     public void setOnExecutionCompleted(Runnable onExecutionCompleted) {
         this.onExecutionCompleted = onExecutionCompleted;
     }
-    
-    /**
-     * Sets the current context program/function for execution history management.
-     * @param contextName The name of the context (e.g., "Main Program", "Minus", "Const7")
-     */
+
     public void setCurrentContext(String contextName) {
         historyManager.setCurrentContext(contextName);
         updateStatisticsTable();
     }
-    
-    /**
-     * Updates the statistics table to show the current context's execution history.
-     */
+
     private void updateStatisticsTable() {
         if (statisticsTable != null) {
             statisticsTable.setItems(historyManager.getCurrentContextHistory());
@@ -781,19 +686,13 @@ public class ExecutionController {
         try {
             int runNumber = Integer.parseInt(historyRow.getRunNumber());
             int expansionLevel = Integer.parseInt(historyRow.getExpansionLevel());
-            
-            System.out.println("Show button clicked for run #" + runNumber + " in context: " + historyManager.getCurrentContext());
-            
-            // Use context-aware execution results
+
             List<ExecutionResult> contextExecutionResults = historyManager.getCurrentContextExecutionResults();
-            System.out.println("Available execution results in context: " + contextExecutionResults.size());
             for (ExecutionResult result : contextExecutionResults) {
-                System.out.println("  - Run #" + result.getRunNumber() + " at level " + result.getExpansionLevel());
             }
             
             ExecutionResult targetResult = null;
             
-            // Find the execution result by run number and expansion level
             for (ExecutionResult result : contextExecutionResults) {
                 if (result.getRunNumber() == runNumber && result.getExpansionLevel() == expansionLevel) {
                     targetResult = result;
@@ -828,7 +727,6 @@ public class ExecutionController {
             return;
         }
         
-        // Clear variables table when re-running
         if (variablesTable != null) {
             variablesTable.setItems(FXCollections.observableArrayList());
         }
@@ -837,7 +735,6 @@ public class ExecutionController {
             int runNumber = Integer.parseInt(historyRow.getRunNumber());
             int expansionLevel = Integer.parseInt(historyRow.getExpansionLevel());
             
-            // Parse the inputs from the history row (context-aware)
             String inputsString = historyRow.getInputs();
             List<Integer> historicalInputs = new ArrayList<>();
             

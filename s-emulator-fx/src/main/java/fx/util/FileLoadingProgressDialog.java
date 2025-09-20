@@ -85,15 +85,12 @@ public class FileLoadingProgressDialog {
         messageLabel.textProperty().bind(task.messageProperty());
         
         task.setOnSucceeded(e -> {
-            System.out.println("FileLoadingProgressDialog: Task succeeded, updating UI");
             messageLabel.textProperty().unbind();
             progressBar.progressProperty().unbind();
             messageLabel.setText("File loaded successfully!");
             progressBar.setProgress(1.0);
             
-            // Wait a bit for the success callback to execute and UI to update
             Timeline closeTimeline = new Timeline(new KeyFrame(Duration.millis(500), event -> {
-                System.out.println("FileLoadingProgressDialog: Closing dialog stage");
                 dialogStage.close();
             }));
             closeTimeline.play();
@@ -131,11 +128,7 @@ public class FileLoadingProgressDialog {
                 currentTask.cancel();
             }
         });
-        
-        // Don't start the task here - it should already be started by the caller
-        // This ensures event handlers are properly attached before the task runs
-        System.out.println("FileLoadingProgressDialog: Task should already be started by caller");
-        
+
         dialogStage.showAndWait();
     }
     

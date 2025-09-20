@@ -138,7 +138,6 @@ public class ExpansionContext {
                     int counter = Integer.parseInt(variable.substring(1));
                     maxCounter = Math.max(maxCounter, counter);
                 } catch (NumberFormatException e) {
-                    // Ignore invalid variable names
                 }
             }
         }

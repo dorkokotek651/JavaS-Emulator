@@ -33,12 +33,11 @@ import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
     
-    // Workflow state management
     public enum WorkflowState {
-        IDLE,           // No active workflow
-        INPUT_COLLECTION, // Collecting inputs for new run
-        READY_TO_RUN,   // Inputs collected, ready to execute
-        RUNNING         // Currently executing
+        IDLE,
+        INPUT_COLLECTION,
+        READY_TO_RUN,
+        RUNNING
     }
     
     private WorkflowState currentWorkflowState = WorkflowState.IDLE;
@@ -47,14 +46,11 @@ public class MainController implements Initializable {
     @FXML private MenuItem exitMenuItem;
     @FXML private MenuItem aboutMenuItem;
     
-    // Theme menu items
     @FXML private MenuItem lightThemeMenuItem;
     @FXML private MenuItem darkThemeMenuItem;
     @FXML private MenuItem highContrastThemeMenuItem;
     
-    // View menu items
     @FXML private MenuItem toggleAnimationsMenuItem;
-    
 
     @FXML private VBox topControlsSection;
     @FXML private Button loadFileButton;
@@ -63,7 +59,6 @@ public class MainController implements Initializable {
     @FXML private ComboBox<String> levelSelector;
     @FXML private Label levelDisplayLabel;
     @FXML private ComboBox<String> highlightSelectionCombo;
-    
 
     @FXML private SplitPane middleSplitPane;
     @FXML private TableView<InstructionTableRow> instructionsTable;
@@ -73,7 +68,6 @@ public class MainController implements Initializable {
     @FXML private TableColumn<InstructionTableRow, String> cyclesColumn;
     @FXML private TableColumn<InstructionTableRow, String> instructionColumn;
     @FXML private Label summaryLabel;
-    
 
     @FXML private VBox debugControlsSection;
     @FXML private Button newRunButton;
@@ -82,23 +76,19 @@ public class MainController implements Initializable {
     @FXML private Button stepOverButton;
     @FXML private Button stopButton;
     @FXML private Button resumeButton;
-    
 
     @FXML private VBox variablesSection;
     @FXML private TableView<VariableTableRow> variablesTable;
     @FXML private TableColumn<VariableTableRow, String> variableNameColumn;
     @FXML private TableColumn<VariableTableRow, String> variableValueColumn;
-    
 
     @FXML private VBox executionInputsSection;
     @FXML private VBox inputsContainer;
     @FXML private Button addInputButton;
     @FXML private Button removeInputButton;
-    
 
     @FXML private VBox cyclesSection;
     @FXML private Label cyclesLabel;
-    
 
     @FXML private SplitPane bottomSplitPane;
     @FXML private TableView<InstructionTableRow> historyChainTable;
@@ -115,10 +105,8 @@ public class MainController implements Initializable {
     @FXML private TableColumn<ExecutionHistoryRow, String> yValueColumn;
     @FXML private TableColumn<ExecutionHistoryRow, String> totalCyclesColumn;
     @FXML private TableColumn<ExecutionHistoryRow, String> actionsColumn;
-    
 
     @FXML private Label statusLabel;
-    
 
     private SEmulatorEngine engine;
     private FileController fileController;
@@ -136,22 +124,17 @@ public class MainController implements Initializable {
         try {
             this.engine = new SEmulatorEngineImpl();
             FileService fileService = new FileService(engine);
-            
 
             this.fileController = new FileController(engine, fileService);
             setupFileControllerCallbacks();
-            
 
             this.executionController = new ExecutionController(engine);
             setupExecutionControllerCallbacks();
-            
 
             this.inputController = new InputController();
             setupInputControllerCallbacks();
             
-            // Setup workflow callbacks after all controllers are initialized
             setupWorkflowCallbacks();
-            
 
             this.highlightController = new HighlightController();
             setupHighlightControllerCallbacks();
@@ -176,14 +159,11 @@ public class MainController implements Initializable {
         labelColumn.setCellValueFactory(cellData -> cellData.getValue().labelProperty());
         cyclesColumn.setCellValueFactory(cellData -> cellData.getValue().cyclesProperty());
         instructionColumn.setCellValueFactory(cellData -> cellData.getValue().instructionProperty());
-        
 
         variableNameColumn.setCellValueFactory(cellData -> cellData.getValue().variableNameProperty());
         variableValueColumn.setCellValueFactory(cellData -> cellData.getValue().variableValueProperty());
-        
 
         instructionsTable.setRowFactory(tv -> new TableRow<>());
-        
 
         variablesTable.setRowFactory(tv -> {
             TableRow<VariableTableRow> row = new TableRow<>() {
@@ -204,7 +184,6 @@ public class MainController implements Initializable {
                                 getStyleClass().remove("variable-changed");
                             }
                         });
-                        
 
                         if (item.isChanged()) {
                             if (!getStyleClass().contains("variable-changed")) {
@@ -218,14 +197,12 @@ public class MainController implements Initializable {
             };
             return row;
         });
-        
 
         historyCommandNumberColumn.setCellValueFactory(cellData -> cellData.getValue().commandNumberProperty());
         historyCommandTypeColumn.setCellValueFactory(cellData -> cellData.getValue().commandTypeProperty());
         historyLabelColumn.setCellValueFactory(cellData -> cellData.getValue().labelProperty());
         historyCyclesColumn.setCellValueFactory(cellData -> cellData.getValue().cyclesProperty());
         historyInstructionColumn.setCellValueFactory(cellData -> cellData.getValue().instructionProperty());
-        
 
         runNumberColumn.setCellValueFactory(cellData -> cellData.getValue().runNumberProperty());
         expansionLevelColumn.setCellValueFactory(cellData -> cellData.getValue().expansionLevelProperty());
@@ -240,21 +217,17 @@ public class MainController implements Initializable {
         levelSelector.setDisable(true);
         programFunctionSelector.setDisable(true);
         highlightController.disableHighlightSelection();
-        
 
         stepOverButton.setDisable(true);
         stopButton.setDisable(true);
         resumeButton.setDisable(true);
-        
 
         updateProgramFunctionSelector();
-        
 
         programFunctionSelector.setOnAction(e -> handleProgramFunctionSelection());
     }
     
     private void initializeExecutionHistory() {
-        // Statistics table is now managed by ExecutionController's context-aware history manager
     }
     
     private void setupFileControllerCallbacks() {
@@ -267,31 +240,25 @@ public class MainController implements Initializable {
         executionController.setStatusUpdater(this::updateStatusLabel);
         executionController.setOnHighlightingCleared(() -> {
             highlightController.clearHighlighting();
-            // Also clear debug highlighting
             if (debugAnimationController != null) {
                 debugAnimationController.clearDebugHighlighting(instructionsTable);
             }
         });
-        
 
         executionController.setVariablesTable(variablesTable);
         executionController.setCyclesLabel(cyclesLabel);
         executionController.setStatisticsTable(statisticsTable);
-        
 
         executionController.setInstructionsTable(instructionsTable);
         executionController.setOnCurrentInstructionChanged(this::highlightCurrentInstruction);
         executionController.setOnVariablesChanged(this::highlightChangedVariables);
-        
 
         executionController.setOnDebugSessionStarted(() -> {
             stepOverButton.setDisable(false);
             stopButton.setDisable(false);
             resumeButton.setDisable(false);
-            
 
             levelSelector.setDisable(true);
-            
 
             addInputButton.setDisable(true);
             removeInputButton.setDisable(true);
@@ -302,16 +269,13 @@ public class MainController implements Initializable {
             stepOverButton.setDisable(true);
             stopButton.setDisable(true);
             resumeButton.setDisable(true);
-            
 
             updateControlStates();
-            
 
             addInputButton.setDisable(false);
             removeInputButton.setDisable(false);
             executionInputsSection.setDisable(false);
             
-            // Clear debug highlighting when session ends
             if (debugAnimationController != null) {
                 debugAnimationController.clearDebugHighlighting(instructionsTable);
             }
@@ -324,20 +288,17 @@ public class MainController implements Initializable {
     }
     
     private void setupWorkflowCallbacks() {
-        // Initialize mode dropdown
         if (executionModeCombo != null) {
             executionModeCombo.getItems().addAll("Normal", "Debug");
-            executionModeCombo.setValue("Normal"); // Set default to Normal
+            executionModeCombo.setValue("Normal");
             executionModeCombo.setOnAction(e -> updateUIForWorkflowState());
         }
         
-        // Initialize animation toggle menu item
         if (toggleAnimationsMenuItem != null) {
             boolean animationsEnabled = StyleManager.areAnimationsEnabled();
             toggleAnimationsMenuItem.setText(animationsEnabled ? "Disable Animations" : "Enable Animations");
         }
         
-        // Initialize workflow state
         updateUIForWorkflowState();
     }
     
@@ -347,7 +308,6 @@ public class MainController implements Initializable {
 
         inputController.setInputsContainer(inputsContainer);
         inputController.setRemoveInputButton(removeInputButton);
-        
 
         inputController.initialize();
         executionController.setInputFields(inputController.getInputFields());
@@ -355,14 +315,11 @@ public class MainController implements Initializable {
     
     private void setupHighlightControllerCallbacks() {
         highlightController.setStatusUpdater(this::updateStatusLabel);
-        
 
         highlightController.setHighlightSelectionCombo(highlightSelectionCombo);
         highlightController.setInstructionsTable(instructionsTable);
-        
 
         highlightController.setHighlightCallback(this::highlightInstructionsWithCurrentProgram);
-        
 
         highlightController.initialize();
     }
@@ -373,33 +330,24 @@ public class MainController implements Initializable {
         StyleManager.applyInstructionTableStyle(historyChainTable);
         StyleManager.applyVariableTableStyle(variablesTable);
         StyleManager.applyHistoryTableStyle(statisticsTable);
-        
 
         StyleManager.applyStatusLabelStyle(statusLabel);
     }
     
     private void onProgramLoaded() {
-        System.out.println("MainController: onProgramLoaded called");
         if (engine.isProgramLoaded()) {
-            System.out.println("MainController: Engine has program loaded, updating UI");
             SProgram program = engine.getCurrentProgram();
             currentFilePathLabel.setText(program.getName());
             currentExpansionLevel = 0;
-            System.out.println("onProgramLoaded: Reset currentExpansionLevel to 0");
             currentContextProgram = "Main Program";
             executionController.setCurrentContext("Main Program");
             
-            // Clear execution history when loading a new program
             executionController.clearExecutionHistory();
             
-            // Update level display to show 0
             updateLevelDisplay();
-            System.out.println("onProgramLoaded: After updateLevelDisplay, currentExpansionLevel = " + currentExpansionLevel);
             
-            // Reset the level selector dropdown to 0
             if (levelSelector != null) {
                 levelSelector.setValue("0");
-                System.out.println("onProgramLoaded: Reset levelSelector to 0");
             }
             
             updateProgramFunctionSelector();
@@ -407,18 +355,13 @@ public class MainController implements Initializable {
             updateLevelSelector();
             enableProgramControls();
             
-            // Update input fields based on the main program's requirements
             inputController.updateInputFieldsForProgram(program);
             
-            // Reset workflow state to IDLE when program loads
             setWorkflowState(WorkflowState.IDLE);
-            System.out.println("MainController: onProgramLoaded completed successfully");
         } else {
-            System.out.println("MainController: Engine does not have program loaded");
         }
     }
-    
-    
+
     public void setPrimaryStage(Stage primaryStage) {
         this.primaryStage = primaryStage;
         if (fileController != null) {
@@ -428,15 +371,12 @@ public class MainController implements Initializable {
             executionController.setPrimaryStage(primaryStage);
         }
     }
-    
 
     @FXML
     private void handleLoadFile() {
         fileController.handleLoadFile();
     }
-    
-    
-    
+
     @FXML
     private void handleExit() {
         if (primaryStage != null) {
@@ -480,7 +420,6 @@ public class MainController implements Initializable {
         
         StyleManager.setAnimationsEnabled(newState);
         
-        // Update menu item text
         if (toggleAnimationsMenuItem != null) {
             toggleAnimationsMenuItem.setText(newState ? "Disable Animations" : "Enable Animations");
         }
@@ -500,10 +439,7 @@ public class MainController implements Initializable {
             }
         }
     }
-    
-    /**
-     * Selects a specific expansion level directly.
-     */
+
     private void selectExpansionLevel(int level) {
         if (!engine.isProgramLoaded()) {
             updateStatusLabel("No program loaded");
@@ -518,23 +454,18 @@ public class MainController implements Initializable {
         
         int maxLevel = contextProgram.getMaxExpansionLevel();
         
-        // Validate level selection
         if (level < 0 || level > maxLevel) {
             updateStatusLabel("Invalid level: " + level + ". Must be between 0 and " + maxLevel);
             return;
         }
         
-        // Update expansion level
         currentExpansionLevel = level;
             executionController.setCurrentExpansionLevel(currentExpansionLevel);
             updateProgramDisplay();
         
         updateStatusLabel("Selected expansion level: " + level + "/" + maxLevel);
     }
-    
-    /**
-     * Updates the level selector dropdown with available levels for the current context program.
-     */
+
     private void updateLevelSelector() {
         if (levelSelector == null) {
             return;
@@ -556,24 +487,15 @@ public class MainController implements Initializable {
         int maxLevel = contextProgram.getMaxExpansionLevel();
         ObservableList<String> levelOptions = FXCollections.observableArrayList();
         
-        // Add levels from 0 to maxLevel
         for (int i = 0; i <= maxLevel; i++) {
             levelOptions.add(String.valueOf(i));
         }
         
         levelSelector.setItems(levelOptions);
         
-        // Set current level as selected
         levelSelector.setValue(String.valueOf(currentExpansionLevel));
         
-        System.out.println("Updated level selector with levels 0-" + maxLevel + ", current: " + currentExpansionLevel);
     }
-    
-    
-    
-
-    
-    
 
     @FXML
     private void handleFinalStart() {
@@ -584,25 +506,21 @@ public class MainController implements Initializable {
             if ("Debug".equals(selectedMode)) {
                 executionController.handleStartDebug();
             } else {
-                // Normal mode - animate the button before starting execution
                 if (buttonAnimationController != null && finalStartButton != null) {
                     buttonAnimationController.animateButtonToRunningState(finalStartButton);
                     
-                    // Start the actual execution after a short delay to show the animation
                     javafx.animation.Timeline delayTimeline = new javafx.animation.Timeline(
                         new javafx.animation.KeyFrame(javafx.util.Duration.millis(200), 
                             event -> executionController.handleStartRun())
                     );
                     delayTimeline.play();
                 } else {
-                    // Fallback if animation controller is not available
                     executionController.handleStartRun();
                 }
             }
         }
     }
-    
-    
+
     @FXML
     private void handleStepOver() {
         executionController.handleStepOver();
@@ -617,7 +535,6 @@ public class MainController implements Initializable {
     private void handleResume() {
         executionController.handleResume();
     }
-    
 
     @FXML
     private void handleAddInput() {
@@ -628,30 +545,20 @@ public class MainController implements Initializable {
     private void handleRemoveInput() {
         inputController.handleRemoveInput();
     }
-    
 
-    
     private void updateProgramDisplay() {
-        System.out.println("updateProgramDisplay() called");
-        System.out.println("Engine loaded: " + engine.isProgramLoaded());
         
         if (!engine.isProgramLoaded()) {
-            System.out.println("No program loaded, clearing display");
             clearProgramDisplay();
             return;
         }
         
         SProgram program = getCurrentDisplayProgram();
-        System.out.println("Display program: " + (program != null ? program.getName() : "null"));
         
         if (program == null) {
-            System.out.println("Display program is null, clearing display");
             clearProgramDisplay();
             return;
         }
-        
-        System.out.println("Updating display for program: " + program.getName());
-        
 
         SProgram contextProgram = getContextProgram();
         if (contextProgram != null) {
@@ -659,20 +566,15 @@ public class MainController implements Initializable {
         } else {
             levelDisplayLabel.setText("0/0");
         }
-        
 
         populateInstructionsTable(program);
-        
 
         updateSummaryLine(program);
-        
 
         highlightController.updateHighlightDropdown(program);
-        
 
         updateControlStates();
         
-        System.out.println("Program display update completed");
     }
     
     private SProgram getCurrentDisplayProgram() {
@@ -687,45 +589,29 @@ public class MainController implements Initializable {
         
         try {
             if (currentExpansionLevel == 0) {
-                System.out.println("getCurrentDisplayProgram: Returning context program at level 0: " + contextProgram.getName());
                 return contextProgram;
             } else {
-                System.out.println("getCurrentDisplayProgram: Expanding " + contextProgram.getName() + " to level " + currentExpansionLevel);
                 
                 SProgram expandedProgram;
-                
-                // For both main program and function wrapper programs, use the engine's expansion methods
-                // because SProgramImpl.expandToLevel() is not implemented properly
-                System.out.println("getCurrentDisplayProgram: Using engine expansion for " + currentContextProgram);
-                
-                // Create a temporary engine instance to expand the context program
-                
-                // For function wrapper programs, we need to use the expansion engine directly
+
                 if ("Main Program".equals(currentContextProgram)) {
                     expandedProgram = engine.getExpandedProgram(currentExpansionLevel);
                 } else {
-                    // For function wrapper programs, we need to use the expansion engine directly
-                    // since the wrapper program's expandToLevel() method doesn't work
                     try {
-                        // Use the expansion engine to expand the wrapper program
                         ExpansionEngine expansionEngine = new ExpansionEngine();
                         expandedProgram = expansionEngine.expandProgram(contextProgram, currentExpansionLevel);
                         
-                        // Ensure the expanded program has access to the function registry
                         if (expandedProgram.getFunctionRegistry() == null && engine.getCurrentProgram().getFunctionRegistry() != null) {
                             expandedProgram.setFunctionRegistry(engine.getCurrentProgram().getFunctionRegistry());
                         }
                     } catch (Exception e) {
-                        System.out.println("getCurrentDisplayProgram: Error expanding function wrapper: " + e.getMessage());
                         throw e;
                     }
                 }
                 
-                System.out.println("getCurrentDisplayProgram: Expanded program has " + expandedProgram.getInstructions().size() + " instructions");
                 return expandedProgram;
             }
         } catch (Exception e) {
-            System.out.println("getCurrentDisplayProgram: Error expanding: " + e.getMessage());
             updateStatusLabel("Warning: Could not expand to level " + currentExpansionLevel + ": " + e.getMessage());
             return contextProgram;
         }
@@ -743,7 +629,6 @@ public class MainController implements Initializable {
             Map<String, String> functions = registry.getAllFunctions();
             for (Map.Entry<String, String> entry : functions.entrySet()) {
                 if (currentContextProgram.equals(entry.getValue())) {
-                    // Create a wrapper program that contains a QUOTE instruction calling this function
                     return createFunctionWrapperProgram(entry.getKey(), entry.getValue());
                 }
             }
@@ -753,23 +638,16 @@ public class MainController implements Initializable {
     
     private SProgram createFunctionWrapperProgram(String functionName, String userString) {
         try {
-            // Get the actual function to determine its input variables
             SProgram actualFunction = engine.getFunction(functionName);
             if (actualFunction == null) {
-                System.out.println("Function not found: " + functionName);
                 return null;
             }
             
-            // Create a simple program that calls the function
             SProgramImpl wrapperProgram = new SProgramImpl(userString);
             
-            // Get the actual input variables for this function
             List<String> inputVariables = actualFunction.getInputVariables();
             String functionArguments = String.join(",", inputVariables);
-            
-            System.out.println("Function " + functionName + " has input variables: " + inputVariables);
-            
-            // Create a QUOTE instruction that calls the function with correct arguments
+
             Map<String, String> quoteArgs = Map.of(
                 SEmulatorConstants.FUNCTION_NAME_ARG, functionName,
                 SEmulatorConstants.FUNCTION_ARGUMENTS_ARG, functionArguments
@@ -778,30 +656,21 @@ public class MainController implements Initializable {
             SInstruction quoteInstruction = InstructionFactory.createInstruction(
                 SEmulatorConstants.QUOTE_NAME, "y", null, quoteArgs);
             
-            // Add the instruction to the wrapper program
             wrapperProgram.addInstruction(quoteInstruction);
             
-            // Set the function registry so expansion works
             wrapperProgram.setFunctionRegistry(engine.getCurrentProgram().getFunctionRegistry());
             
             return wrapperProgram;
         } catch (Exception e) {
-            System.out.println("Error creating function wrapper: " + e.getMessage());
-            // Fallback to returning the actual function program
             return engine.getFunction(functionName);
         }
     }
     
     private void populateInstructionsTable(SProgram program) {
-        System.out.println("populateInstructionsTable() called for program: " + program.getName());
-        System.out.println("Current expansion level: " + currentExpansionLevel);
         
         ObservableList<InstructionTableRow> instructionData = FXCollections.observableArrayList();
-        
-
 
         List<SInstruction> instructions = program.getInstructions();
-        System.out.println("Found " + instructions.size() + " instructions at level " + currentExpansionLevel);
         
         for (int i = 0; i < instructions.size(); i++) {
             SInstruction instruction = instructions.get(i);
@@ -815,21 +684,16 @@ public class MainController implements Initializable {
             instructionData.add(new InstructionTableRow(commandNumber, commandType, label, cycles, instructionText));
         }
         
-        System.out.println("Setting " + instructionData.size() + " items to instructions table");
         instructionsTable.setItems(instructionData);
-        
 
         instructionsTable.getSelectionModel().selectedItemProperty().addListener(
             (observable, oldValue, newValue) -> updateHistoryChain(newValue, program)
         );
         
-        System.out.println("Instructions table populated successfully");
     }
-    
-    
+
     private String formatInstructionDisplay(SInstruction instruction) {
         StringBuilder display = new StringBuilder();
-        
 
         String displayFormat = instruction.getDisplayFormat();
         if (displayFormat != null && !displayFormat.trim().isEmpty()) {
@@ -847,14 +711,12 @@ public class MainController implements Initializable {
     
     private void updateSummaryLine(SProgram program) {
         List<SInstruction> instructions = program.getInstructions();
-        
 
         long basicCount = instructions.stream()
             .filter(instr -> instr.getType() == InstructionType.BASIC)
             .count();
         long syntheticCount = instructions.size() - basicCount;
         
-        // Get the max expansion level for the current context program
         SProgram contextProgram = getContextProgram();
         int maxLevel = contextProgram != null ? contextProgram.getMaxExpansionLevel() : 0;
         
@@ -869,8 +731,7 @@ public class MainController implements Initializable {
         
         summaryLabel.setText(summary);
     }
-    
-    
+
     private void clearProgramDisplay() {
         instructionsTable.setItems(FXCollections.observableArrayList());
         historyChainTable.setItems(FXCollections.observableArrayList());
@@ -883,43 +744,30 @@ public class MainController implements Initializable {
 
         instructionsTable.setItems(FXCollections.observableArrayList());
         historyChainTable.setItems(FXCollections.observableArrayList());
-        
 
         variablesTable.setItems(FXCollections.observableArrayList());
-        
 
         cyclesLabel.setText("Total Cycles: 0");
-        
-
-        // Execution history is now managed by ExecutionController's context-aware history manager
-        
 
         executionController.resetExecutionState();
-        
 
         highlightController.clearHighlighting();
         highlightController.clearHighlightDropdown();
-        
 
         currentExpansionLevel = 0;
         currentContextProgram = "Main Program";
         executionController.setCurrentContext("Main Program");
         executionController.setCurrentExpansionLevel(currentExpansionLevel);
         levelDisplayLabel.setText("0/0");
-        
 
         summaryLabel.setText("Loading...");
-        
 
         currentFilePathLabel.setText("No file loaded");
-        
 
         updateProgramFunctionSelector();
-        
 
         inputController.clearInputFieldStyling();
         
-        // Reset workflow state to IDLE when clearing program state
         setWorkflowState(WorkflowState.IDLE);
         
         updateStatusLabel("Clearing previous program state...");
@@ -934,24 +782,18 @@ public class MainController implements Initializable {
         if (engine.isProgramLoaded()) {
             SProgram contextProgram = getContextProgram();
             if (contextProgram != null) {
-                // Level selector is always enabled when program is loaded
                 levelSelector.setDisable(false);
             }
         }
     }
-    
-    
+
     private void updateStatusLabel(String message) {
         if (statusLabel != null) {
             statusLabel.setText(message);
         }
 
-        System.out.println("Status: " + message);
     }
-    
-    /**
-     * Clears the variables table.
-     */
+
     private void clearVariablesTable() {
         if (variablesTable != null) {
             variablesTable.setItems(FXCollections.observableArrayList());
@@ -966,8 +808,7 @@ public class MainController implements Initializable {
             }
         }
     }
-    
-    
+
     private void updateProgramFunctionSelector() {
         ObservableList<String> items = FXCollections.observableArrayList();
         items.add("Main Program");
@@ -1003,33 +844,26 @@ public class MainController implements Initializable {
         
         currentContextProgram = programName;
         
-        // Reset expansion level to 0 when switching contexts
         currentExpansionLevel = 0;
         updateLevelDisplay();
         
-        // Reset the level selector dropdown to 0
         if (levelSelector != null) {
             levelSelector.setValue("0");
-            System.out.println("setContextProgram: Reset levelSelector to 0 for " + programName);
         }
         
-        // Update execution history context
         executionController.setCurrentContext(programName);
         
-        // Clear variables table when switching contexts
         clearVariablesTable();
         
         if ("Main Program".equals(programName)) {
             updateProgramDisplay();
             updateLevelSelector();
             updateStatusLabel("Displaying main program");
-            // Update input fields for main program
             inputController.updateInputFieldsForProgram(engine.getCurrentProgram());
         } else {
             updateFunctionDisplay(programName);
             updateLevelSelector();
             updateStatusLabel("Displaying function: " + programName);
-            // Update input fields for the selected function
             SProgram contextProgram = getContextProgram();
             inputController.updateInputFieldsForProgram(contextProgram);
         }
@@ -1073,7 +907,6 @@ public class MainController implements Initializable {
         currentExpansionLevel = 0;
         executionController.setCurrentExpansionLevel(currentExpansionLevel);
         
-        // Use updateProgramDisplay to ensure proper expansion handling
         updateProgramDisplay();
     }
     
@@ -1089,13 +922,10 @@ public class MainController implements Initializable {
             
             if (instructionIndex >= 0 && instructionIndex < program.getInstructions().size()) {
                 SInstruction instruction = program.getInstructions().get(instructionIndex);
-                
 
                 List<SInstruction> ancestryChain = instruction.getAncestryChain();
-                
 
                 ObservableList<InstructionTableRow> historyData = FXCollections.observableArrayList();
-                
 
                 historyData.add(new InstructionTableRow(
                     "1",
@@ -1104,13 +934,11 @@ public class MainController implements Initializable {
                     String.valueOf(instruction.getCycles()),
                     formatInstructionDisplay(instruction)
                 ));
-                
 
                 if (!ancestryChain.isEmpty()) {
 
                     for (int i = 0; i < ancestryChain.size(); i++) {
                         SInstruction ancestorInstruction = ancestryChain.get(i);
-                        
 
                         if (ancestorInstruction != instruction && 
                             !formatInstructionDisplay(ancestorInstruction).equals(formatInstructionDisplay(instruction))) {
@@ -1119,7 +947,6 @@ public class MainController implements Initializable {
                             String commandType = ancestorInstruction.getType() == InstructionType.BASIC ? "B" : "S";
                             String cycles = String.valueOf(ancestorInstruction.getCycles());
                             String instructionText = formatInstructionDisplay(ancestorInstruction);
-                            
 
                             if (i == 0) {
                                 instructionText += " (Original)";
@@ -1151,7 +978,6 @@ public class MainController implements Initializable {
             return;
         }
         
-        // Clear any existing debug highlighting
         if (debugAnimationController != null) {
             debugAnimationController.clearDebugHighlighting(instructionsTable);
         }
@@ -1159,12 +985,10 @@ public class MainController implements Initializable {
         instructionsTable.getSelectionModel().clearSelection();
         
         if (instructionIndex != null && instructionIndex >= 0 && instructionIndex < instructionsTable.getItems().size()) {
-            // Select the instruction
             instructionsTable.getSelectionModel().select(instructionIndex);
             instructionsTable.scrollTo(instructionIndex);
             instructionsTable.requestFocus();
             
-            // Animate the instruction highlight
             if (debugAnimationController != null) {
                 debugAnimationController.animateInstructionHighlight(instructionsTable, instructionIndex);
             }
@@ -1175,21 +999,18 @@ public class MainController implements Initializable {
         if (variablesTable == null || changedVariables == null) {
             return;
         }
-        
 
         for (VariableTableRow row : variablesTable.getItems()) {
             if (row != null) {
                 row.setChanged(false);
             }
         }
-        
 
         for (VariableTableRow row : variablesTable.getItems()) {
             if (row != null && changedVariables.containsKey(row.getVariableName())) {
                 row.setChanged(true);
             }
         }
-        
 
         variablesTable.refresh();
     }
@@ -1198,7 +1019,6 @@ public class MainController implements Initializable {
         if (inputController != null && historicalInputs != null) {
             inputController.populateInputsFromHistory(historicalInputs);
             
-            // Set workflow state to READY_TO_RUN for re-run scenario
             setWorkflowState(WorkflowState.READY_TO_RUN);
             updateStatusLabel("Ready to re-run with historical inputs. Select mode and click Start Run.");
         }
@@ -1211,7 +1031,6 @@ public class MainController implements Initializable {
             updateLevelDisplay();
             updateProgramDisplay();
             
-            // Update the dropdown selector to match the historical expansion level
             if (levelSelector != null) {
                 levelSelector.setValue(String.valueOf(currentExpansionLevel));
             }
@@ -1224,50 +1043,38 @@ public class MainController implements Initializable {
             int maxLevel = contextProgram != null ? contextProgram.getMaxExpansionLevel() : 0;
             String displayText = currentExpansionLevel + "/" + maxLevel;
             levelDisplayLabel.setText(displayText);
-            System.out.println("updateLevelDisplay: Set level display to '" + displayText + "' (currentExpansionLevel=" + currentExpansionLevel + ", maxLevel=" + maxLevel + ")");
         }
     }
-    
-    // ===== NEW RUN WORKFLOW IMPLEMENTATION =====
-    
+
     @FXML
     private void handleNewRun() {
         startNewRunWorkflow();
     }
     
     private void startNewRunWorkflow() {
-        // Step 1: Clear previous run data
         clearPreviousRunData();
         
-        // Step 2: Show required input fields for current context program
         showRequiredInputFields();
         
-        // Step 3: Set workflow state to INPUT_COLLECTION
         setWorkflowState(WorkflowState.INPUT_COLLECTION);
         
         updateStatusLabel("New run workflow started. Please provide inputs and select mode.");
         
-        // Step 4: Automatically transition to READY_TO_RUN since inputs are now available
-        // The user can immediately select mode and start execution
         setWorkflowState(WorkflowState.READY_TO_RUN);
         updateStatusLabel("Inputs ready. Select execution mode and click Start Run.");
     }
     
     private void clearPreviousRunData() {
-        // Clear all input field values but preserve requiredVariables
         if (inputController != null) {
             inputController.clearInputFieldsOnly();
         }
         
-        // Clear variable display
         clearVariablesTable();
         
-        // Clear instruction highlighting
         if (highlightController != null) {
             highlightController.clearHighlighting();
         }
         
-        // Reset cycle count display
         if (executionController != null) {
             executionController.resetExecutionState();
         }
@@ -1276,7 +1083,6 @@ public class MainController implements Initializable {
     }
     
     private void showRequiredInputFields() {
-        // Update input fields for current context program
         SProgram contextProgram = getContextProgram();
         if (contextProgram != null && inputController != null) {
             inputController.updateInputFieldsForProgram(contextProgram);
@@ -1291,37 +1097,29 @@ public class MainController implements Initializable {
     private void updateUIForWorkflowState() {
         switch (currentWorkflowState) {
             case IDLE:
-                // Enable New Run button only if program is loaded, disable execution controls
                 if (newRunButton != null) newRunButton.setDisable(!engine.isProgramLoaded());
                 if (finalStartButton != null) finalStartButton.setDisable(true);
                 if (executionModeCombo != null) executionModeCombo.setDisable(true);
-                // Disable input fields when no workflow is active
                 setInputFieldsEnabled(false);
                 
-                // Reset button animation when returning to IDLE state
                 if (buttonAnimationController != null) {
                     buttonAnimationController.resetButtonToOriginalState();
                 }
                 break;
                 
             case INPUT_COLLECTION:
-                // Disable New Run button, enable mode selection
                 if (newRunButton != null) newRunButton.setDisable(true);
                 if (finalStartButton != null) finalStartButton.setDisable(true);
                 if (executionModeCombo != null) executionModeCombo.setDisable(false);
-                // Enable input fields for input collection
                 setInputFieldsEnabled(true);
                 break;
                 
             case READY_TO_RUN:
-                // Enable final start button and mode selection
                 if (newRunButton != null) newRunButton.setDisable(true);
                 if (finalStartButton != null) finalStartButton.setDisable(false);
                 if (executionModeCombo != null) executionModeCombo.setDisable(false);
-                // Enable input fields for ready to run
                 setInputFieldsEnabled(true);
                 
-                // Update final start button text based on selected mode
                 if (finalStartButton != null && executionModeCombo != null) {
                     String selectedMode = executionModeCombo.getValue();
                     if ("Debug".equals(selectedMode)) {
@@ -1333,11 +1131,9 @@ public class MainController implements Initializable {
                 break;
                 
             case RUNNING:
-                // Disable all controls except stop (New Run disabled during run)
                 if (newRunButton != null) newRunButton.setDisable(true);
                 if (finalStartButton != null) finalStartButton.setDisable(true);
                 if (executionModeCombo != null) executionModeCombo.setDisable(true);
-                // Disable input fields during execution
                 setInputFieldsEnabled(false);
                 break;
         }
@@ -1349,7 +1145,6 @@ public class MainController implements Initializable {
         }
     }
     
-    // Method to be called when inputs are ready
     public void onInputsReady() {
         if (currentWorkflowState == WorkflowState.INPUT_COLLECTION) {
             setWorkflowState(WorkflowState.READY_TO_RUN);
@@ -1357,16 +1152,13 @@ public class MainController implements Initializable {
         }
     }
     
-    // Method to be called when execution starts
     public void onExecutionStarted() {
         setWorkflowState(WorkflowState.RUNNING);
     }
     
-    // Method to be called when execution completes
     public void onExecutionCompleted() {
         setWorkflowState(WorkflowState.IDLE);
         
-        // Reset button animation when execution completes
         if (buttonAnimationController != null) {
             buttonAnimationController.resetButtonToOriginalState();
         }

@@ -28,7 +28,6 @@ public class ExecutionHistoryRow {
         this.actions = new SimpleStringProperty(actions);
         this.context = new SimpleStringProperty(context);
     }
-    
 
     public StringProperty runNumberProperty() {
         return runNumber;
@@ -41,7 +40,6 @@ public class ExecutionHistoryRow {
     public void setRunNumber(String runNumber) {
         this.runNumber.set(runNumber);
     }
-    
 
     public StringProperty expansionLevelProperty() {
         return expansionLevel;
@@ -54,7 +52,6 @@ public class ExecutionHistoryRow {
     public void setExpansionLevel(String expansionLevel) {
         this.expansionLevel.set(expansionLevel);
     }
-    
 
     public StringProperty inputsProperty() {
         return inputs;
@@ -67,7 +64,6 @@ public class ExecutionHistoryRow {
     public void setInputs(String inputs) {
         this.inputs.set(inputs);
     }
-    
 
     public StringProperty yValueProperty() {
         return yValue;
@@ -80,7 +76,6 @@ public class ExecutionHistoryRow {
     public void setYValue(String yValue) {
         this.yValue.set(yValue);
     }
-    
 
     public StringProperty totalCyclesProperty() {
         return totalCycles;
@@ -93,7 +88,6 @@ public class ExecutionHistoryRow {
     public void setTotalCycles(String totalCycles) {
         this.totalCycles.set(totalCycles);
     }
-    
 
     public StringProperty actionsProperty() {
         return actions;

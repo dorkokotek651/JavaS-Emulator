@@ -82,6 +82,5 @@ public class JumpZeroInstruction extends BaseInstruction {
     public String getJumpLabel() {
         return jumpLabel;
     }
-    
 
 }

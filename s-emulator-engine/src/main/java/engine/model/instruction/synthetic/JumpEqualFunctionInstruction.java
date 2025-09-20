@@ -118,16 +118,13 @@ public class JumpEqualFunctionInstruction extends BaseInstruction {
                 throw new UnsupportedOperationException("Function not found: " + functionName);
             }
             
-            // Execute the function to get its result
             String workingVar = generateUniqueVariable();
             executeFunctionCallVirtual(functionProgram, functionArguments, workingVar, context);
             
-            // Check if the variable equals the function result
             int variableValue = context.getVariableManager().getValue(variable);
             int functionResult = context.getVariableManager().getValue(workingVar);
             
             if (variableValue == functionResult) {
-                // Jump to the specified label (handles EXIT specially)
                 context.jumpToLabel(jumpLabel);
             }
             
@@ -142,16 +139,12 @@ public class JumpEqualFunctionInstruction extends BaseInstruction {
     
     private void executeFunctionCallVirtual(engine.api.SProgram functionProgram, String functionArguments, 
                                           String resultVariable, engine.execution.ExecutionContext context) {
-        // Parse function arguments
         List<String> functionArgs = parseFunctionArguments(functionArguments);
         
-        // Create function execution context
         engine.execution.ExecutionContext functionContext = createFunctionExecutionContext(functionProgram, functionArgs, context);
         
-        // Execute the function
         executeFunctionProgram(functionProgram, functionContext);
         
-        // Get the result
         int result = functionContext.getVariableManager().getYValue();
         context.getVariableManager().setValue(resultVariable, result);
     }
@@ -245,7 +238,6 @@ public class JumpEqualFunctionInstruction extends BaseInstruction {
             
             currentInstruction.execute(functionContext);
             
-            // Handle jumps
             if (functionContext.getPendingJumpLabel() != null) {
                 String jumpLabel = functionContext.getPendingJumpLabel();
                 Map<String, Integer> labelMap = functionContext.getLabelToIndexMap();

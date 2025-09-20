@@ -14,7 +14,6 @@ public class FileController {
     private final SEmulatorEngine engine;
     private final FileService fileService;
     private Stage primaryStage;
-    
 
     private Consumer<String> statusUpdater;
     private Runnable onProgramLoaded;
@@ -62,17 +61,14 @@ public class FileController {
             if (onProgramStateCleared != null) {
                 onProgramStateCleared.run();
             }
-            
 
             engine.loadProgram(file.getAbsolutePath());
             
             updateStatus("Engine loading completed");
-            
 
             if (engine.isProgramLoaded()) {
                 SProgram program = engine.getCurrentProgram();
                 updateStatus("Program loaded: " + program.getName() + " with " + program.getInstructions().size() + " instructions");
-                
 
                 if (onProgramLoaded != null) {
                     onProgramLoaded.run();
@@ -102,41 +98,29 @@ public class FileController {
             primaryStage,
             () -> {
 
-                System.out.println("File load success callback triggered");
-                System.out.println("Engine program loaded: " + engine.isProgramLoaded());
-                
                 if (engine.isProgramLoaded()) {
                     SProgram program = engine.getCurrentProgram();
-                    System.out.println("Program: " + (program != null ? program.getName() : "null"));
-                    System.out.println("Instructions count: " + (program != null ? program.getInstructions().size() : "N/A"));
                 }
                 
                 updateStatus("Program loaded successfully: " + file.getName());
-                
 
                 if (onProgramLoaded != null) {
-                    System.out.println("FileController: Calling onProgramLoaded callback");
                     onProgramLoaded.run();
-                    System.out.println("FileController: onProgramLoaded callback completed");
                 } else {
-                    System.out.println("FileController: onProgramLoaded callback is null!");
                 }
             },
             (errorMessage) -> {
 
-                System.out.println("File load error callback triggered: " + errorMessage);
                 ErrorDialogUtil.showError(primaryStage, "File Loading Failed", errorMessage);
                 updateStatus("Failed to load file: " + file.getName());
             }
         );
     }
-    
-    
+
     private void updateStatus(String message) {
         if (statusUpdater != null) {
             statusUpdater.accept(message);
         }
 
-        System.out.println("FileController Status: " + message);
     }
 }

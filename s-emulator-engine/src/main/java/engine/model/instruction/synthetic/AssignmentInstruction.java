@@ -147,6 +147,5 @@ public class AssignmentInstruction extends BaseInstruction {
     public String getAssignedVariable() {
         return assignedVariable;
     }
-    
 
 }

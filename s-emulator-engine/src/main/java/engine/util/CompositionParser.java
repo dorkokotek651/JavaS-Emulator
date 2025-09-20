@@ -6,7 +6,6 @@ import java.util.List;
 public class CompositionParser {
     
     private CompositionParser() {
-        // Utility class - prevent instantiation
     }
     
     public static class FunctionCall {
@@ -31,7 +30,6 @@ public class CompositionParser {
             return "FunctionCall{name='" + functionName + "', args=" + arguments + "}";
         }
     }
-    
 
     public static List<FunctionCall> parseComposition(String composition) {
         if (composition == null || composition.trim().isEmpty()) {

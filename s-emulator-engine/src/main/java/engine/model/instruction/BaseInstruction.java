@@ -90,8 +90,6 @@ public abstract class BaseInstruction implements SInstruction {
         return cycles;
     }
 
-
-
     @Override
     public SInstruction getSourceInstruction() {
         return sourceInstruction;

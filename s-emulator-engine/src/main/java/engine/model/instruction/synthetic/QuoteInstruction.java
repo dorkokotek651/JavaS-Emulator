@@ -52,8 +52,7 @@ public class QuoteInstruction extends BaseInstruction {
         if (context.getFunctionRegistry() == null) {
             throw new IllegalArgumentException("Function registry not available in expansion context");
         }
-        
-        
+
         List<SInstruction> expandedInstructions = new ArrayList<>();
         
         List<String> functionArgs = parseFunctionArguments(functionArguments);
@@ -106,8 +105,7 @@ public class QuoteInstruction extends BaseInstruction {
     
     private void expandSingleFunction(String functionName, List<String> args, String resultVar, 
                                     List<SInstruction> expandedInstructions, ExpansionContext context) {
-        
-        
+
         SProgram functionProgram = context.getFunctionRegistry().getFunction(functionName);
         if (functionProgram == null) {
             throw new IllegalArgumentException("Function not found: " + functionName);

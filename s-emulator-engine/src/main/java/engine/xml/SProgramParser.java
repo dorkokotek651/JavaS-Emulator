@@ -19,9 +19,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-
 public class SProgramParser {
-
 
     private final XMLValidator xmlValidator;
     private final XmlMapper xmlMapper;
@@ -194,7 +192,6 @@ public class SProgramParser {
                         arg.getName() + "' in instruction: " + instructionName);
                 }
                 
-                // Allow empty values for functionArguments (means function takes no arguments)
                 if (arg.getValue().trim().isEmpty() && !arg.getName().equals(SEmulatorConstants.FUNCTION_ARGUMENTS_ARG)) {
                     throw new XMLValidationException("Argument value cannot be empty for argument '" + 
                         arg.getName() + "' in instruction: " + instructionName);

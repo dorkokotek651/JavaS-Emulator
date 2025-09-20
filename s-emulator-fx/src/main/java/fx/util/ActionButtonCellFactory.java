@@ -34,13 +34,11 @@ public class ActionButtonCellFactory implements Callback<TableColumn<ExecutionHi
                 
                 showButton.setOnAction(event -> {
                     ExecutionHistoryRow row = getTableView().getItems().get(getIndex());
-                    System.out.println("Show button clicked for run #" + row.getRunNumber());
                     executionController.handleShowHistoricalState(row);
                 });
                 
                 rerunButton.setOnAction(event -> {
                     ExecutionHistoryRow row = getTableView().getItems().get(getIndex());
-                    System.out.println("Re-run button clicked for run #" + row.getRunNumber());
                     executionController.handleRerunHistoricalExecution(row);
                 });
                 
@@ -54,10 +52,8 @@ public class ActionButtonCellFactory implements Callback<TableColumn<ExecutionHi
                 
                 if (empty || getIndex() < 0 || getIndex() >= getTableView().getItems().size()) {
                     setGraphic(null);
-                    System.out.println("Setting graphic to null for index: " + getIndex());
                 } else {
                     setGraphic(buttonContainer);
-                    System.out.println("Setting graphic to buttonContainer for index: " + getIndex());
                 }
             }
         };

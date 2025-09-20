@@ -15,27 +15,19 @@ public class DebugAnimationController {
     private TableRow<?> currentAnimatedRow;
     
     public DebugAnimationController() {
-        // Constructor
     }
-    
-    /**
-     * Animates the transition to a new instruction during debug execution.
-     * Creates a smooth pulse effect that draws attention to the current instruction.
-     */
+
     public void animateInstructionHighlight(TableView<?> table, int instructionIndex) {
         if (table == null || instructionIndex < 0 || instructionIndex >= table.getItems().size()) {
             return;
         }
         
-        // Check if animations are enabled
         if (!StyleManager.areAnimationsEnabled()) {
             return;
         }
         
-        // Stop any existing animation
         stopCurrentAnimation();
         
-        // Get the table row for the instruction
         TableRow<?> row = getTableRow(table, instructionIndex);
         if (row == null) {
             return;
@@ -43,21 +35,14 @@ public class DebugAnimationController {
         
         currentAnimatedRow = row;
         
-        // Create a pulse animation
         createPulseAnimation(row);
     }
-    
-    /**
-     * Creates a smooth pulse animation for the instruction row.
-     */
+
     private void createPulseAnimation(TableRow<?> row) {
-        // Start with the animated state
         row.getStyleClass().add("debug-current-instruction-animated");
         
-        // Create timeline for pulse effect
         Timeline pulseTimeline = new Timeline();
         
-        // KeyFrame 1: Start with normal animated state (0ms)
         pulseTimeline.getKeyFrames().add(
             new KeyFrame(Duration.ZERO,
                 new KeyValue(row.scaleXProperty(), 1.02),
@@ -65,7 +50,6 @@ public class DebugAnimationController {
             )
         );
         
-        // KeyFrame 2: Pulse to larger size (400ms)
         pulseTimeline.getKeyFrames().add(
             new KeyFrame(Duration.millis(400),
                 new KeyValue(row.scaleXProperty(), 1.05),
@@ -73,7 +57,6 @@ public class DebugAnimationController {
             )
         );
         
-        // KeyFrame 3: Return to normal animated size (800ms)
         pulseTimeline.getKeyFrames().add(
             new KeyFrame(PULSE_DURATION,
                 new KeyValue(row.scaleXProperty(), 1.02),
@@ -81,7 +64,6 @@ public class DebugAnimationController {
             )
         );
         
-        // Add CSS class changes for enhanced visual effect
         pulseTimeline.getKeyFrames().add(
             new KeyFrame(Duration.millis(200),
                 event -> {
@@ -100,18 +82,13 @@ public class DebugAnimationController {
             )
         );
         
-        // Set the animation to run once
         pulseTimeline.setCycleCount(1);
         
-        // Store reference to current animation
         currentAnimation = pulseTimeline;
         
-        // Start the animation
         pulseTimeline.play();
         
-        // Clean up when animation finishes
         pulseTimeline.setOnFinished(event -> {
-            // Ensure we end with the correct CSS class
             if (row.getStyleClass().contains("debug-pulse-effect")) {
                 row.getStyleClass().remove("debug-pulse-effect");
             }
@@ -121,10 +98,7 @@ public class DebugAnimationController {
             currentAnimation = null;
         });
     }
-    
-    /**
-     * Stops the current animation and cleans up the row styling.
-     */
+
     public void stopCurrentAnimation() {
         if (currentAnimation != null) {
             currentAnimation.stop();
@@ -132,28 +106,22 @@ public class DebugAnimationController {
         }
         
         if (currentAnimatedRow != null) {
-            // Clean up CSS classes
             currentAnimatedRow.getStyleClass().removeAll(
                 "debug-current-instruction-animated",
                 "debug-pulse-effect"
             );
             
-            // Reset scale
             currentAnimatedRow.setScaleX(1.0);
             currentAnimatedRow.setScaleY(1.0);
             
             currentAnimatedRow = null;
         }
     }
-    
-    /**
-     * Clears all debug highlighting and stops any running animations.
-     */
+
     public void clearDebugHighlighting(TableView<?> table) {
         stopCurrentAnimation();
         
         if (table != null) {
-            // Clear all debug-related CSS classes from all rows
             for (int i = 0; i < table.getItems().size(); i++) {
                 TableRow<?> row = getTableRow(table, i);
                 if (row != null) {
@@ -168,23 +136,16 @@ public class DebugAnimationController {
             }
         }
     }
-    
-    /**
-     * Gets the TableRow for a specific index in the table.
-     */
+
     private TableRow<?> getTableRow(TableView<?> table, int index) {
         if (table == null || index < 0) {
             return null;
         }
         
-        // Scroll to the row to ensure it's rendered
         table.scrollTo(index);
         
-        // Force a layout pass to ensure the row is rendered
         table.layout();
         
-        // Look for the specific row by index
-        // We'll use a more reliable method by looking for the row in the table's children
         for (javafx.scene.Node node : table.lookupAll(".table-row-cell")) {
             if (node instanceof TableRow) {
                 TableRow<?> row = (TableRow<?>) node;
@@ -194,13 +155,9 @@ public class DebugAnimationController {
             }
         }
         
-        // Fallback: return null if we can't find the specific row
         return null;
     }
-    
-    /**
-     * Checks if an animation is currently running.
-     */
+
     public boolean isAnimationRunning() {
         return currentAnimation != null && currentAnimation.getStatus() == javafx.animation.Animation.Status.RUNNING;
     }

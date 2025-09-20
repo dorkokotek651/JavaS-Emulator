@@ -70,6 +70,5 @@ public class GotoLabelInstruction extends BaseInstruction {
     public String getGotoLabel() {
         return gotoLabel;
     }
-    
 
 }

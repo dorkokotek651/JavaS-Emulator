@@ -28,7 +28,6 @@ public class FileService {
             }
             return;
         }
-        
 
         try {
             validateFile(file);
@@ -38,13 +37,9 @@ public class FileService {
             }
             return;
         }
-        
 
         FileLoadingProgressDialog progressDialog = new FileLoadingProgressDialog(parentStage);
-        
-        System.out.println("FileService: Creating task with event handlers");
-        
-        // Create task and set up event handlers before starting
+
         Task<Void> loadTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
@@ -65,22 +60,16 @@ public class FileService {
                 
                 updateMessage("Loading program into engine...");
                 try {
-                    System.out.println("FileService Task: About to call engine.loadProgram");
                     engine.loadProgram(file.getAbsolutePath());
-                    System.out.println("FileService Task: engine.loadProgram completed successfully");
                 } catch (SProgramException e) {
-                    System.out.println("FileService Task: SProgramException caught: " + e.getMessage());
                     throw new RuntimeException("Failed to load program: " + e.getMessage(), e);
                 } catch (Exception e) {
-                    System.out.println("FileService Task: Unexpected exception caught: " + e.getMessage());
                     throw e;
                 }
                 
                 updateProgress(100, 100);
                 updateMessage("Program loaded successfully");
-                System.out.println("FileService Task: About to sleep and return");
                 Thread.sleep(200);
-                System.out.println("FileService Task: Returning null - task should succeed");
                 
                 updateMessage("Task completed successfully");
                 
@@ -88,21 +77,16 @@ public class FileService {
             }
         };
         
-        // Set up event handlers
         loadTask.setOnSucceeded(e -> {
-            System.out.println("FileService: Task succeeded, executing success callback");
             javafx.application.Platform.runLater(() -> {
                 if (onSuccess != null) {
-                    System.out.println("FileService: Executing onSuccess callback");
                     onSuccess.run();
                 } else {
-                    System.out.println("FileService: onSuccess callback is null");
                 }
             });
         });
         
         loadTask.setOnFailed(e -> {
-            System.out.println("FileService: Task failed, executing error callback");
             javafx.application.Platform.runLater(() -> {
                 Throwable exception = loadTask.getException();
                 String errorMessage = getFriendlyErrorMessage(exception instanceof Exception ? (Exception) exception : new Exception(exception));
@@ -112,41 +96,27 @@ public class FileService {
             });
         });
         
-        // Add a listener to track task state changes
         loadTask.stateProperty().addListener((obs, oldState, newState) -> {
-            System.out.println("FileService: Task state changed from " + oldState + " to " + newState);
         });
-        
-        System.out.println("FileService: Event handlers set up, starting task");
-        
-        // Start the task
+
         Thread taskThread = new Thread(loadTask);
         taskThread.setDaemon(true);
         taskThread.start();
-        
-        System.out.println("FileService: Task started, showing dialog");
-        
+
         progressDialog.showAndWait(loadTask, file.getName());
         
-        // Manual check after dialog closes - this is a fallback
-        System.out.println("FileService: Dialog closed, checking task state manually");
         if (loadTask.getState() == javafx.concurrent.Worker.State.SUCCEEDED) {
-            System.out.println("FileService: Task succeeded (manual check), executing success callback");
             if (onSuccess != null) {
-                System.out.println("FileService: Executing onSuccess callback (manual)");
                 onSuccess.run();
             } else {
-                System.out.println("FileService: onSuccess callback is null (manual)");
             }
         } else if (loadTask.getState() == javafx.concurrent.Worker.State.FAILED) {
-            System.out.println("FileService: Task failed (manual check), executing error callback");
             Throwable exception = loadTask.getException();
             String errorMessage = getFriendlyErrorMessage(exception instanceof Exception ? (Exception) exception : new Exception(exception));
             if (onError != null) {
                 onError.accept(errorMessage);
             }
         } else {
-            System.out.println("FileService: Task state is: " + loadTask.getState());
         }
     }
     
@@ -156,7 +126,6 @@ public class FileService {
         fileChooser.getExtensionFilters().add(
             new FileChooser.ExtensionFilter("XML Files", "*.xml")
         );
-        
 
         String userHome = System.getProperty("user.home");
         if (userHome != null) {
@@ -168,8 +137,7 @@ public class FileService {
         
         return fileChooser.showOpenDialog(parentStage);
     }
-    
-    
+
     public void validateFile(File file) {
         if (file == null) {
             throw new IllegalArgumentException("File cannot be null");
@@ -186,13 +154,11 @@ public class FileService {
         if (!file.canRead()) {
             throw new IllegalArgumentException("File is not readable: " + file.getAbsolutePath());
         }
-        
 
         String fileName = file.getName().toLowerCase(java.util.Locale.ENGLISH);
         if (!fileName.endsWith(".xml")) {
             throw new IllegalArgumentException("File must be an XML file: " + file.getName());
         }
-        
 
         long fileSizeKB = file.length() / 1024;
         if (fileSizeKB > 10240) {
@@ -217,7 +183,6 @@ public class FileService {
         if (message == null || message.trim().isEmpty()) {
             message = exception.getClass().getSimpleName();
         }
-        
 
         if (message.contains("XML") && message.contains("validation")) {
             return "The XML file format is invalid or corrupted. Please check the file structure.";

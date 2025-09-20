@@ -9,7 +9,6 @@ import javafx.stage.Stage;
 public class ErrorDialogUtil {
     
     private ErrorDialogUtil() {
-        // Utility class - prevent instantiation
     }
     
     public static void showError(String title, String message) {
@@ -101,7 +100,6 @@ public class ErrorDialogUtil {
         if (message == null || message.trim().isEmpty()) {
             message = exception.getClass().getSimpleName();
         }
-        
 
         if (exception instanceof SProgramException) {
             return "Program Error: " + message;

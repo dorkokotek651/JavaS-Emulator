@@ -27,7 +27,6 @@ public class ExecutionContext {
     
     private FunctionRegistry functionRegistry;
 
-
     public ExecutionContext() {
         this.variableManager = new VariableManager();
         this.currentInstructionIndex = 0;
@@ -150,7 +149,6 @@ public class ExecutionContext {
         variableManager.initializeInputs(inputValues);
     }
 
-    
     public void enableDebugMode() {
         this.debugMode = true;
         this.pauseRequested = false;

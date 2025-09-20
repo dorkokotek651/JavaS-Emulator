@@ -79,7 +79,6 @@ public class FileValidator {
     public ValidationResult validateFile(File file) {
         List<String> errors = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
-        
 
         try {
             validateBasicFile(file);
@@ -87,12 +86,10 @@ public class FileValidator {
             errors.add(e.getMessage());
             return new ValidationResult(false, errors, warnings);
         }
-        
 
         try {
 
             engine.loadProgram(file.getAbsolutePath());
-            
 
             SProgram program = engine.getCurrentProgram();
             if (program != null) {
@@ -124,13 +121,11 @@ public class FileValidator {
         if (!file.canRead()) {
             throw new IllegalArgumentException("File is not readable: " + file.getName());
         }
-        
 
         String fileName = file.getName().toLowerCase(java.util.Locale.ENGLISH);
         if (!fileName.endsWith(".xml")) {
             throw new IllegalArgumentException("File must be an XML file (.xml extension required)");
         }
-        
 
         long fileSizeKB = file.length() / 1024;
         if (fileSizeKB == 0) {
@@ -147,24 +142,20 @@ public class FileValidator {
             errors.add("Program is null after loading");
             return;
         }
-        
 
         String programName = program.getName();
         if (programName == null || programName.trim().isEmpty()) {
             errors.add("Program must have a name");
         }
-        
 
         if (program.getInstructions().isEmpty()) {
             errors.add("Program must contain at least one instruction");
         }
-        
 
         int instructionCount = program.getInstructions().size();
         if (instructionCount > 10000) {
             warnings.add("Program has many instructions (" + instructionCount + "). This may affect performance.");
         }
-        
 
         int maxLevel = program.getMaxExpansionLevel();
         if (maxLevel > 10) {
@@ -174,14 +165,8 @@ public class FileValidator {
     
     private void validateFunctionReferences(SProgram program, List<String> errors) {
 
-
-        
-
-
-        
         String programDisplay = program.toString();
         if (programDisplay.contains("QUOTE") || programDisplay.contains("JUMP_EQUAL_FUNCTION")) {
-            // Program appears to use function features that may not be fully supported yet
         }
     }
     
@@ -193,22 +178,18 @@ public class FileValidator {
         }
         
         String path = file.getAbsolutePath();
-        
 
         if (path.contains(" ")) {
             warnings.add("File path contains spaces. This should work fine but may cause issues in some environments.");
         }
-        
 
         if (path.length() > 260) {
             warnings.add("File path is very long (" + path.length() + " characters). This may cause issues on some systems.");
         }
-        
 
         if (path.matches(".*[<>:\"|?*].*")) {
             warnings.add("File path contains special characters that may cause issues.");
         }
-        
 
         if (!path.matches("^[\\x00-\\x7F]*$")) {
             warnings.add("File path contains non-ASCII characters. This may cause issues in some environments.");

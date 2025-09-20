@@ -16,7 +16,6 @@ public class VariableTableRow {
         this.variableValue = new SimpleStringProperty(variableValue);
         this.changed = new SimpleBooleanProperty(false);
     }
-    
 
     public StringProperty variableNameProperty() {
         return variableName;
@@ -29,7 +28,6 @@ public class VariableTableRow {
     public void setVariableName(String variableName) {
         this.variableName.set(variableName);
     }
-    
 
     public StringProperty variableValueProperty() {
         return variableValue;
@@ -42,7 +40,6 @@ public class VariableTableRow {
     public void setVariableValue(String variableValue) {
         this.variableValue.set(variableValue);
     }
-    
 
     public BooleanProperty changedProperty() {
         return changed;
